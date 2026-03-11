@@ -1,11 +1,17 @@
 const jwt = require('jsonwebtoken');
+const logger = require('../config/logger');
 
-// Protect routes - verify JWT token
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  logger.error('FATAL ERROR: JWT_SECRET is not defined in environment variables');
+  process.exit(1);
+}
+
 const protect = async (req, res, next) => {
   try {
     let token;
 
-    // Check for token in Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -16,10 +22,8 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Add user info to request
     req.user = {
       id: decoded.id,
       email: decoded.email,
@@ -34,11 +38,11 @@ const protect = async (req, res, next) => {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired' });
     }
+    logger.error('Auth middleware error:', error);
     return res.status(500).json({ error: 'Server error' });
   }
 };
 
-// Admin only middleware
 const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
@@ -49,7 +53,6 @@ const adminOnly = (req, res, next) => {
   }
 };
 
-// Optional auth - doesn't fail if no token
 const optionalAuth = async (req, res, next) => {
   try {
     let token;
@@ -58,7 +61,7 @@ const optionalAuth = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       
       if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
         req.user = {
           id: decoded.id,
           email: decoded.email,
@@ -68,7 +71,6 @@ const optionalAuth = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    // Continue without user info
     next();
   }
 };

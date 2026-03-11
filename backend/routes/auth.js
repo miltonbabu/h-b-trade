@@ -1,51 +1,59 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { body } = require("express-validator");
-const db = require("../config/database");
-const { handleValidationErrors } = require("../middleware/validation");
-const { v4: uuidv4 } = require("uuid");
-const logger = require("../config/logger");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { body } = require('express-validator');
+const db = require('../config/database');
+const { handleValidationErrors } = require('../middleware/validation');
+const logger = require('../config/logger');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+
+if (!JWT_SECRET) {
+  logger.error('FATAL ERROR: JWT_SECRET is not defined in environment variables');
+  process.exit(1);
+}
 
 const loginValidation = [
-  body("email").isEmail().withMessage("Please provide a valid email"),
-  body("password").notEmpty().withMessage("Password is required"),
-  handleValidationErrors,
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('password').notEmpty().withMessage('Password is required'),
+  handleValidationErrors
 ];
 
-router.post("/login", loginValidation, async (req, res) => {
+router.post('/login', loginValidation, async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await db.getOne("SELECT * FROM users WHERE email = ?", [
-      email.toLowerCase(),
-    ]);
+    const user = await db.getOne(
+      'SELECT * FROM users WHERE email = ?',
+      [email.toLowerCase()]
+    );
 
     if (!user) {
       logger.warn(`Failed login attempt for email: ${email}`);
-      return res.status(401).json({
-        error: "Invalid credentials",
+      return res.status(401).json({ 
+        error: 'Invalid credentials' 
       });
     }
 
     const isMatch = bcrypt.compareSync(password, user.password);
-
+    
     if (!isMatch) {
       logger.warn(`Failed login attempt for email: ${email}`);
-      return res.status(401).json({
-        error: "Invalid credentials",
+      return res.status(401).json({ 
+        error: 'Invalid credentials' 
       });
     }
 
     const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role,
+      { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role 
       },
-      process.env.JWT_SECRET || "hbtrade_secret_key",
-      { expiresIn: process.env.JWT_EXPIRE || "7d" },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRE }
     );
 
     logger.info(`User logged in: ${email}`);
@@ -57,98 +65,85 @@ router.post("/login", loginValidation, async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
-      },
+        role: user.role
+      }
     });
   } catch (error) {
-    logger.error("Login error:", error);
-    res.status(500).json({ error: "Server error" });
+    logger.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
-router.get("/me", async (req, res) => {
+router.get('/me', async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
+    const token = req.headers.authorization?.split(' ')[1];
+    
     if (!token) {
-      return res.status(401).json({ error: "No token provided" });
+      return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "hbtrade_secret_key",
-    );
-
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
     const user = await db.getOne(
-      "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
-      [decoded.id],
+      'SELECT id, name, email, role, created_at FROM users WHERE id = ?',
+      [decoded.id]
     );
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({ user });
   } catch (error) {
-    logger.error("Get user error:", error);
-    res.status(401).json({ error: "Invalid token" });
+    logger.error('Get user error:', error);
+    res.status(401).json({ error: 'Invalid token' });
   }
 });
 
-router.post(
-  "/change-password",
-  [
-    body("currentPassword")
-      .notEmpty()
-      .withMessage("Current password is required"),
-    body("newPassword")
-      .isLength({ min: 6 })
-      .withMessage("New password must be at least 6 characters"),
-    handleValidationErrors,
-  ],
-  async (req, res) => {
-    try {
-      const token = req.headers.authorization?.split(" ")[1];
-
-      if (!token) {
-        return res.status(401).json({ error: "No token provided" });
-      }
-
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "hbtrade_secret_key",
-      );
-      const { currentPassword, newPassword } = req.body;
-
-      const user = await db.getOne("SELECT * FROM users WHERE id = ?", [
-        decoded.id,
-      ]);
-
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      const isMatch = bcrypt.compareSync(currentPassword, user.password);
-
-      if (!isMatch) {
-        return res.status(400).json({ error: "Current password is incorrect" });
-      }
-
-      const hashedPassword = bcrypt.hashSync(newPassword, 10);
-
-      await db.run("UPDATE users SET password = ? WHERE id = ?", [
-        hashedPassword,
-        user.id,
-      ]);
-
-      logger.info(`Password changed for user: ${user.email}`);
-
-      res.json({ success: true, message: "Password updated successfully" });
-    } catch (error) {
-      logger.error("Change password error:", error);
-      res.status(500).json({ error: "Server error" });
+router.post('/change-password', [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+  handleValidationErrors
+], async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
     }
-  },
-);
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await db.getOne(
+      'SELECT * FROM users WHERE id = ?',
+      [decoded.id]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isMatch = bcrypt.compareSync(currentPassword, user.password);
+    
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+    await db.run(
+      'UPDATE users SET password = ? WHERE id = ?',
+      [hashedPassword, user.id]
+    );
+
+    logger.info(`Password changed for user: ${user.email}`);
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    logger.error('Change password error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 module.exports = router;
