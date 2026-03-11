@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hbtrade-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hbtrade
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hbtrade123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - hbtrade-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: hbtrade-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=hbtrade
+      - DB_USER=postgres
+      - DB_PASSWORD=hbtrade123
+      - JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+      - JWT_EXPIRE=7d
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - backend_uploads:/app/uploads
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hbtrade-network
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: hbtrade-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - hbtrade-network
+
+volumes:
+  postgres_data:
+  backend_uploads:
+
+networks:
+  hbtrade-network:
+    driver: bridge

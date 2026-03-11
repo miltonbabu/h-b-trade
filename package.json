@@ -1,0 +1,17 @@
+{
+  "name": "hbtrade-platform",
+  "version": "1.0.0",
+  "description": "H&B Trade - China to Bangladesh Product Sourcing & Shipping Platform",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm install",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start"
+  },
+  "keywords": ["logistics", "sourcing", "trade", "shipping", "china", "bangladesh"],
+  "author": "H&B Trade",
+  "license": "MIT"
+}
