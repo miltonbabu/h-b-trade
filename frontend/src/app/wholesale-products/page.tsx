@@ -1,0 +1,356 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import {
+  ShoppingCart,
+  Package,
+  Filter,
+  Search,
+  Minus,
+  Plus,
+  ShoppingBag,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import Link from "next/link";
+import api from "@/lib/api";
+import { useCart } from "@/context/CartContext";
+
+// Image Slider Component
+function ProductImageSlider({ images, productName, category }: { images: string[], productName: string, category?: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const hasMultipleImages = images.length > 1;
+
+  const goToPrevious = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  if (images.length === 0 || !images[0]) {
+    return (
+      <div className="relative w-full h-48 bg-gray-200 flex items-center justify-center">
+        <Package size={48} className="text-gray-400" />
+        {category && (
+          <div className="absolute top-2 right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+            {category}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-48 overflow-hidden">
+      <img
+        src={images[currentIndex]}
+        alt={`${productName} - Image ${currentIndex + 1}`}
+        className="w-full h-full object-cover transition-opacity duration-300"
+      />
+      
+      {category && (
+        <div className="absolute top-2 right-2 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold z-10">
+          {category}
+        </div>
+      )}
+
+      {hasMultipleImages && (
+        <>
+          {/* Navigation Arrows */}
+          <button
+            onClick={goToPrevious}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors z-10"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={goToNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors z-10"
+          >
+            <ChevronRight size={16} />
+          </button>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentIndex(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentIndex ? "bg-white" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Image Counter */}
+          <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 rounded text-xs z-10">
+            {currentIndex + 1}/{images.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+interface Product {
+  id: string;
+  productCode?: string;
+  name: string;
+  category: string;
+  price: number;
+  moq: number;
+  image: string;
+  image2?: string;
+  image3?: string;
+  description: string;
+}
+
+export default function WholesaleProductsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [loading, setLoading] = useState(true);
+  const { addItem, getTotalItems } = useCart();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (selectedCategory !== "All")
+        params.append("category", selectedCategory);
+      if (searchTerm) params.append("search", searchTerm);
+
+      const response = await api.get(`/products?${params}`);
+      setProducts(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get("/products/categories");
+      setCategories(["All", ...response.data.data]);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchProducts();
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  // Fetch products when category changes
+  useEffect(() => {
+    if (!loading) {
+      fetchProducts();
+    }
+  }, [selectedCategory]);
+
+  const updateCart = (productId: string, change: number) => {
+    const current = cart[productId] || 0;
+    const newQuantity = Math.max(0, current + change);
+
+    // Update local cart state
+    setCart((prev) => ({ ...prev, [productId]: newQuantity }));
+
+    // If adding item (change > 0), add to cart context
+    if (change > 0 && newQuantity > 0) {
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        addItem(
+          {
+            id: product.id,
+            productCode: product.productCode,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            description: product.description,
+            moq: product.moq,
+          },
+          change,
+        );
+      }
+    }
+  };
+
+  const shareOnWhatsApp = (product: Product) => {
+    const productUrl = `${window.location.origin}/wholesale-products?product=${product.id}`;
+    const text = `Check out this product: ${product.name}\nPrice: ৳${product.price.toFixed(2)}\nLink: ${productUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                Wholesale Products
+              </h1>
+              <p className="text-xl opacity-90">
+                Premium quality products at competitive prices
+              </p>
+            </div>
+            <Link href="/cart">
+              <Button className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-6 py-4 shadow-xl">
+                <ShoppingBag className="mr-2" size={24} />
+                Cart ({getTotalItems()})
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Search and Filter */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <form onSubmit={handleSearch} className="relative flex-1 w-full">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </form>
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <Filter size={20} className="text-gray-600" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+          </div>
+        ) : (
+          <>
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {products.map((product) => {
+                // Get all images for this product
+                const images = [product.image, product.image2, product.image3].filter(Boolean);
+                const hasMultipleImages = images.length > 1;
+                
+                return (
+                  <Card
+                    key={product.id}
+                    className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                  >
+                    <ProductImageSlider images={images} productName={product.name} category={product.category} />
+                    <CardContent className="p-4">
+                      <h3 className="font-bold text-lg mb-2 text-gray-800">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        {product.description}
+                      </p>
+
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-2xl font-bold text-orange-600">
+                            ৳{product.price.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500">per unit</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-700">
+                            MOQ: {product.moq}
+                          </p>
+                          <p className="text-xs text-gray-500">min. order</p>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={() => shareOnWhatsApp(product)}
+                      className="w-full bg-green-500 hover:bg-green-600 text-white mb-3 flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle size={18} />
+                      Inquiry to Seller
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => updateCart(product.id, -1)}
+                        disabled={!cart[product.id]}
+                        className="w-10 h-10 p-0 bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      >
+                        <Minus size={18} />
+                      </Button>
+                      <div className="flex-1 text-center font-bold text-lg">
+                        {cart[product.id] || 0}
+                      </div>
+                      <Button
+                        onClick={() => updateCart(product.id, 1)}
+                        className="w-10 h-10 p-0 bg-orange-500 hover:bg-orange-600 text-white"
+                      >
+                        <Plus size={18} />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                );
+              })}
+            </div>
+
+            {products.length === 0 && (
+              <div className="text-center py-12">
+                <Package size={64} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-xl text-gray-600">No products found</p>
+                <p className="text-gray-500">
+                  Try adjusting your search or filter
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

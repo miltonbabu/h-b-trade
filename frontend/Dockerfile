@@ -1,5 +1,10 @@
-# Frontend Dockerfile
-FROM node:18-alpine AS builder
+# Frontend Dockerfile - Production Ready
+# Multi-stage build for optimized image size
+
+# ============================================
+# Stage 1: Dependencies
+# ============================================
+FROM node:18-alpine AS deps
 
 WORKDIR /app
 
@@ -9,30 +14,57 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy source code
+# ============================================
+# Stage 2: Builder
+# ============================================
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
 # Build the application
 RUN npm run build
 
-# Production image
+# ============================================
+# Stage 3: Production Runner
+# ============================================
 FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-ENV NODE_ENV production
+# Set environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
 
-# Copy built files
-COPY --from=builder /app/.next ./.next
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy necessary files from builder
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Set proper ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
 
 # Expose port
 EXPOSE 3000
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+
 # Start server
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

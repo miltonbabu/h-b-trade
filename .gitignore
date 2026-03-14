@@ -2,9 +2,12 @@
 node_modules/
 .pnp
 .pnp.js
+package-lock.json
+yarn.lock
 
 # Testing
 coverage/
+.nyc_output/
 
 # Next.js
 .next/
@@ -17,10 +20,13 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Misc
 .DS_Store
 *.pem
+*.tgz
 
 # Environment variables - IMPORTANT: Never commit these!
 .env
@@ -29,6 +35,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 .env.production
+docker/.env
+!.env.example
+!.env.production.example
 
 # Database files - Never commit database files!
 *.db
@@ -37,6 +46,7 @@ yarn-error.log*
 *.sqlite
 *.sqlite3
 data/
+*.sql.bak
 
 # Uploads - User uploaded files
 uploads/*
@@ -47,12 +57,18 @@ backend/uploads/*
 # Logs
 logs/
 *.log
+pids/
+*.pid
+*.seed
+*.pid.lock
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-workspace
+*.sublime-project
 
 # Vercel
 .vercel
@@ -64,7 +80,26 @@ next-env.d.ts
 # OS
 Thumbs.db
 .DS_Store
+Desktop.ini
 
 # Backup files
 *.bak
 *.backup
+*~
+
+# Debug
+.npm
+.eslintcache
+.stylelintcache
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Render
+.render/
+
+# Docker (keep Dockerfiles, ignore build artifacts)
+docker-compose.override.yml

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { FileText, Eye, Trash2, X, ExternalLink } from 'lucide-react';
+import { Input } from '@/components/ui/Input';
+import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
@@ -14,6 +15,12 @@ export default function AdminRequestsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState<ProductRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [editingTracking, setEditingTracking] = useState<string | null>(null);
+  const [trackingInput, setTrackingInput] = useState('');
+  const [convertPrice, setConvertPrice] = useState('');
+  const [convertStatus, setConvertStatus] = useState('processing');
+  const [converting, setConverting] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -53,6 +60,49 @@ export default function AdminRequestsPage() {
     }
   };
 
+  const handleTrackingUpdate = async (id: string) => {
+    try {
+      await api.put(`/admin/requests/${id}`, { tracking_number: trackingInput });
+      setEditingTracking(null);
+      setTrackingInput('');
+      fetchRequests();
+      if (selectedRequest && selectedRequest.id === id) {
+        setSelectedRequest({ ...selectedRequest, tracking_number: trackingInput });
+      }
+    } catch (error) {
+      console.error('Failed to update tracking number:', error);
+    }
+  };
+
+  const startEditingTracking = (request: ProductRequest) => {
+    setEditingTracking(request.id);
+    setTrackingInput(request.tracking_number || '');
+  };
+
+  const openConvertModal = (request: ProductRequest) => {
+    setSelectedRequest(request);
+    setConvertPrice('');
+    setConvertStatus('processing');
+    setShowConvertModal(true);
+  };
+
+  const handleConvertToOrder = async () => {
+    if (!selectedRequest) return;
+    setConverting(true);
+    try {
+      await api.post(`/admin/requests/${selectedRequest.id}/convert-to-order`, {
+        price: parseFloat(convertPrice) || 0,
+        status: convertStatus
+      });
+      setShowConvertModal(false);
+      fetchRequests();
+    } catch (error) {
+      console.error('Failed to convert to order:', error);
+    } finally {
+      setConverting(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this request?')) return;
     try {
@@ -89,6 +139,7 @@ export default function AdminRequestsPage() {
             <option value="pending">Pending</option>
             <option value="processing">Processing</option>
             <option value="completed">Completed</option>
+            <option value="converted">Converted to Order</option>
             <option value="cancelled">Cancelled</option>
           </select>
         </CardContent>
@@ -114,7 +165,7 @@ export default function AdminRequestsPage() {
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Shipping</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Tracking</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
                     <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -126,7 +177,9 @@ export default function AdminRequestsPage() {
                       <td className="px-6 py-4 font-medium">{request.name}</td>
                       <td className="px-6 py-4 text-sm">{request.email}</td>
                       <td className="px-6 py-4 text-sm">{request.product_name}</td>
-                      <td className="px-6 py-4 text-sm">{request.shipping_method || '-'}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className="font-mono text-primary">{request.tracking_number || '-'}</span>
+                      </td>
                       <td className="px-6 py-4">
                         <select
                           value={request.status}
@@ -135,18 +188,31 @@ export default function AdminRequestsPage() {
                             request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                             request.status === 'processing' ? 'bg-blue-100 text-blue-800' :
                             request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            request.status === 'converted' ? 'bg-purple-100 text-purple-800' :
                             'bg-gray-100 text-gray-800'
                           }`}
                         >
                           <option value="pending">Pending</option>
                           <option value="processing">Processing</option>
                           <option value="completed">Completed</option>
+                          <option value="converted">Converted</option>
                           <option value="cancelled">Cancelled</option>
                         </select>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{formatDate(request.created_at)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {request.status !== 'converted' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openConvertModal(request)}
+                              className="text-green-600 hover:text-green-700"
+                              title="Convert to Order"
+                            >
+                              <ArrowRight size={16} />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
@@ -227,6 +293,34 @@ export default function AdminRequestsPage() {
                   <p className="text-sm text-gray-600">Shipping Method</p>
                   <p className="font-medium">{selectedRequest.shipping_method || '-'}</p>
                 </div>
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-600 mb-1">Tracking Number</p>
+                  {editingTracking === selectedRequest.id ? (
+                    <div className="flex gap-2">
+                      <Input
+                        value={trackingInput}
+                        onChange={(e) => setTrackingInput(e.target.value)}
+                        placeholder="Enter tracking number"
+                        className="flex-1"
+                      />
+                      <Button size="sm" onClick={() => handleTrackingUpdate(selectedRequest.id)}>
+                        <Save size={16} />
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingTracking(null)}>
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-medium text-primary">
+                        {selectedRequest.tracking_number || 'Not set'}
+                      </span>
+                      <Button size="sm" variant="ghost" onClick={() => startEditingTracking(selectedRequest)}>
+                        Edit
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <div>
                   <p className="text-sm text-gray-600">Status</p>
                   <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedRequest.status)}`}>
@@ -257,6 +351,71 @@ export default function AdminRequestsPage() {
               <div className="pt-4">
                 <Button variant="outline" className="w-full" onClick={() => setShowModal(false)}>
                   Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Convert to Order Modal */}
+      {showConvertModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="text-green-500" size={20} />
+                Convert to Order
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowConvertModal(false)}>
+                <X size={20} />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">Request Details:</p>
+                <p className="font-medium">{selectedRequest.product_name}</p>
+                <p className="text-sm text-gray-500">by {selectedRequest.name}</p>
+                {selectedRequest.tracking_number && (
+                  <p className="text-xs text-primary mt-1">Tracking: {selectedRequest.tracking_number}</p>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Price (BDT)</label>
+                <Input
+                  type="number"
+                  value={convertPrice}
+                  onChange={(e) => setConvertPrice(e.target.value)}
+                  placeholder="Enter price"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Initial Status</label>
+                <select
+                  value={convertStatus}
+                  onChange={(e) => setConvertStatus(e.target.value)}
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="in-transit">In Transit</option>
+                  <option value="delivered">Delivered</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setShowConvertModal(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-green-600 hover:bg-green-700" 
+                  onClick={handleConvertToOrder}
+                  disabled={converting}
+                >
+                  {converting ? 'Converting...' : 'Confirm & Create Order'}
                 </Button>
               </div>
             </CardContent>

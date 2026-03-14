@@ -7,6 +7,8 @@ const { upload, handleUploadError } = require('../config/multer');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 
+console.log('=== PUBLIC ROUTES LOADED ===');
+
 router.use(xssProtection);
 
 const contactValidation = [
@@ -23,40 +25,102 @@ const productRequestValidation = [
   handleValidationErrors
 ];
 
-router.post('/product-request', upload.single('image'), handleUploadError, productRequestValidation, async (req, res) => {
+router.post('/product-request', (req, res, next) => {
+  console.log('=== Before Multer ===');
+  console.log('Content-Type:', req.headers['content-type']);
+
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('=== Multer Error ===');
+      console.error('Error:', err);
+      return res.status(400).json({
+        error: 'File upload error',
+        details: err.message
+      });
+    }
+    console.log('=== Multer Success ===');
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
+    next();
+  });
+}, async (req, res) => {
+  console.log('=== Product Request Route Hit ===');
+
   try {
-    const { 
-      name, 
-      phone, 
-      whatsapp, 
-      email, 
-      product_name, 
-      product_link, 
-      quantity, 
-      shipping_method, 
-      message 
+    const {
+      name,
+      phone,
+      whatsapp,
+      email,
+      product_name,
+      product_link,
+      quantity,
+      shipping_method,
+      message
     } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !product_name) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        required: ['name', 'email', 'product_name']
+      });
+    }
 
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     const id = uuidv4();
+    const trackingNumber = `PR${Date.now().toString().slice(-10)}`;
+
+    console.log('Inserting with ID:', id);
+    console.log('Tracking Number:', trackingNumber);
+
+    // Ensure all values are either the value or null (not undefined)
+    const values = [
+      id,
+      name || null,
+      phone || null,
+      whatsapp || null,
+      email || null,
+      product_name || null,
+      product_link || null,
+      quantity || null,
+      shipping_method || null,
+      message || null,
+      imagePath,
+      trackingNumber
+    ];
 
     await db.run(
-      `INSERT INTO product_requests 
-       (id, name, phone, whatsapp, email, product_name, product_link, quantity, shipping_method, message, image) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, phone, whatsapp, email, product_name, product_link, quantity, shipping_method, message, imagePath]
+      `INSERT INTO product_requests
+       (id, name, phone, whatsapp, email, product_name, product_link, quantity, shipping_method, message, image, tracking_number)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      values
     );
 
-    logger.info(`New product request from: ${email} - ${product_name}`);
+    console.log('Insert successful');
+
+    logger.info(`New product request from: ${email} - ${product_name} - Tracking: ${trackingNumber}`);
 
     res.status(201).json({
       success: true,
       message: 'Product request submitted successfully',
-      data: { id, name, product_name }
+      data: { 
+        id, 
+        name, 
+        product_name,
+        trackingNumber 
+      }
     });
   } catch (error) {
+    console.error('=== PRODUCT REQUEST ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
     logger.error('Product request error:', error);
-    res.status(500).json({ error: 'Failed to submit request' });
+    res.status(500).json({
+      error: 'Failed to submit request',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -135,15 +199,22 @@ router.get('/track/:tracking_number', async (req, res) => {
 router.get('/settings', async (req, res) => {
   try {
     const settings = await db.getOne(
-      `SELECT 
-        phone, 
-        email, 
-        whatsapp_link, 
-        facebook_page, 
-        facebook_group, 
-        office_address, 
-        company_name 
-       FROM settings 
+      `SELECT
+        phone,
+        email,
+        whatsapp_link,
+        facebook_page,
+        facebook_group,
+        office_address,
+        company_name,
+        bkash,
+        nagad,
+        bank_account as bankAccount,
+        wechat,
+        alipay,
+        wechat_qr as wechatQr,
+        alipay_qr as alipayQr
+       FROM settings
        LIMIT 1`
     );
 
@@ -154,6 +225,133 @@ router.get('/settings', async (req, res) => {
   } catch (error) {
     logger.error('Settings error:', error);
     res.status(500).json({ error: 'Failed to get settings' });
+  }
+});
+
+// Public products endpoint for wholesale page
+// Get product categories (must be before /products route)
+router.get('/products/categories', async (req, res) => {
+  try {
+    const categories = await db.getMany(
+      "SELECT DISTINCT category FROM products WHERE status = 'active' AND category IS NOT NULL AND category != '' ORDER BY category"
+    );
+
+    res.json({
+      success: true,
+      data: categories.map(c => c.category)
+    });
+  } catch (error) {
+    logger.error('Get categories error:', error);
+    res.status(500).json({ error: 'Failed to get categories' });
+  }
+});
+
+router.get('/products', async (req, res) => {
+  try {
+    const { category, search } = req.query;
+    
+    let queryStr = "SELECT id, name, category, price, moq, image, image2, image3, description FROM products WHERE status = 'active'";
+    const params = [];
+
+    if (category && category !== 'all') {
+      queryStr += ' AND category = ?';
+      params.push(category);
+    }
+
+    if (search) {
+      queryStr += ' AND (name LIKE ? OR description LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    queryStr += ' ORDER BY created_at DESC';
+
+    const products = await db.getMany(queryStr, params);
+
+    res.json({
+      success: true,
+      data: products
+    });
+  } catch (error) {
+    logger.error('Get products error:', error);
+    res.status(500).json({ error: 'Failed to get products' });
+  }
+});
+
+// Public order creation endpoint
+router.post('/orders', [
+  body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
+  body('totalAmount').isFloat({ min: 0 }).withMessage('Valid total amount is required'),
+  body('customerInfo').isObject().withMessage('Customer information is required'),
+  body('shippingMethod').notEmpty().withMessage('Shipping method is required'),
+  handleValidationErrors
+], async (req, res) => {
+  try {
+    const { items, totalAmount, status, customerInfo, payment, shippingMethod } = req.body;
+    
+    const id = uuidv4();
+    const orderNumber = `HB${Date.now().toString().slice(-8)}`;
+    const trackingNumber = `TRK${Date.now().toString().slice(-10)}`;
+    
+    // Create a summary of products for the order
+    const productNames = items.map(item => item.productName).join(', ');
+    const productCodes = items.map(item => item.productCode).filter(Boolean).join(', ');
+    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Store customer info as JSON
+    const customerInfoJson = JSON.stringify(customerInfo);
+    
+    // Store payment info as JSON
+    const paymentInfoJson = payment ? JSON.stringify(payment) : null;
+    
+    // Store items with product codes as JSON
+    const itemsJson = JSON.stringify(items);
+    
+    // Map shipping method to display name
+    const shippingMethodMap = {
+      'air': 'Air Cargo',
+      'sea': 'Sea Freight',
+      'hand': 'Hand Carry'
+    };
+    const shippingMethodName = shippingMethodMap[shippingMethod] || shippingMethod;
+    
+    await db.run(
+      `INSERT INTO orders 
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, product_codes, items_info, quantity, shipping_method, price, status, payment_info) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, 
+        orderNumber, 
+        trackingNumber,
+        customerInfo.name || 'Guest Customer', 
+        customerInfoJson,
+        productNames,
+        productCodes,
+        itemsJson, 
+        totalQuantity,
+        shippingMethodName,
+        totalAmount, 
+        status || 'pending',
+        paymentInfoJson
+      ]
+    );
+
+    logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total: ${totalAmount}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Order placed successfully',
+      data: { 
+        id, 
+        orderId: orderNumber,
+        orderNumber,
+        trackingNumber,
+        totalAmount,
+        itemCount: items.length 
+      }
+    });
+  } catch (error) {
+    logger.error('Create order error:', error);
+    res.status(500).json({ error: 'Failed to place order' });
   }
 });
 

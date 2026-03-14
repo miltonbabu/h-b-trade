@@ -13,9 +13,19 @@ import {
   LogOut,
   Menu,
   X,
-  Bell
+  Bell,
+  Box,
+  BarChart3,
+  Users
 } from 'lucide-react';
 import api from '@/lib/api';
+
+interface NotificationCounts {
+  messages: number;
+  requests: number;
+  orders: number;
+  total: number;
+}
 
 export default function AdminLayout({
   children,
@@ -27,6 +37,22 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationCounts>({
+    messages: 0,
+    requests: 0,
+    orders: 0,
+    total: 0
+  });
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.get('/admin/notifications');
+      setNotifications(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
 
   useEffect(() => {
     // Check authentication
@@ -45,6 +71,17 @@ export default function AdminLayout({
     setLoading(false);
   }, [pathname, router]);
 
+  // Fetch notifications when authenticated
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token && pathname !== '/admin/login') {
+      fetchNotifications();
+      // Refresh notifications every 30 seconds
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -52,13 +89,22 @@ export default function AdminLayout({
   };
 
   const menuItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/orders', label: 'Orders', icon: Package },
-    { href: '/admin/tracking', label: 'Tracking', icon: Truck },
-    { href: '/admin/requests', label: 'Product Requests', icon: FileText },
-    { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, badge: null, superAdminOnly: false },
+    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, badge: null, superAdminOnly: false },
+    { href: '/admin/products', label: 'Products', icon: Box, badge: null, superAdminOnly: false },
+    { href: '/admin/orders', label: 'Orders', icon: Package, badge: notifications.orders, superAdminOnly: false },
+    { href: '/admin/tracking', label: 'Tracking', icon: Truck, badge: null, superAdminOnly: false },
+    { href: '/admin/requests', label: 'Product Requests', icon: FileText, badge: notifications.requests, superAdminOnly: false },
+    { href: '/admin/messages', label: 'Messages', icon: MessageSquare, badge: notifications.messages, superAdminOnly: false },
+    { href: '/admin/admins', label: 'Admins', icon: Users, badge: null, superAdminOnly: true },
+    { href: '/admin/settings', label: 'Settings', icon: Settings, badge: null, superAdminOnly: false },
   ];
+
+  const isSuperAdmin = user?.role === 'super_admin';
+
+  const filteredMenuItems = menuItems.filter(item => 
+    !item.superAdminOnly || (item.superAdminOnly && isSuperAdmin)
+  );
 
   // Don't show layout for login page
   if (pathname === '/admin/login') {
@@ -90,7 +136,7 @@ export default function AdminLayout({
         </div>
 
         <nav className="mt-4">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -102,7 +148,12 @@ export default function AdminLayout({
                 onClick={() => setIsSidebarOpen(false)}
               >
                 <item.icon size={20} />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -133,7 +184,11 @@ export default function AdminLayout({
           <div className="flex items-center gap-4 ml-auto">
             <button className="p-2 rounded-lg hover:bg-gray-100 relative">
               <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              {notifications.total > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {notifications.total > 9 ? '9+' : notifications.total}
+                </span>
+              )}
             </button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">

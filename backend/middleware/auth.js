@@ -43,12 +43,37 @@ const protect = async (req, res, next) => {
   }
 };
 
+// Admin only - allows both 'admin' and 'super_admin' roles
 const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin')) {
     next();
   } else {
     res.status(403).json({ 
       error: 'Access denied. Admin privileges required.' 
+    });
+  }
+};
+
+// Super admin only - only allows 'super_admin' role
+const superAdminOnly = (req, res, next) => {
+  logger.info(`superAdminOnly check - user role: ${req.user?.role}, user: ${req.user?.email}`);
+  if (req.user && req.user.role === 'super_admin') {
+    next();
+  } else {
+    logger.warn(`Access denied for ${req.user?.email} - role: ${req.user?.role}`);
+    res.status(403).json({ 
+      error: 'Access denied. Super admin privileges required.' 
+    });
+  }
+};
+
+// Check if user can delete (only super_admin can delete)
+const canDelete = (req, res, next) => {
+  if (req.user && req.user.role === 'super_admin') {
+    next();
+  } else {
+    res.status(403).json({ 
+      error: 'Access denied. Only super admin can delete items.' 
     });
   }
 };
@@ -75,4 +100,4 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly, optionalAuth };
+module.exports = { protect, adminOnly, superAdminOnly, canDelete, optionalAuth };

@@ -1,12 +1,12 @@
-const initSqlJs = require('sql.js');
-const { Pool } = require('pg');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcryptjs');
+const initSqlJs = require("sql.js");
+const { Pool } = require("pg");
+const path = require("path");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
+const bcrypt = require("bcryptjs");
 
-const isProduction = process.env.NODE_ENV === 'production';
-const dbPath = path.join(__dirname, '..', 'data', 'hbtrade.db');
+const isProduction = process.env.NODE_ENV === "production";
+const dbPath = path.join(__dirname, "..", "data", "hbtrade.db");
 const dataDir = path.dirname(dbPath);
 
 let db;
@@ -30,18 +30,18 @@ const initPostgreSQL = async () => {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
   });
 
   try {
     const client = await pgPool.connect();
-    console.log('PostgreSQL connected successfully');
+    console.log("PostgreSQL connected successfully");
     client.release();
-    
+
     await initPostgresTables();
     return true;
   } catch (error) {
-    console.error('PostgreSQL connection error:', error);
+    console.error("PostgreSQL connection error:", error);
     throw error;
   }
 };
@@ -49,7 +49,7 @@ const initPostgreSQL = async () => {
 const initPostgresTables = async () => {
   const client = await pgPool.connect();
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -120,6 +120,30 @@ const initPostgresTables = async () => {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        product_code VARCHAR(100),
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(100),
+        price DECIMAL(10, 2) NOT NULL,
+        moq INTEGER DEFAULT 1,
+        image VARCHAR(500),
+        description TEXT,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    try {
+      await client.query(
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_code VARCHAR(100)",
+      );
+    } catch (e) {
+      // Column already exists, ignore error
+    }
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         phone VARCHAR(50),
@@ -133,7 +157,7 @@ const initPostgresTables = async () => {
       )
     `);
 
-    const settingsResult = await client.query('SELECT COUNT(*) FROM settings');
+    const settingsResult = await client.query("SELECT COUNT(*) FROM settings");
     if (parseInt(settingsResult.rows[0].count) === 0) {
       await client.query(`
         INSERT INTO settings (phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name)
@@ -141,19 +165,25 @@ const initPostgresTables = async () => {
       `);
     }
 
-    const adminResult = await client.query("SELECT COUNT(*) FROM users WHERE email = $1", ['admin@hbtrade.com']);
+    const adminResult = await client.query(
+      "SELECT COUNT(*) FROM users WHERE email = $1",
+      ["admin@hbtrade.com"],
+    );
     if (parseInt(adminResult.rows[0].count) === 0) {
-      const hashedPassword = bcrypt.hashSync('admin123', 10);
-      await client.query(`
+      const hashedPassword = bcrypt.hashSync("admin123", 10);
+      await client.query(
+        `
         INSERT INTO users (name, email, password, role)
         VALUES ('Admin', 'admin@hbtrade.com', $1, 'admin')
-      `, [hashedPassword]);
+      `,
+        [hashedPassword],
+      );
     }
 
-    await client.query('COMMIT');
-    console.log('PostgreSQL tables initialized');
+    await client.query("COMMIT");
+    console.log("PostgreSQL tables initialized");
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
@@ -166,7 +196,7 @@ const initSQLite = async () => {
   }
 
   SQL = await initSqlJs();
-  
+
   if (fs.existsSync(dbPath)) {
     const fileBuffer = fs.readFileSync(dbPath);
     db = new SQL.Database(fileBuffer);
@@ -198,22 +228,34 @@ const initSQLite = async () => {
       shipping_method TEXT,
       message TEXT,
       image TEXT,
+      tracking_number TEXT,
       status TEXT DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
+  // Add tracking_number column to product_requests if it doesn't exist
+  const productRequestsInfo = db.exec("PRAGMA table_info(product_requests)");
+  if (productRequestsInfo.length > 0) {
+    const prColumns = productRequestsInfo[0].values.map((col) => col[1]);
+    if (!prColumns.includes("tracking_number")) {
+      db.run("ALTER TABLE product_requests ADD COLUMN tracking_number TEXT");
+    }
+  }
+
   db.run(`
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       order_number TEXT UNIQUE NOT NULL,
+      tracking_number TEXT,
       customer_name TEXT NOT NULL,
+      customer_info TEXT,
       product_name TEXT NOT NULL,
       quantity TEXT,
       shipping_method TEXT,
       price REAL,
       status TEXT DEFAULT 'pending',
-      tracking_number TEXT,
+      payment_info TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -243,6 +285,48 @@ const initSQLite = async () => {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      product_code TEXT,
+      name TEXT NOT NULL,
+      category TEXT,
+      price REAL NOT NULL,
+      moq INTEGER DEFAULT 1,
+      image TEXT,
+      description TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  const productsInfo = db.exec("PRAGMA table_info(products)");
+  if (productsInfo.length > 0) {
+    const columns = productsInfo[0].values.map((col) => col[1]);
+    if (!columns.includes("product_code")) {
+      db.run("ALTER TABLE products ADD COLUMN product_code TEXT");
+    }
+    if (!columns.includes("image2")) {
+      db.run("ALTER TABLE products ADD COLUMN image2 TEXT");
+    }
+    if (!columns.includes("image3")) {
+      db.run("ALTER TABLE products ADD COLUMN image3 TEXT");
+    }
+  }
+
+  // Add missing columns to orders table
+  const ordersInfo = db.exec("PRAGMA table_info(orders)");
+  if (ordersInfo.length > 0) {
+    const orderColumns = ordersInfo[0].values.map((col) => col[1]);
+    if (!orderColumns.includes("product_codes")) {
+      db.run("ALTER TABLE orders ADD COLUMN product_codes TEXT");
+    }
+    if (!orderColumns.includes("items_info")) {
+      db.run("ALTER TABLE orders ADD COLUMN items_info TEXT");
+    }
+  }
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       phone TEXT,
@@ -252,29 +336,41 @@ const initSQLite = async () => {
       facebook_group TEXT,
       office_address TEXT,
       company_name TEXT DEFAULT 'H&B Trade',
+      bkash TEXT,
+      nagad TEXT,
+      bank_account TEXT,
+      wechat TEXT,
+      alipay TEXT,
+      wechat_qr TEXT,
+      alipay_qr TEXT,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  const settingsResult = db.exec('SELECT COUNT(*) as count FROM settings');
+  const settingsResult = db.exec("SELECT COUNT(*) as count FROM settings");
   if (settingsResult.length === 0 || settingsResult[0].values[0][0] === 0) {
     db.run(`
-      INSERT INTO settings (id, phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name)
-      VALUES ('settings-1', '+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade')
+      INSERT INTO settings (id, phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name, bkash, nagad, bank_account, wechat, alipay)
+      VALUES ('settings-1', '+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade', '0183522072', '0183522072', 'Bank: The City Bank\nName: MD ARIFUL ISLAM RONY\nAccount Number: 2183964509001\nBranch: Gulshan-02 Avenue\nRouting Number: 225261732\nDhaka, Bangladesh', 'wechat_hbtrade', 'alipay_hbtrade')
     `);
   }
 
-  const adminResult = db.exec("SELECT COUNT(*) as count FROM users WHERE email = 'admin@hbtrade.com'");
+  const adminResult = db.exec(
+    "SELECT COUNT(*) as count FROM users WHERE email = 'admin@hbtrade.com'",
+  );
   if (adminResult.length === 0 || adminResult[0].values[0][0] === 0) {
-    const hashedPassword = bcrypt.hashSync('admin123', 10);
-    db.run(`
+    const hashedPassword = bcrypt.hashSync("admin123", 10);
+    db.run(
+      `
       INSERT INTO users (id, name, email, password, role)
-      VALUES ('admin-1', 'Admin', 'admin@hbtrade.com', ?, 'admin')
-    `, [hashedPassword]);
+      VALUES ('admin-1', 'Admin', 'admin@hbtrade.com', ?, 'super_admin')
+    `,
+      [hashedPassword],
+    );
   }
 
   saveDatabase();
-  console.log('SQLite database initialized');
+  console.log("SQLite database initialized");
   return true;
 };
 
@@ -291,24 +387,24 @@ const query = async (sql, params = []) => {
     const result = await pgPool.query(sql, params);
     return { rows: result.rows, rowCount: result.rowCount };
   }
-  
+
   try {
     const stmt = db.prepare(sql);
     if (params.length > 0) {
       stmt.bind(params);
     }
-    
+
     const rows = [];
     while (stmt.step()) {
       const row = stmt.getAsObject();
       rows.push(row);
     }
     stmt.free();
-    
+
     saveDatabase();
     return { rows, rowCount: rows.length };
   } catch (error) {
-    console.error('Query error:', error);
+    console.error("Query error:", error);
     throw error;
   }
 };
@@ -318,22 +414,22 @@ const getOne = async (sql, params = []) => {
     const result = await pgPool.query(sql, params);
     return result.rows[0];
   }
-  
+
   try {
     const stmt = db.prepare(sql);
     if (params.length > 0) {
       stmt.bind(params);
     }
-    
+
     let result = null;
     if (stmt.step()) {
       result = stmt.getAsObject();
     }
     stmt.free();
-    
+
     return result;
   } catch (error) {
-    console.error('getOne error:', error);
+    console.error("getOne error:", error);
     throw error;
   }
 };
@@ -343,22 +439,22 @@ const getMany = async (sql, params = []) => {
     const result = await pgPool.query(sql, params);
     return result.rows;
   }
-  
+
   try {
     const stmt = db.prepare(sql);
     if (params.length > 0) {
       stmt.bind(params);
     }
-    
+
     const rows = [];
     while (stmt.step()) {
       rows.push(stmt.getAsObject());
     }
     stmt.free();
-    
+
     return rows;
   } catch (error) {
-    console.error('getMany error:', error);
+    console.error("getMany error:", error);
     throw error;
   }
 };
@@ -368,13 +464,13 @@ const run = async (sql, params = []) => {
     const result = await pgPool.query(sql, params);
     return { changes: result.rowCount };
   }
-  
+
   try {
     db.run(sql, params);
     saveDatabase();
     return { changes: db.getRowsModified() };
   } catch (error) {
-    console.error('run error:', error);
+    console.error("run error:", error);
     throw error;
   }
 };
@@ -384,5 +480,5 @@ module.exports = {
   query,
   getOne,
   getMany,
-  run
+  run,
 };

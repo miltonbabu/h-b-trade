@@ -1,0 +1,108 @@
+# Render Blueprint for H&B Trade Platform
+# This file defines the infrastructure for deploying on Render
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  # ============================================
+  # PostgreSQL Database (Private Service)
+  # ============================================
+  - type: pserv
+    name: hbtrade-db
+    env: docker
+    plan: starter # Free tier (1GB storage, 97 connections)
+    region: oregon # Change to your preferred region: oregon, frankfurt, singapore, etc.
+    envVars:
+      - key: POSTGRES_DB
+        value: hbtrade
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        generateValue: true # Render generates a secure password automatically
+
+  # ============================================
+  # Backend API Service
+  # ============================================
+  - type: web
+    name: hbtrade-backend
+    env: docker
+    plan: starter # Free tier (spins down after 15 min inactivity)
+    region: oregon # Same region as database
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      # Database Connection
+      - key: DB_HOST
+        fromService:
+          name: hbtrade-db
+          type: pserv
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: hbtrade
+      - key: DB_USER
+        value: postgres
+      - key: DB_PASSWORD
+        fromService:
+          name: hbtrade-db
+          type: pserv
+          envVarKey: POSTGRES_PASSWORD
+      # Authentication
+      - key: JWT_SECRET
+        generateValue: true # Render generates a 64-char secure secret
+      - key: JWT_EXPIRE
+        value: 7d
+      # CORS & Frontend
+      - key: FRONTEND_URL
+        value: https://hbtrade-frontend.onrender.com
+      # File Upload
+      - key: UPLOAD_DIR
+        value: uploads
+      - key: MAX_FILE_SIZE
+        value: 5242880
+      # Logging
+      - key: LOG_LEVEL
+        value: info
+
+  # ============================================
+  # Frontend Web Service (Next.js)
+  # ============================================
+  - type: web
+    name: hbtrade-frontend
+    env: docker
+    plan: starter # Free tier (spins down after 15 min inactivity)
+    region: oregon # Same region as backend
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://hbtrade-backend.onrender.com/api
+
+# ============================================
+# NOTES:
+# ============================================
+# 1. Free Tier Limitations:
+#    - Services spin down after 15 minutes of inactivity
+#    - Cold start takes 30-60 seconds
+#    - 750 hours/month free per service
+#
+# 2. Production Upgrade:
+#    - Change plan from 'starter' to 'standard' ($7/month per service)
+#    - Services stay always on
+#    - More RAM and CPU
+#
+# 3. Custom Domain:
+#    - Add custom domain in Render dashboard
+#    - Update FRONTEND_URL and NEXT_PUBLIC_API_URL accordingly
+#
+# 4. Database Initialization:
+#    - After deployment, run: database/schema.sql
+#    - Create admin user using backend/scripts/createAdmin.js
+# ============================================

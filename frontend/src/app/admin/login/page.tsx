@@ -134,12 +134,6 @@ export default function AdminLoginPage() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Default credentials for testing:</p>
-            <p>Email: admin@hbtrade.com</p>
-            <p>Password: admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

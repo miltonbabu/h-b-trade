@@ -1,0 +1,65 @@
+# Railway Configuration
+# Documentation: https://docs.railway.app
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node server.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+# ============================================
+# Services Configuration
+# ============================================
+
+# Backend Service
+[[services]]
+name = "hbtrade-backend"
+source = "backend"
+
+[services.build]
+builder = "nixpacks"
+buildCommand = "npm ci --only=production"
+
+[services.deploy]
+startCommand = "node server.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+
+# Frontend Service
+[[services]]
+name = "hbtrade-frontend"
+source = "frontend"
+
+[services.build]
+builder = "nixpacks"
+buildCommand = "npm ci && npm run build"
+
+[services.deploy]
+startCommand = "npm start"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+
+# ============================================
+# Environment Variables
+# ============================================
+# Set these in Railway Dashboard or CLI:
+#
+# Backend:
+# - NODE_ENV=production
+# - PORT=5000
+# - DB_HOST=${{Postgres.POSTGRES_HOST}}
+# - DB_PORT=${{Postgres.POSTGRES_PORT}}
+# - DB_NAME=hbtrade
+# - DB_USER=${{Postgres.POSTGRES_USER}}
+# - DB_PASSWORD=${{Postgres.POSTGRES_PASSWORD}}
+# - JWT_SECRET=<generate-64-char-secret>
+# - JWT_EXPIRE=7d
+# - FRONTEND_URL=https://your-frontend.railway.app
+#
+# Frontend:
+# - NODE_ENV=production
+# - NEXT_PUBLIC_API_URL=https://your-backend.railway.app/api

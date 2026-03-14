@@ -75,8 +75,8 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-gray-600">+880 1234-567890</p>
-                      <p className="text-gray-600">+86 1234-5678-90</p>
+                      <p className="text-gray-600">+880 1835220729 (Admin: RONY)</p>
+                      <p className="text-gray-600">+86 13071095097 (WeChat)</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -88,7 +88,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
-                      <p className="text-gray-600">info@hbtrade.com</p>
+                      <p className="text-gray-600">helpandbenefit30@gmail.com</p>
                       <p className="text-gray-600">support@hbtrade.com</p>
                     </div>
                   </CardContent>
@@ -103,11 +103,15 @@ export default function ContactPage() {
                       <h3 className="font-semibold mb-1">Office Addresses</h3>
                       <p className="text-gray-600 mb-2">
                         <strong>China Office:</strong><br />
-                        123 Trade Center, Yuexiu District, Guangzhou, China
+                        Tahei Town, Baiyun District<br />
+                        Guangzhou City, China<br />
+                        广州市白云区太和镇
                       </p>
                       <p className="text-gray-600">
                         <strong>Bangladesh Office:</strong><br />
-                        456 Business Hub, Motijheel, Dhaka, Bangladesh
+                        Dhaka, Uttara, Sector 5<br />
+                        Road 3, House # 25<br />
+                        ঢাকা, উত্তরা, সেক্টর ৫
                       </p>
                     </div>
                   </CardContent>
@@ -119,7 +123,7 @@ export default function ContactPage() {
                 <h3 className="font-semibold mb-4">Connect With Us</h3>
                 <div className="flex gap-4">
                   <a
-                    href="https://wa.me/8801234567890"
+                    href="https://wa.me/8801835220729"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition"
@@ -277,7 +281,7 @@ export default function ContactPage() {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">China Office</h3>
-                  <p className="text-gray-600 text-sm">123 Trade Center, Yuexiu District, Guangzhou</p>
+                  <p className="text-gray-600 text-sm">Guangzhou, China</p>
                 </div>
               </CardContent>
             </Card>
@@ -292,7 +296,7 @@ export default function ContactPage() {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">Bangladesh Office</h3>
-                  <p className="text-gray-600 text-sm">456 Business Hub, Motijheel, Dhaka</p>
+                  <p className="text-gray-600 text-sm">Uttara Sector 05, Road 03, House 25, Dhaka</p>
                 </div>
               </CardContent>
             </Card>

@@ -1,8 +1,64 @@
+# Dependencies
 node_modules
 npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Build output
 .next
 out
+build
+dist
+
+# Environment files
 .env
 .env.local
-.DS_Store
+.env.development
+.env.production
+.env.*.local
+
+# Logs
+logs
 *.log
+
+# Testing
+coverage
+.nyc_output
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+test/
+tests/
+__tests__
+*.test.js
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+
+# Public (will be copied separately)
+public/README.md

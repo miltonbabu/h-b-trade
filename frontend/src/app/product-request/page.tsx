@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Send, Upload, CheckCircle, Loader2 } from 'lucide-react';
+import { Send, Upload, CheckCircle, Loader2, Package, Zap } from 'lucide-react';
 import api from '@/lib/api';
 
 interface ProductRequestForm {
@@ -21,11 +21,20 @@ interface ProductRequestForm {
   message: string;
 }
 
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
+
 export default function ProductRequestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
+  const [trackingNumber, setTrackingNumber] = useState('');
 
   const {
     register,
@@ -48,17 +57,19 @@ export default function ProductRequestPage() {
         formData.append('image', selectedFile);
       }
 
-      await api.post('/product-request', formData, {
+      const response = await api.post('/product-request', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      setIsSuccess(true);
+      setTrackingNumber(response.data.data.trackingNumber);
+      setIsSuccess(true`    `);
       reset();
       setSelectedFile(null);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to submit request. Please try again.');
+    } catch (err: unknown) {
+      const apiError = err as ApiError;
+      setError(apiError?.response?.data?.error || 'Failed to submit request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,18 +88,23 @@ export default function ProductRequestPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 py-16">
+      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-16">
         <div className="container mx-auto px-4">
-          <Card className="max-w-lg mx-auto text-center">
+          <Card className="max-w-lg mx-auto text-center border-0 shadow-2xl">
             <CardContent className="p-8">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="text-green-500" size={40} />
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
+                <CheckCircle className="text-white" size={40} />
               </div>
-              <h2 className="text-2xl font-bold mb-4">Request Submitted Successfully!</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold mb-4 gradient-text">Request Submitted!</h2>
+              <p className="text-gray-600 mb-4">
                 Thank you for your product request. Our team will review it and get back to you within 24-48 hours.
               </p>
-              <Button onClick={() => setIsSuccess(false)}>
+              <div className="bg-primary/10 rounded-xl p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-1">Your Tracking Number</p>
+                <p className="text-2xl font-bold text-primary">{trackingNumber}</p>
+                <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
+              </div>
+              <Button variant="gradient" onClick={() => setIsSuccess(false)}>
                 Submit Another Request
               </Button>
             </CardContent>
@@ -101,33 +117,38 @@ export default function ProductRequestPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-16">
-        <div className="container mx-auto px-4">
+      <section className="hero-gradient text-white py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Product Request
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <Package className="text-yellow-300" size={18} />
+              <span className="text-sm font-medium">Product Sourcing Made Easy</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Request a <span className="text-yellow-300">Product</span>
             </h1>
-            <p className="text-xl text-blue-100">
-              Tell us about the products you need and we&apos;ll source them for you from China.
+            <p className="text-xl text-teal-100">
+              Tell us about the products you need and we&apos;ll source them from China for you.
             </p>
           </div>
         </div>
       </section>
 
       {/* Form Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
-          <Card className="max-w-3xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl">Submit Your Product Request</CardTitle>
+          <Card className="max-w-3xl mx-auto border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b">
+              <CardTitle className="text-2xl gradient-text">Submit Your Product Request</CardTitle>
               <p className="text-gray-600">
                 Fill out the form below with your product details. Our team will contact you within 24-48 hours.
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                  {error}
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                  <span>⚠️</span> {error}
                 </div>
               )}
 
@@ -136,12 +157,12 @@ export default function ProductRequestPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Your Name *
+                      Your Name <span className="text-red-500">*</span>
                     </label>
                     <Input
                       {...register('name', { required: 'Name is required' })}
                       placeholder="Enter your full name"
-                      className={errors.name ? 'border-red-500' : ''}
+                      className={`rounded-xl ${errors.name ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
                     />
                     {errors.name && (
                       <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
@@ -150,7 +171,7 @@ export default function ProductRequestPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
+                      Email Address <span className="text-red-500">*</span>
                     </label>
                     <Input
                       type="email"
@@ -162,7 +183,7 @@ export default function ProductRequestPage() {
                         }
                       })}
                       placeholder="your@email.com"
-                      className={errors.email ? 'border-red-500' : ''}
+                      className={`rounded-xl ${errors.email ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -178,6 +199,7 @@ export default function ProductRequestPage() {
                     <Input
                       {...register('phone')}
                       placeholder="+880 1XXX-XXXXXX"
+                      className="rounded-xl"
                     />
                   </div>
 
@@ -188,23 +210,24 @@ export default function ProductRequestPage() {
                     <Input
                       {...register('whatsapp')}
                       placeholder="+880 1XXX-XXXXXX"
+                      className="rounded-xl"
                     />
                   </div>
                 </div>
 
                 {/* Product Information */}
                 <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Product Details</h3>
+                  <h3 className="text-lg font-semibold mb-4 gradient-text">Product Details</h3>
                   
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product Name *
+                        Product Name <span className="text-red-500">*</span>
                       </label>
                       <Input
                         {...register('product_name', { required: 'Product name is required' })}
                         placeholder="What product are you looking for?"
-                        className={errors.product_name ? 'border-red-500' : ''}
+                        className={`rounded-xl ${errors.product_name ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
                       />
                       {errors.product_name && (
                         <p className="text-red-500 text-sm mt-1">{errors.product_name.message}</p>
@@ -218,6 +241,7 @@ export default function ProductRequestPage() {
                       <Input
                         {...register('product_link')}
                         placeholder="Link to the product (e.g., Alibaba, 1688, etc.)"
+                        className="rounded-xl"
                       />
                     </div>
 
@@ -229,6 +253,7 @@ export default function ProductRequestPage() {
                         <Input
                           {...register('quantity')}
                           placeholder="e.g., 100 pieces, 50 cartons"
+                          className="rounded-xl"
                         />
                       </div>
 
@@ -238,7 +263,7 @@ export default function ProductRequestPage() {
                         </label>
                         <select
                           {...register('shipping_method')}
-                          className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         >
                           <option value="">Select shipping method</option>
                           <option value="air-cargo">Air Cargo (3-7 days)</option>
@@ -256,6 +281,7 @@ export default function ProductRequestPage() {
                         {...register('message')}
                         placeholder="Tell us more about your requirements (size, color, material, specifications, etc.)"
                         rows={4}
+                        className="rounded-xl"
                       />
                     </div>
 
@@ -263,7 +289,7 @@ export default function ProductRequestPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Product Image (Optional)
                       </label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition cursor-pointer">
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
                         <input
                           type="file"
                           accept="image/*"
@@ -272,8 +298,8 @@ export default function ProductRequestPage() {
                           id="file-upload"
                         />
                         <label htmlFor="file-upload" className="cursor-pointer">
-                          <Upload className="mx-auto text-gray-400 mb-2" size={32} />
-                          <p className="text-gray-600">
+                          <Upload className="mx-auto text-primary mb-2" size={32} />
+                          <p className="text-gray-600 font-medium">
                             {selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}
                           </p>
                           <p className="text-gray-400 text-sm mt-1">PNG, JPG, GIF up to 5MB</p>
@@ -286,7 +312,8 @@ export default function ProductRequestPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full"
+                  variant="gradient"
+                  className="w-full rounded-xl"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -296,6 +323,7 @@ export default function ProductRequestPage() {
                     </>
                   ) : (
                     <>
+                      <Zap className="mr-2" size={20} />
                       <Send className="mr-2" size={20} />
                       Submit Request
                     </>

@@ -20,6 +20,7 @@ export interface ProductRequest {
   shipping_method?: string;
   message?: string;
   image?: string;
+  tracking_number?: string;
   status: string;
   created_at: string;
 }
@@ -35,6 +36,25 @@ export interface Order {
   price?: number;
   status: string;
   tracking_number?: string;
+  customer_info?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+    address?: string;
+  };
+  items?: Array<{
+    productId?: string;
+    productCode?: string;
+    productName?: string;
+    quantity?: number;
+    price?: number;
+    total?: number;
+  }>;
+  product_codes?: string;
+  items_info?: string;
+  payment_info?: string;
+  total_amount?: number;
   created_at: string;
   updated_at: string;
 }

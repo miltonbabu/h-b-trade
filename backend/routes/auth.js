@@ -46,6 +46,8 @@ router.post('/login', loginValidation, async (req, res) => {
       });
     }
 
+    logger.info(`Login - User role from DB: ${user.role}`);
+
     const token = jwt.sign(
       { 
         id: user.id, 
@@ -56,7 +58,7 @@ router.post('/login', loginValidation, async (req, res) => {
       { expiresIn: JWT_EXPIRE }
     );
 
-    logger.info(`User logged in: ${email}`);
+    logger.info(`User logged in: ${email} with role: ${user.role}`);
 
     res.json({
       success: true,

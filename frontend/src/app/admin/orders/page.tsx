@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Package, Plus, Search, Edit, Trash2, X, Eye } from 'lucide-react';
+import { Package, Plus, Search, Edit, Trash2, X, Eye, Download, FileText, FileDown } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { Order } from '@/types';
@@ -139,6 +139,174 @@ export default function AdminOrdersPage() {
     });
   };
 
+  // Download as PDF
+  const downloadAsPDF = (order: Order) => {
+    const printContent = generateOrderHTML(order);
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Download as DOC (HTML format)
+  const downloadAsDoc = (order: Order) => {
+    const content = generateOrderHTML(order);
+    const blob = new Blob([content], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `order-${order.order_number}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Generate HTML content for order
+  const generateOrderHTML = (order: Order): string => {
+    const customerInfo = order.customer_info 
+      ? (typeof order.customer_info === 'string' ? JSON.parse(order.customer_info) : order.customer_info)
+      : null;
+    
+    const itemsInfo = order.items_info
+      ? (typeof order.items_info === 'string' ? JSON.parse(order.items_info) : order.items_info)
+      : null;
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Order ${order.order_number}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 28px; font-weight: bold; color: #0d9488; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 16px; font-weight: bold; color: #0d9488; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .field { margin-bottom: 10px; }
+          .label { font-size: 12px; color: #6b7280; }
+          .value { font-size: 14px; font-weight: 500; }
+          .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .status-pending { background: #fef3c7; color: #92400e; }
+          .status-processing { background: #dbeafe; color: #1e40af; }
+          .status-shipped { background: #e0e7ff; color: #3730a3; }
+          .status-in-transit { background: #cffafe; color: #0e7490; }
+          .status-delivered { background: #d1fae5; color: #065f46; }
+          .status-cancelled { background: #fee2e2; color: #991b1b; }
+          .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          .items-table th, .items-table td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; }
+          .items-table th { background: #f9fafb; }
+          .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; color: #0d9488; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">H&B Trade</div>
+          <p style="color: #6b7280; margin: 5px 0;">China to Bangladesh Product Sourcing & Shipping</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Order Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Order Number</div>
+              <div class="value">${order.order_number}</div>
+            </div>
+            <div class="field">
+              <div class="label">Tracking Number</div>
+              <div class="value">${order.tracking_number || 'Not assigned'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Status</div>
+              <div class="value"><span class="status status-${order.status}">${order.status.toUpperCase()}</span></div>
+            </div>
+            <div class="field">
+              <div class="label">Order Date</div>
+              <div class="value">${formatDate(order.created_at)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Customer Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Name</div>
+              <div class="value">${order.customer_name}</div>
+            </div>
+            ${customerInfo?.email ? `<div class="field"><div class="label">Email</div><div class="value">${customerInfo.email}</div></div>` : ''}
+            ${customerInfo?.phone ? `<div class="field"><div class="label">Phone</div><div class="value">${customerInfo.phone}</div></div>` : ''}
+            ${customerInfo?.whatsapp ? `<div class="field"><div class="label">WhatsApp</div><div class="value">${customerInfo.whatsapp}</div></div>` : ''}
+            ${customerInfo?.address ? `<div class="field" style="grid-column: span 2;"><div class="label">Address</div><div class="value">${customerInfo.address}</div></div>` : ''}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Product Details</div>
+          ${itemsInfo && itemsInfo.length > 0 ? `
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Code</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsInfo.map((item: any) => `
+                  <tr>
+                    <td>${item.productName}</td>
+                    <td>${item.productCode || '-'}</td>
+                    <td>${item.quantity}</td>
+                    <td>৳${item.total}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : `
+            <div class="grid">
+              <div class="field" style="grid-column: span 2;">
+                <div class="label">Product(s)</div>
+                <div class="value">${order.product_name}</div>
+              </div>
+              <div class="field">
+                <div class="label">Quantity</div>
+                <div class="value">${order.quantity || '-'}</div>
+              </div>
+            </div>
+          `}
+        </div>
+
+        <div class="section">
+          <div class="section-title">Shipping & Payment</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Shipping Method</div>
+              <div class="value">${order.shipping_method || 'Not specified'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Total Amount</div>
+              <div class="value" style="color: #0d9488; font-size: 18px;">৳${order.price || '0'}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Thank you for your business!</p>
+          <p>H&B Trade - Your Trusted Sourcing Partner</p>
+          <p style="margin-top: 10px;">Document generated on ${new Date().toLocaleString()}</p>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -204,6 +372,7 @@ export default function AdminOrdersPage() {
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Order #</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Customer</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Shipping</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Tracking</th>
                     <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
@@ -216,6 +385,15 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4 font-medium">{order.order_number}</td>
                       <td className="px-6 py-4">{order.customer_name}</td>
                       <td className="px-6 py-4">{order.product_name}</td>
+                      <td className="px-6 py-4">
+                        {order.shipping_method ? (
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                            {order.shipping_method}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(order.status)}`}>
                           {order.status}
@@ -239,14 +417,16 @@ export default function AdminOrdersPage() {
                           >
                             <Edit size={16} />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(order.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          {typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || '{}')?.role === 'super_admin' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(order.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -352,51 +532,242 @@ export default function AdminOrdersPage() {
       {/* View Modal */}
       {showViewModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-lg">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Order Details</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => setShowViewModal(false)}>
                 <X size={20} />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Order Number</p>
-                  <p className="font-medium">{selectedOrder.order_number}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Status</p>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
-                    {selectedOrder.status}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Customer</p>
-                  <p className="font-medium">{selectedOrder.customer_name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Product</p>
-                  <p className="font-medium">{selectedOrder.product_name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Quantity</p>
-                  <p className="font-medium">{selectedOrder.quantity || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Price</p>
-                  <p className="font-medium">{selectedOrder.price ? `$${selectedOrder.price}` : '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Shipping Method</p>
-                  <p className="font-medium">{selectedOrder.shipping_method || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Tracking Number</p>
-                  <p className="font-medium">{selectedOrder.tracking_number || '-'}</p>
+            <CardContent className="space-y-6">
+              {/* Order Info */}
+              <div>
+                <h3 className="font-bold text-lg mb-3 text-gray-800 border-b pb-2">Order Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Order Number</p>
+                    <p className="font-medium">{selectedOrder.order_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Tracking Number</p>
+                    <p className="font-medium text-blue-600">{selectedOrder.tracking_number || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Status</p>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
+                      {selectedOrder.status}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Date</p>
+                    <p className="font-medium">{formatDate(selectedOrder.created_at)}</p>
+                  </div>
                 </div>
               </div>
+
+              {/* Customer Info */}
+              {selectedOrder.customer_info && (
+                <div>
+                  <h3 className="font-bold text-lg mb-3 text-gray-800 border-b pb-2">Customer Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Name</p>
+                      <p className="font-medium">{selectedOrder.customer_name}</p>
+                    </div>
+                    {(() => {
+                      try {
+                        const customerInfo = typeof selectedOrder.customer_info === 'string'
+                          ? JSON.parse(selectedOrder.customer_info)
+                          : selectedOrder.customer_info;
+                        return (
+                          <>
+                            {customerInfo.email && (
+                              <div>
+                                <p className="text-sm text-gray-600">Email</p>
+                                <p className="font-medium">{customerInfo.email}</p>
+                              </div>
+                            )}
+                            {customerInfo.phone && (
+                              <div>
+                                <p className="text-sm text-gray-600">Phone</p>
+                                <p className="font-medium">{customerInfo.phone}</p>
+                              </div>
+                            )}
+                            {customerInfo.whatsapp && (
+                              <div>
+                                <p className="text-sm text-gray-600">WhatsApp</p>
+                                <p className="font-medium">{customerInfo.whatsapp}</p>
+                              </div>
+                            )}
+                            {customerInfo.address && (
+                              <div className="col-span-2">
+                                <p className="text-sm text-gray-600">Address</p>
+                                <p className="font-medium">{customerInfo.address}</p>
+                              </div>
+                            )}
+                          </>
+                        );
+                      } catch (e) {
+                        return null;
+                      }
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Product Info */}
+              <div>
+                <h3 className="font-bold text-lg mb-3 text-gray-800 border-b pb-2">Product Information</h3>
+                <div className="space-y-4">
+                  {/* Product Codes - Only visible to admin */}
+                  {selectedOrder.product_codes && (
+                    <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+                      <p className="text-sm font-bold text-yellow-800 mb-2">🔑 Product Codes (Admin Only)</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedOrder.product_codes.split(', ').map((code, index) => (
+                          <span key={index} className="px-3 py-1 bg-yellow-200 text-yellow-900 rounded-full text-sm font-mono font-bold">
+                            {code}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Items Details */}
+                  {selectedOrder.items_info && (() => {
+                    try {
+                      const items = typeof selectedOrder.items_info === 'string'
+                        ? JSON.parse(selectedOrder.items_info)
+                        : selectedOrder.items_info;
+                      return (
+                        <div className="space-y-2">
+                          {items.map((item: any, index: number) => (
+                            <div key={index} className="bg-gray-50 rounded-lg p-3 border">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-800">{item.productName}</p>
+                                  {item.productCode && (
+                                    <p className="text-xs text-gray-500 mt-1">Code: <span className="font-mono font-bold text-blue-600">{item.productCode}</span></p>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                                  <p className="font-bold text-green-600">৳{item.total}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    } catch (e) {
+                      return null;
+                    }
+                  })()}
+
+                  {/* Fallback for orders without items_info */}
+                  {!selectedOrder.items_info && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <p className="text-sm text-gray-600">Product(s)</p>
+                        <p className="font-medium">{selectedOrder.product_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Quantity</p>
+                        <p className="font-medium">{selectedOrder.quantity || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Amount</p>
+                        <p className="font-medium text-lg text-green-600">{selectedOrder.price ? `৳${selectedOrder.price}` : '-'}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Shipping Info */}
+              <div>
+                <h3 className="font-bold text-lg mb-3 text-gray-800 border-b pb-2">Shipping Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Shipping Method</p>
+                    <p className="font-medium">
+                      {selectedOrder.shipping_method ? (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                          {selectedOrder.shipping_method}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">Not specified</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              {selectedOrder.payment_info && (
+                <div>
+                  <h3 className="font-bold text-lg mb-3 text-gray-800 border-b pb-2">Payment Information</h3>
+                  {(() => {
+                    try {
+                      const paymentInfo = typeof selectedOrder.payment_info === 'string'
+                        ? JSON.parse(selectedOrder.payment_info)
+                        : selectedOrder.payment_info;
+                      return (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-600">Payment Option</p>
+                            <p className="font-medium">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                paymentInfo.option === 'now' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {paymentInfo.option === 'now' ? 'Pay Now' : 'Pay Later'}
+                              </span>
+                            </p>
+                          </div>
+                          {paymentInfo.option === 'now' && (
+                            <>
+                              <div>
+                                <p className="text-sm text-gray-600">Payment Method</p>
+                                <p className="font-medium capitalize">{paymentInfo.method || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Transaction ID</p>
+                                <p className="font-medium">{paymentInfo.transactionId || '-'}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm text-gray-600">Amount Paid</p>
+                                <p className="font-medium text-green-600">৳{paymentInfo.amount || '-'}</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    } catch (e) {
+                      return null;
+                    }
+                  })()}
+                </div>
+              )}
+
               <div className="pt-4">
+                <div className="flex gap-2 mb-3">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => downloadAsPDF(selectedOrder)}
+                  >
+                    <FileDown size={16} className="mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="flex-1" 
+                    onClick={() => downloadAsDoc(selectedOrder)}
+                  >
+                    <FileText size={16} className="mr-2" />
+                    Download DOC
+                  </Button>
+                </div>
                 <Button variant="outline" className="w-full" onClick={() => setShowViewModal(false)}>
                   Close
                 </Button>

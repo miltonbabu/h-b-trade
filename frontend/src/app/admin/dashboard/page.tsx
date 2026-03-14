@@ -113,7 +113,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center relative`}>
                   <stat.icon className="text-white" size={24} />
-                  {stat.badge > 0 && (
+                  {stat.badge && stat.badge > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                       {stat.badge}
                     </span>

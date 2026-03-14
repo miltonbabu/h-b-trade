@@ -29,6 +29,19 @@ const sanitizeInput = (input) => {
 
 // Sanitize object recursively
 const sanitizeObject = (obj) => {
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(item => {
+      if (typeof item === 'string') {
+        return sanitizeInput(item);
+      } else if (typeof item === 'object' && item !== null) {
+        return sanitizeObject(item);
+      }
+      return item;
+    });
+  }
+  
+  // Handle objects
   const sanitized = {};
   for (const key in obj) {
     if (typeof obj[key] === 'string') {
@@ -44,16 +57,24 @@ const sanitizeObject = (obj) => {
 
 // XSS protection middleware
 const xssProtection = (req, res, next) => {
-  if (req.body) {
-    req.body = sanitizeObject(req.body);
+  console.log('=== XSS PROTECTION ===');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  try {
+    if (req.body) {
+      req.body = sanitizeObject(req.body);
+    }
+    if (req.query) {
+      req.query = sanitizeObject(req.query);
+    }
+    if (req.params) {
+      req.params = sanitizeObject(req.params);
+    }
+    next();
+  } catch (error) {
+    console.error('XSS Protection Error:', error);
+    next(error);
   }
-  if (req.query) {
-    req.query = sanitizeObject(req.query);
-  }
-  if (req.params) {
-    req.params = sanitizeObject(req.params);
-  }
-  next();
 };
 
 module.exports = {
