@@ -235,11 +235,15 @@ const initPostgresTables = async () => {
       await client.query(
         `
         INSERT INTO users (name, email, password, role)
-        VALUES ('Admin', 'admin@hbtrade.com', $1, 'admin')
+        VALUES ('Admin', 'admin@hbtrade.com', $1, 'super_admin')
       `,
         [hashedPassword],
       );
     }
+
+    await client.query(
+      "UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.com' AND role = 'admin'"
+    );
 
     await client.query("COMMIT");
     console.log("PostgreSQL tables initialized");
