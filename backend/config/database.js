@@ -89,10 +89,19 @@ const initPostgresTables = async () => {
         shipping_method VARCHAR(100),
         message TEXT,
         image VARCHAR(500),
+        tracking_number VARCHAR(100),
         status VARCHAR(50) DEFAULT 'pending',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    try {
+      await client.query(
+        "ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100)"
+      );
+    } catch (e) {
+      // Column already exists, ignore error
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS orders (
