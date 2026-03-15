@@ -250,7 +250,7 @@ router.get('/products', async (req, res) => {
   try {
     const { category, search } = req.query;
     
-    let queryStr = "SELECT id, name, category, price, moq, image, image2, image3, description FROM products WHERE status = 'active'";
+    let queryStr = "SELECT id, product_code, name, category, price, moq, image, image2, image3, description FROM products WHERE status = 'active'";
     const params = [];
 
     if (category && category !== 'all') {

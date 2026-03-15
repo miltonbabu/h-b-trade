@@ -289,19 +289,19 @@ export default function WholesaleProductsPage() {
                         {product.name}
                       </h3>
                       <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {product.description}
+                        {product.description || 'No description available'}
                       </p>
 
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="text-2xl font-bold text-orange-600">
-                            ৳{product.price.toFixed(2)}
+                            ৳{(product.price ?? 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500">per unit</p>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-semibold text-gray-700">
-                            MOQ: {product.moq}
+                            MOQ: {product.moq ?? 1}
                           </p>
                           <p className="text-xs text-gray-500">min. order</p>
                         </div>
