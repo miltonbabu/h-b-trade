@@ -267,20 +267,20 @@ export default function AdminProductsPage() {
                           <div>
                             <p className="font-medium">{product.name}</p>
                             <p className="text-sm text-gray-500 truncate max-w-xs">
-                              {product.description?.substring(0, 50)}...
+                              {product.description?.substring(0, 50) || '-'}...
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">{product.category || '-'}</td>
-                      <td className="px-6 py-4">${product.price.toFixed(2)}</td>
-                      <td className="px-6 py-4">{product.moq}</td>
+                      <td className="px-6 py-4">${(product.price ?? 0).toFixed(2)}</td>
+                      <td className="px-6 py-4">{product.moq ?? '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(product.status)}`}>
                           {product.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(product.created_at)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(product.created_at || new Date())}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button
