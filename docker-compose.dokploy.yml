@@ -105,11 +105,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${API_URL:-https://api.yourdomain.com/api}
     container_name: hbtrade-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${API_URL:-https://api.yourdomain.com/api}
     depends_on:
       - backend
     networks:

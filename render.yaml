@@ -85,8 +85,12 @@ services:
         value: production
       - key: HOSTNAME
         value: 0.0.0.0
-      - key: NEXT_PUBLIC_API_URL
-        value: https://hbtrade-backend.onrender.com/api
+    # NOTE: NEXT_PUBLIC_API_URL must be set as a build environment variable
+    # in Render dashboard for it to be embedded at build time.
+    # Go to: Frontend Service > Environment > Add Environment Variable
+    # Key: NEXT_PUBLIC_API_URL
+    # Value: https://hbtrade-backend.onrender.com/api
+    # Then trigger a new deploy.
 
 # ============================================
 # NOTES:
