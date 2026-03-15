@@ -14,24 +14,38 @@ let SQL;
 let pgPool;
 
 const initDatabase = async () => {
-  if (isProduction && process.env.DB_HOST) {
+  if (isProduction && (process.env.DATABASE_URL || process.env.DB_HOST)) {
     return initPostgreSQL();
   }
   return initSQLite();
 };
 
 const initPostgreSQL = async () => {
-  pgPool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
-  });
+  let poolConfig;
+  
+  if (process.env.DATABASE_URL) {
+    poolConfig = {
+      connectionString: process.env.DATABASE_URL,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+      ssl: { rejectUnauthorized: false },
+    };
+  } else {
+    poolConfig = {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT || 5432,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+    };
+  }
+  
+  pgPool = new Pool(poolConfig);
 
   try {
     const client = await pgPool.connect();
