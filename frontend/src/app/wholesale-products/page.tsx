@@ -108,7 +108,7 @@ interface Product {
   productCode?: string;
   name: string;
   category: string;
-  price: number;
+  price: number | string;
   moq: number;
   image: string;
   image2?: string;
@@ -201,7 +201,7 @@ export default function WholesaleProductsPage() {
 
   const shareOnWhatsApp = (product: Product) => {
     const productUrl = `${window.location.origin}/wholesale-products?product=${product.id}`;
-    const text = `Check out this product: ${product.name}\nPrice: ৳${product.price.toFixed(2)}\nLink: ${productUrl}`;
+    const text = `Check out this product: ${product.name}\nPrice: ৳${Number(product.price ?? 0).toFixed(2)}\nLink: ${productUrl}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
   };
@@ -295,7 +295,7 @@ export default function WholesaleProductsPage() {
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <p className="text-2xl font-bold text-orange-600">
-                            ৳{(product.price ?? 0).toFixed(2)}
+                            ৳{Number(product.price ?? 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500">per unit</p>
                         </div>

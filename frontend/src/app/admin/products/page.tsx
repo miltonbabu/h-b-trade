@@ -13,7 +13,7 @@ interface Product {
   id: string;
   name: string;
   category: string;
-  price: number;
+  price: number | string;
   moq: number;
   image: string;
   image2?: string;
@@ -68,10 +68,13 @@ export default function AdminProductsPage() {
       if (search) params.append('search', search);
 
       const response = await api.get(`/admin/products?${params}`);
-      setProducts(response.data.data);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      setProducts(response.data?.data || []);
+      if (response.data?.pagination) {
+        setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      }
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -80,9 +83,10 @@ export default function AdminProductsPage() {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/products/categories');
-      setCategories(response.data.data);
+      setCategories(response.data?.data || []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
+      setCategories([]);
     }
   };
 
@@ -146,7 +150,7 @@ export default function AdminProductsPage() {
     setFormData({
       name: product.name,
       category: product.category || '',
-      price: product.price.toString(),
+      price: Number(product.price ?? 0).toString(),
       moq: product.moq?.toString() || '1',
       image: product.image || '',
       image2: product.image2 || '',
@@ -273,7 +277,7 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">{product.category || '-'}</td>
-                      <td className="px-6 py-4">${(product.price ?? 0).toFixed(2)}</td>
+                      <td className="px-6 py-4">${Number(product.price ?? 0).toFixed(2)}</td>
                       <td className="px-6 py-4">{product.moq ?? '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(product.status)}`}>
