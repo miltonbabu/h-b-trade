@@ -108,16 +108,29 @@ const initPostgresTables = async () => {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         order_number VARCHAR(100) UNIQUE NOT NULL,
         customer_name VARCHAR(255) NOT NULL,
+        customer_info TEXT,
         product_name VARCHAR(500) NOT NULL,
+        product_codes VARCHAR(500),
+        items_info TEXT,
         quantity VARCHAR(100),
         shipping_method VARCHAR(100),
         price DECIMAL(10, 2),
         status VARCHAR(50) DEFAULT 'pending',
         tracking_number VARCHAR(100),
+        payment_info TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    try {
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_info TEXT");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_codes VARCHAR(500)");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS items_info TEXT");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_info TEXT");
+    } catch (e) {
+      // Columns already exist, ignore error
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS tracking (
@@ -160,7 +173,13 @@ const initPostgresTables = async () => {
 
     try {
       await client.query(
-        "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_code VARCHAR(100)",
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS product_code VARCHAR(100)"
+      );
+      await client.query(
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS image2 VARCHAR(500)"
+      );
+      await client.query(
+        "ALTER TABLE products ADD COLUMN IF NOT EXISTS image3 VARCHAR(500)"
       );
     } catch (e) {
       // Column already exists, ignore error
@@ -176,15 +195,34 @@ const initPostgresTables = async () => {
         facebook_group VARCHAR(500),
         office_address TEXT,
         company_name VARCHAR(255) DEFAULT 'H&B Trade',
+        bkash VARCHAR(100),
+        nagad VARCHAR(100),
+        bank_account TEXT,
+        wechat VARCHAR(100),
+        alipay VARCHAR(100),
+        wechat_qr VARCHAR(500),
+        alipay_qr VARCHAR(500),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
+    try {
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS bkash VARCHAR(100)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS nagad VARCHAR(100)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS bank_account TEXT");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat VARCHAR(100)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay VARCHAR(100)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat_qr VARCHAR(500)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay_qr VARCHAR(500)");
+    } catch (e) {
+      // Columns already exist, ignore error
+    }
+
     const settingsResult = await client.query("SELECT COUNT(*) FROM settings");
     if (parseInt(settingsResult.rows[0].count) === 0) {
       await client.query(`
-        INSERT INTO settings (phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name)
-        VALUES ('+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade')
+        INSERT INTO settings (phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name, bkash, nagad, bank_account, wechat, alipay)
+        VALUES ('+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade', '0183522072', '0183522072', 'Bank: The City Bank\nName: MD ARIFUL ISLAM RONY\nAccount Number: 2183964509001\nBranch: Gulshan-02 Avenue\nRouting Number: 225261732\nDhaka, Bangladesh', 'wechat_hbtrade', 'alipay_hbtrade')
       `);
     }
 
