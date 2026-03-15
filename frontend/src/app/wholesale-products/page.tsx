@@ -275,7 +275,7 @@ export default function WholesaleProductsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => {
                 // Get all images for this product
-                const images = [product.image, product.image2, product.image3].filter(Boolean);
+                const images = [product.image, product.image2, product.image3].filter((img): img is string => Boolean(img));
                 const hasMultipleImages = images.length > 1;
                 
                 return (

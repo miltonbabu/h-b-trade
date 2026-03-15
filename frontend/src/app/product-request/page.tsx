@@ -64,7 +64,7 @@ export default function ProductRequestPage() {
       });
 
       setTrackingNumber(response.data.data.trackingNumber);
-      setIsSuccess(true`    `);
+      setIsSuccess(true);
       reset();
       setSelectedFile(null);
     } catch (err: unknown) {
