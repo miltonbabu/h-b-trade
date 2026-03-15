@@ -38,8 +38,8 @@ COPY --from=deps --chown=hbtrade:nodejs /app/node_modules ./node_modules
 # Copy application code
 COPY --chown=hbtrade:nodejs . .
 
-# Create uploads directory with proper permissions
-RUN mkdir -p uploads && chown -R hbtrade:nodejs uploads
+# Create uploads and logs directories with proper permissions
+RUN mkdir -p uploads logs && chown -R hbtrade:nodejs uploads logs
 
 # Switch to non-root user
 USER hbtrade
