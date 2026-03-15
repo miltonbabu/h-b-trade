@@ -11,7 +11,17 @@
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm start"
   },
-  "keywords": ["logistics", "sourcing", "trade", "shipping", "china", "bangladesh"],
+  "keywords": [
+    "logistics",
+    "sourcing",
+    "trade",
+    "shipping",
+    "china",
+    "bangladesh"
+  ],
   "author": "H&B Trade",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "axios": "^1.13.6"
+  }
 }

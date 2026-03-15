@@ -4,6 +4,11 @@ const nextConfig = {
   
   // Enable standalone output for Docker
   output: 'standalone',
+
+  // Turbopack configuration
+  turbopack: {
+    root: __dirname,
+  },
   
   // Image optimization
   images: {
