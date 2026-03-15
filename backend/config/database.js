@@ -443,9 +443,19 @@ const saveDatabase = () => {
   }
 };
 
+const convertPlaceholders = (sql, params) => {
+  if (isProduction && pgPool) {
+    let index = 1;
+    const convertedSql = sql.replace(/\?/g, () => `$${index++}`);
+    return { sql: convertedSql, params };
+  }
+  return { sql, params };
+};
+
 const query = async (sql, params = []) => {
   if (isProduction && pgPool) {
-    const result = await pgPool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pgPool.query(convertedSql, convertedParams);
     return { rows: result.rows, rowCount: result.rowCount };
   }
 
@@ -472,7 +482,8 @@ const query = async (sql, params = []) => {
 
 const getOne = async (sql, params = []) => {
   if (isProduction && pgPool) {
-    const result = await pgPool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pgPool.query(convertedSql, convertedParams);
     return result.rows[0];
   }
 
@@ -497,7 +508,8 @@ const getOne = async (sql, params = []) => {
 
 const getMany = async (sql, params = []) => {
   if (isProduction && pgPool) {
-    const result = await pgPool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pgPool.query(convertedSql, convertedParams);
     return result.rows;
   }
 
@@ -522,7 +534,8 @@ const getMany = async (sql, params = []) => {
 
 const run = async (sql, params = []) => {
   if (isProduction && pgPool) {
-    const result = await pgPool.query(sql, params);
+    const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
+    const result = await pgPool.query(convertedSql, convertedParams);
     return { changes: result.rowCount };
   }
 
