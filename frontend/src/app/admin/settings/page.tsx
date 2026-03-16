@@ -139,6 +139,12 @@ export default function AdminSettingsPage() {
     return process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
   };
 
+  const getImageSrc = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('data:')) return path;
+    return `${getApiUrl()}${path}`;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -349,7 +355,7 @@ Dhaka, Bangladesh"
                 {formData.wechat_qr && (
                   <div className="mb-3 relative inline-block">
                     <img
-                      src={`${getApiUrl()}${formData.wechat_qr}`}
+                      src={getImageSrc(formData.wechat_qr)}
                       alt="WeChat QR"
                       className="w-40 h-40 object-contain border rounded-lg"
                     />
@@ -393,7 +399,7 @@ Dhaka, Bangladesh"
                 {formData.alipay_qr && (
                   <div className="mb-3 relative inline-block">
                     <img
-                      src={`${getApiUrl()}${formData.alipay_qr}`}
+                      src={getImageSrc(formData.alipay_qr)}
                       alt="Alipay QR"
                       className="w-40 h-40 object-contain border rounded-lg"
                     />

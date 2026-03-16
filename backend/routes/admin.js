@@ -902,6 +902,8 @@ router.put("/settings", async (req, res) => {
       alipay_qr,
     } = req.body;
 
+    logger.info("Settings update request body:", req.body);
+
     await db.run(
       `UPDATE settings 
        SET phone = COALESCE(?, phone),
@@ -938,6 +940,7 @@ router.put("/settings", async (req, res) => {
     );
 
     const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
+    logger.info("Updated settings:", updatedSettings);
 
     logger.info("Settings updated");
 
@@ -964,15 +967,25 @@ router.post(
       logger.info("QR upload request received");
       logger.info("Files:", req.files);
       
+      const fs = require('fs');
+      const path = require('path');
       const updates = {};
 
       if (req.files && req.files.wechat_qr) {
-        updates.wechat_qr = `/uploads/${req.files.wechat_qr[0].filename}`;
-        logger.info("WeChat QR path:", updates.wechat_qr);
+        const filePath = req.files.wechat_qr[0].path;
+        const fileBuffer = fs.readFileSync(filePath);
+        const base64 = `data:${req.files.wechat_qr[0].mimetype};base64,${fileBuffer.toString('base64')}`;
+        updates.wechat_qr = base64;
+        logger.info("WeChat QR converted to base64");
+        fs.unlinkSync(filePath);
       }
       if (req.files && req.files.alipay_qr) {
-        updates.alipay_qr = `/uploads/${req.files.alipay_qr[0].filename}`;
-        logger.info("Alipay QR path:", updates.alipay_qr);
+        const filePath = req.files.alipay_qr[0].path;
+        const fileBuffer = fs.readFileSync(filePath);
+        const base64 = `data:${req.files.alipay_qr[0].mimetype};base64,${fileBuffer.toString('base64')}`;
+        updates.alipay_qr = base64;
+        logger.info("Alipay QR converted to base64");
+        fs.unlinkSync(filePath);
       }
 
       if (Object.keys(updates).length === 0) {
@@ -998,9 +1011,7 @@ router.post(
       );
 
       const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
-      logger.info("Updated settings:", updatedSettings);
-
-      logger.info("QR codes uploaded successfully");
+      logger.info("Updated settings with QR codes");
 
       res.json({
         success: true,

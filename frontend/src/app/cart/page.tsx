@@ -70,6 +70,12 @@ export default function CartPage() {
     }
   };
 
+  const getImageSrc = (path: string | undefined) => {
+    if (!path) return '';
+    if (path.startsWith('data:')) return path;
+    return `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${path}`;
+  };
+
   const handleUserInfoChange = (field: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [field]: value }));
   };
@@ -524,7 +530,7 @@ export default function CartPage() {
                         {paymentInfo.wechatQr ? (
                           <div className="mt-2">
                             <img
-                              src={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${paymentInfo.wechatQr}`}
+                              src={getImageSrc(paymentInfo.wechatQr)}
                               alt="WeChat Pay QR"
                               className="w-32 h-32 object-contain rounded-lg"
                             />
@@ -542,7 +548,7 @@ export default function CartPage() {
                         {paymentInfo.alipayQr ? (
                           <div className="mt-2">
                             <img
-                              src={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${paymentInfo.alipayQr}`}
+                              src={getImageSrc(paymentInfo.alipayQr)}
                               alt="Alipay QR"
                               className="w-32 h-32 object-contain rounded-lg"
                             />
@@ -700,7 +706,7 @@ export default function CartPage() {
                                 <img
                                   src={
                                     paymentInfo.wechatQr
-                                      ? `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${paymentInfo.wechatQr}`
+                                      ? getImageSrc(paymentInfo.wechatQr)
                                       : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentInfo.wechat || "")}`
                                   }
                                   alt="WeChat Pay QR Code"
@@ -726,7 +732,7 @@ export default function CartPage() {
                                 <img
                                   src={
                                     paymentInfo.alipayQr
-                                      ? `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${paymentInfo.alipayQr}`
+                                      ? getImageSrc(paymentInfo.alipayQr)
                                       : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentInfo.alipay || "")}`
                                   }
                                   alt="Alipay QR Code"
