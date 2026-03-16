@@ -918,7 +918,7 @@ router.put("/settings", async (req, res) => {
            alipay = COALESCE(?, alipay),
            wechat_qr = COALESCE(?, wechat_qr),
            alipay_qr = COALESCE(?, alipay_qr)
-       WHERE id = 'settings-1'`,
+       WHERE id = (SELECT id FROM settings LIMIT 1)`,
       [
         phone,
         email,
@@ -987,7 +987,7 @@ router.post(
       }
 
       await db.run(
-        `UPDATE settings SET ${setClauses.join(", ")} WHERE id = 'settings-1'`,
+        `UPDATE settings SET ${setClauses.join(", ")} WHERE id = (SELECT id FROM settings LIMIT 1)`,
         values,
       );
 
