@@ -277,7 +277,7 @@ export default function CartPage() {
                         </p>
                         <div className="flex items-center gap-4 mb-3">
                           <span className="text-2xl font-bold text-orange-600">
-                            ${item.price.toFixed(2)}
+                            ৳{item.price.toFixed(2)}
                           </span>
                           <span className="text-sm text-gray-500">
                             per unit
