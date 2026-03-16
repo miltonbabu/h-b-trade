@@ -132,7 +132,7 @@ export default function ContactPage() {
                     WhatsApp
                   </a>
                   <a
-                    href="https://facebook.com/hbtrade"
+                    href="https://facebook.com/hbtradebd"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"

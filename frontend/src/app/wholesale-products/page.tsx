@@ -208,7 +208,7 @@ export default function WholesaleProductsPage() {
   const shareOnWhatsApp = (product: Product) => {
     const productUrl = `${window.location.origin}/wholesale-products?product=${product.id}`;
     const text = `Check out this product: ${product.name}\nPrice: ৳${Number(product.price ?? 0).toFixed(2)}\nLink: ${productUrl}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    const whatsappUrl = `https://wa.me/8801835220729?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
   };
 

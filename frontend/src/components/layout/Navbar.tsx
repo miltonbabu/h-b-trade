@@ -50,7 +50,7 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://facebook.com/hbtrade"
+              href="https://facebook.com/hbtradebd"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-yellow-300 transition-colors hover:scale-110 transform"

@@ -56,7 +56,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://facebook.com/hbtrade"
+                href="https://facebook.com/hbtradebd"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center hover:bg-gradient-to-br hover:from-primary hover:to-primary-700 transition-all duration-300 hover:scale-110 hover:shadow-lg"
