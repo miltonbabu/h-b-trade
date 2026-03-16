@@ -282,22 +282,84 @@ router.get('/products', async (req, res) => {
 // Public order creation endpoint
 router.post('/orders', [
   body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
-  body('totalAmount').isFloat({ min: 0 }).withMessage('Valid total amount is required'),
   body('customerInfo').isObject().withMessage('Customer information is required'),
   body('shippingMethod').notEmpty().withMessage('Shipping method is required'),
   handleValidationErrors
 ], async (req, res) => {
   try {
-    const { items, totalAmount, status, customerInfo, payment, shippingMethod } = req.body;
+    const { items, status, customerInfo, payment, shippingMethod } = req.body;
+    
+    // Fetch actual product prices from database for validation
+    const productIds = items.map(item => item.productId).filter(Boolean);
+    const productCodes = items.map(item => item.productCode).filter(Boolean);
+    
+    let products = [];
+    if (productIds.length > 0) {
+      const placeholders = productIds.map(() => '?').join(',');
+      products = await db.all(
+        `SELECT id, product_code, name, price, moq FROM products WHERE id IN (${placeholders})`,
+        productIds
+      );
+    } else if (productCodes.length > 0) {
+      const placeholders = productCodes.map(() => '?').join(',');
+      products = await db.all(
+        `SELECT id, product_code, name, price, moq FROM products WHERE product_code IN (${placeholders})`,
+        productCodes
+      );
+    }
+    
+    // Create a map for quick lookup
+    const productMap = new Map();
+    products.forEach(p => {
+      productMap.set(p.id, p);
+      if (p.product_code) productMap.set(p.product_code, p);
+    });
+    
+    // Validate items and calculate server-side total
+    let serverTotal = 0;
+    const validatedItems = [];
+    
+    for (const item of items) {
+      const product = productMap.get(item.productId) || productMap.get(item.productCode);
+      
+      if (!product) {
+        return res.status(400).json({ 
+          error: `Product not found: ${item.productName || item.productId || item.productCode}` 
+        });
+      }
+      
+      // Use server-side price (ignore client-submitted price)
+      const serverPrice = parseFloat(product.price);
+      const quantity = parseInt(item.quantity) || 1;
+      
+      // Check MOQ
+      if (product.moq && quantity < product.moq) {
+        return res.status(400).json({ 
+          error: `Minimum order quantity for ${product.name} is ${product.moq}` 
+        });
+      }
+      
+      const itemTotal = serverPrice * quantity;
+      serverTotal += itemTotal;
+      
+      validatedItems.push({
+        productId: product.id,
+        productCode: product.product_code,
+        productName: product.name,
+        quantity: quantity,
+        price: serverPrice,
+        total: itemTotal
+      });
+    }
     
     const id = uuidv4();
     const orderNumber = `HB${Date.now().toString().slice(-8)}`;
     const trackingNumber = `TRK${Date.now().toString().slice(-10)}`;
     
     // Create a summary of products for the order
-    const productNames = items.map(item => item.productName).join(', ');
-    const productCodes = items.map(item => item.productCode).filter(Boolean).join(', ');
-    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+    const productNames = validatedItems.map(item => item.productName).join(', ');
+    const productCodesStr = validatedItems.map(item => item.productCode).filter(Boolean).join(', ');
+    const totalQuantity = validatedItems.reduce((sum, item) => sum + item.quantity, 0);
     
     // Store customer info as JSON
     const customerInfoJson = JSON.stringify(customerInfo);
@@ -305,8 +367,8 @@ router.post('/orders', [
     // Store payment info as JSON
     const paymentInfoJson = payment ? JSON.stringify(payment) : null;
     
-    // Store items with product codes as JSON
-    const itemsJson = JSON.stringify(items);
+    // Store validated items as JSON
+    const itemsJson = JSON.stringify(validatedItems);
     
     // Map shipping method to display name
     const shippingMethodMap = {
@@ -327,17 +389,17 @@ router.post('/orders', [
         customerInfo.name || 'Guest Customer', 
         customerInfoJson,
         productNames,
-        productCodes,
+        productCodesStr,
         itemsJson, 
         totalQuantity,
         shippingMethodName,
-        totalAmount, 
+        serverTotal, 
         status || 'pending',
         paymentInfoJson
       ]
     );
 
-    logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total: ${totalAmount}`);
+    logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total: ${serverTotal}`);
 
     res.status(201).json({
       success: true,
@@ -347,8 +409,8 @@ router.post('/orders', [
         orderId: orderNumber,
         orderNumber,
         trackingNumber,
-        totalAmount,
-        itemCount: items.length 
+        totalAmount: serverTotal,
+        itemCount: validatedItems.length 
       }
     });
   } catch (error) {
