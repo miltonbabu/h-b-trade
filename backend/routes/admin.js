@@ -961,16 +961,22 @@ router.post(
   handleUploadError,
   async (req, res) => {
     try {
+      logger.info("QR upload request received");
+      logger.info("Files:", req.files);
+      
       const updates = {};
 
-      if (req.files.wechat_qr) {
+      if (req.files && req.files.wechat_qr) {
         updates.wechat_qr = `/uploads/${req.files.wechat_qr[0].filename}`;
+        logger.info("WeChat QR path:", updates.wechat_qr);
       }
-      if (req.files.alipay_qr) {
+      if (req.files && req.files.alipay_qr) {
         updates.alipay_qr = `/uploads/${req.files.alipay_qr[0].filename}`;
+        logger.info("Alipay QR path:", updates.alipay_qr);
       }
 
       if (Object.keys(updates).length === 0) {
+        logger.error("No files in request");
         return res.status(400).json({ error: "No files uploaded" });
       }
 
@@ -992,8 +998,9 @@ router.post(
       );
 
       const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
+      logger.info("Updated settings:", updatedSettings);
 
-      logger.info("QR codes uploaded");
+      logger.info("QR codes uploaded successfully");
 
       res.json({
         success: true,
