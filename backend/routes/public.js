@@ -218,7 +218,7 @@ router.get('/settings', async (req, res) => {
        LIMIT 1`
     );
 
-    logger.info('Settings fetched:', settings);
+    logger.info('Settings fetched - bankAccount:', settings?.bankAccount);
 
     res.json({
       success: true,

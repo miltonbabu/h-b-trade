@@ -903,6 +903,7 @@ router.put("/settings", async (req, res) => {
     } = req.body;
 
     logger.info("Settings update request body:", req.body);
+    logger.info("Bank account value:", bank_account);
 
     await db.run(
       `UPDATE settings 
@@ -940,7 +941,7 @@ router.put("/settings", async (req, res) => {
     );
 
     const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
-    logger.info("Updated settings:", updatedSettings);
+    logger.info("Updated settings bank_account:", updatedSettings?.bank_account);
 
     logger.info("Settings updated");
 
