@@ -26,9 +26,9 @@ const initPostgreSQL = async () => {
   if (process.env.DATABASE_URL) {
     poolConfig = {
       connectionString: process.env.DATABASE_URL,
-      max: 20,
+      max: 10,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 10000,
       ssl: { rejectUnauthorized: false },
     };
   } else {
@@ -38,25 +38,34 @@ const initPostgreSQL = async () => {
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      max: 20,
+      max: 10,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 10000,
       ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
     };
   }
   
   pgPool = new Pool(poolConfig);
 
-  try {
-    const client = await pgPool.connect();
-    console.log("PostgreSQL connected successfully");
-    client.release();
+  // Retry connection up to 5 times
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const client = await pgPool.connect();
+      console.log("PostgreSQL connected successfully");
+      client.release();
 
-    await initPostgresTables();
-    return true;
-  } catch (error) {
-    console.error("PostgreSQL connection error:", error);
-    throw error;
+      await initPostgresTables();
+      return true;
+    } catch (error) {
+      retries--;
+      console.error(`PostgreSQL connection error (${retries} retries left):`, error.message);
+      if (retries === 0) {
+        throw error;
+      }
+      // Wait 3 seconds before retrying
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
   }
 };
 
