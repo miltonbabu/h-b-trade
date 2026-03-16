@@ -885,7 +885,7 @@ router.get("/settings", async (req, res) => {
 
 router.put("/settings", async (req, res) => {
   try {
-    const {
+    let {
       phone,
       email,
       whatsapp_link,
@@ -902,8 +902,23 @@ router.put("/settings", async (req, res) => {
       alipay_qr,
     } = req.body;
 
-    logger.info("Settings update request body:", req.body);
-    logger.info("Bank account value:", bank_account);
+    // Convert empty strings to null for COALESCE to work properly
+    phone = phone || null;
+    email = email || null;
+    whatsapp_link = whatsapp_link || null;
+    facebook_page = facebook_page || null;
+    facebook_group = facebook_group || null;
+    office_address = office_address || null;
+    company_name = company_name || null;
+    bkash = bkash || null;
+    nagad = nagad || null;
+    bank_account = bank_account || null;
+    wechat = wechat || null;
+    alipay = alipay || null;
+    wechat_qr = wechat_qr || null;
+    alipay_qr = alipay_qr || null;
+
+    logger.info("Settings update - bank_account:", bank_account);
 
     await db.run(
       `UPDATE settings 
