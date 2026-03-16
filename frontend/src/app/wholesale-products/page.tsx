@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import {
@@ -28,17 +29,6 @@ interface Product {
   image2?: string;
   image3?: string;
   description: string;
-}
-
-interface CartItem {
-  id: string;
-  productCode?: string;
-  name: string;
-  price: number | string;
-  quantity: number;
-  image: string;
-  description: string;
-  moq: number;
 }
 
 function ProductImageSlider({ images, productName, category }: { images: string[], productName: string, category?: string }) {
@@ -122,10 +112,10 @@ function ProductImageSlider({ images, productName, category }: { images: string[
 }
 
 export default function WholesaleProductsPage() {
+  const { items, addItem, updateQuantity, getTotalItems } = useCart();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
@@ -135,6 +125,14 @@ export default function WholesaleProductsPage() {
     fetchProducts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    const cartFromItems: { [key: string]: number } = {};
+    items.forEach((item) => {
+      cartFromItems[item.id] = item.quantity;
+    });
+    setCart(cartFromItems);
+  }, [items]);
 
   const fetchProducts = async () => {
     try {
@@ -180,29 +178,13 @@ export default function WholesaleProductsPage() {
     }
   }, [selectedCategory]);
 
-  const getTotalItems = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
-
-  const addItem = (item: Omit<CartItem, 'quantity'>, quantity: number) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        return prev.map(i =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
-        );
-      }
-      return [...prev, { ...item, quantity }];
-    });
-  };
-
   const updateCart = (productId: string, change: number) => {
     const current = cart[productId] || 0;
     const newQuantity = Math.max(0, current + change);
 
     setCart((prev) => ({ ...prev, [productId]: newQuantity }));
 
-    if (change > 0 && newQuantity > 0) {
+    if (change > 0) {
       const product = products.find((p) => p.id === productId);
       if (product) {
         addItem(
@@ -210,7 +192,7 @@ export default function WholesaleProductsPage() {
             id: product.id,
             productCode: product.productCode,
             name: product.name,
-            price: product.price,
+            price: Number(product.price ?? 0),
             image: product.image,
             description: product.description,
             moq: product.moq,
@@ -218,6 +200,8 @@ export default function WholesaleProductsPage() {
           change,
         );
       }
+    } else if (change < 0 && newQuantity >= 0) {
+      updateQuantity(productId, newQuantity);
     }
   };
 
