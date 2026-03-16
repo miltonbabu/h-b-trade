@@ -218,9 +218,11 @@ router.get('/settings', async (req, res) => {
        LIMIT 1`
     );
 
+    logger.info('Settings fetched:', settings);
+
     res.json({
       success: true,
-      data: settings
+      data: settings || {}
     });
   } catch (error) {
     logger.error('Settings error:', error);
