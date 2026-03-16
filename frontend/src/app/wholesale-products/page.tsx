@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import {
-  ShoppingCart,
   Package,
   Filter,
   Search,
@@ -17,9 +16,31 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
-import { useCart } from "@/context/CartContext";
 
-// Image Slider Component
+interface Product {
+  id: string;
+  productCode?: string;
+  name: string;
+  category: string;
+  price: number | string;
+  moq: number;
+  image: string;
+  image2?: string;
+  image3?: string;
+  description: string;
+}
+
+interface CartItem {
+  id: string;
+  productCode?: string;
+  name: string;
+  price: number | string;
+  quantity: number;
+  image: string;
+  description: string;
+  moq: number;
+}
+
 function ProductImageSlider({ images, productName, category }: { images: string[], productName: string, category?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const hasMultipleImages = images.length > 1;
@@ -63,7 +84,6 @@ function ProductImageSlider({ images, productName, category }: { images: string[
 
       {hasMultipleImages && (
         <>
-          {/* Navigation Arrows */}
           <button
             onClick={goToPrevious}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors z-10"
@@ -77,7 +97,6 @@ function ProductImageSlider({ images, productName, category }: { images: string[
             <ChevronRight size={16} />
           </button>
 
-          {/* Dots Indicator */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
             {images.map((_, index) => (
               <button
@@ -93,7 +112,6 @@ function ProductImageSlider({ images, productName, category }: { images: string[
             ))}
           </div>
 
-          {/* Image Counter */}
           <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-0.5 rounded text-xs z-10">
             {currentIndex + 1}/{images.length}
           </div>
@@ -103,27 +121,15 @@ function ProductImageSlider({ images, productName, category }: { images: string[
   );
 }
 
-interface Product {
-  id: string;
-  productCode?: string;
-  name: string;
-  category: string;
-  price: number | string;
-  moq: number;
-  image: string;
-  image2?: string;
-  image3?: string;
-  description: string;
-}
-
 export default function WholesaleProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
-  const { addItem, getTotalItems } = useCart();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -133,15 +139,18 @@ export default function WholesaleProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const params = new URLSearchParams();
       if (selectedCategory !== "All")
         params.append("category", selectedCategory);
       if (searchTerm) params.append("search", searchTerm);
 
       const response = await api.get(`/products?${params}`);
-      setProducts(response.data.data);
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
+      setProducts(response.data?.data || []);
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+      setError("Failed to load products. Please try again.");
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -150,9 +159,9 @@ export default function WholesaleProductsPage() {
   const fetchCategories = async () => {
     try {
       const response = await api.get("/products/categories");
-      setCategories(["All", ...response.data.data]);
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
+      setCategories(["All", ...(response.data?.data || [])]);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
     }
   };
 
@@ -165,21 +174,34 @@ export default function WholesaleProductsPage() {
     setSelectedCategory(category);
   };
 
-  // Fetch products when category changes
   useEffect(() => {
     if (!loading) {
       fetchProducts();
     }
   }, [selectedCategory]);
 
+  const getTotalItems = () => {
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  const addItem = (item: Omit<CartItem, 'quantity'>, quantity: number) => {
+    setCartItems(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) {
+        return prev.map(i =>
+          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
+        );
+      }
+      return [...prev, { ...item, quantity }];
+    });
+  };
+
   const updateCart = (productId: string, change: number) => {
     const current = cart[productId] || 0;
     const newQuantity = Math.max(0, current + change);
 
-    // Update local cart state
     setCart((prev) => ({ ...prev, [productId]: newQuantity }));
 
-    // If adding item (change > 0), add to cart context
     if (change > 0 && newQuantity > 0) {
       const product = products.find((p) => p.id === productId);
       if (product) {
@@ -208,7 +230,6 @@ export default function WholesaleProductsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Header */}
       <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
@@ -231,7 +252,6 @@ export default function WholesaleProductsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Search and Filter */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <form onSubmit={handleSearch} className="relative flex-1 w-full">
@@ -264,19 +284,23 @@ export default function WholesaleProductsPage() {
           </div>
         </div>
 
-        {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
           </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Package size={64} className="mx-auto text-red-400 mb-4" />
+            <p className="text-xl text-red-600">{error}</p>
+            <Button onClick={fetchProducts} className="mt-4">
+              Try Again
+            </Button>
+          </div>
         ) : (
           <>
-            {/* Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => {
-                // Get all images for this product
                 const images = [product.image, product.image2, product.image3].filter((img): img is string => Boolean(img));
-                const hasMultipleImages = images.length > 1;
                 
                 return (
                   <Card
@@ -309,32 +333,32 @@ export default function WholesaleProductsPage() {
 
                       <Button
                         onClick={() => shareOnWhatsApp(product)}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white mb-3 flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle size={18} />
-                      Inquiry to Seller
-                    </Button>
+                        className="w-full bg-green-500 hover:bg-green-600 text-white mb-3 flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle size={18} />
+                        Inquiry to Seller
+                      </Button>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        onClick={() => updateCart(product.id, -1)}
-                        disabled={!cart[product.id]}
-                        className="w-10 h-10 p-0 bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      >
-                        <Minus size={18} />
-                      </Button>
-                      <div className="flex-1 text-center font-bold text-lg">
-                        {cart[product.id] || 0}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => updateCart(product.id, -1)}
+                          disabled={!cart[product.id]}
+                          className="w-10 h-10 p-0 bg-gray-200 hover:bg-gray-300 text-gray-700"
+                        >
+                          <Minus size={18} />
+                        </Button>
+                        <div className="flex-1 text-center font-bold text-lg">
+                          {cart[product.id] || 0}
+                        </div>
+                        <Button
+                          onClick={() => updateCart(product.id, 1)}
+                          className="w-10 h-10 p-0 bg-orange-500 hover:bg-orange-600 text-white"
+                        >
+                          <Plus size={18} />
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => updateCart(product.id, 1)}
-                        className="w-10 h-10 p-0 bg-orange-500 hover:bg-orange-600 text-white"
-                      >
-                        <Plus size={18} />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
