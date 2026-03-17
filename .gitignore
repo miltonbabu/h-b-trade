@@ -4,6 +4,7 @@ node_modules/
 .pnp.js
 package-lock.json
 yarn.lock
+!frontend/package-lock.json
 
 # Testing
 coverage/
