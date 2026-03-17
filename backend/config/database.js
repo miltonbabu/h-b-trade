@@ -209,8 +209,8 @@ const initPostgresTables = async () => {
         bank_account TEXT,
         wechat VARCHAR(100),
         alipay VARCHAR(100),
-        wechat_qr VARCHAR(500),
-        alipay_qr VARCHAR(500),
+        wechat_qr TEXT,
+        alipay_qr TEXT,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -221,8 +221,8 @@ const initPostgresTables = async () => {
       await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS bank_account TEXT");
       await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat VARCHAR(100)");
       await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay VARCHAR(100)");
-      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat_qr VARCHAR(500)");
-      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay_qr VARCHAR(500)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat_qr TEXT");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay_qr TEXT");
     } catch (e) {
       // Columns already exist, ignore error
     }
