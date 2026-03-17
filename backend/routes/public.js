@@ -250,7 +250,8 @@ router.get('/products/categories', async (req, res) => {
 
 router.get('/products', async (req, res) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, page = 1, limit = 12 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
     
     let queryStr = "SELECT id, product_code, name, category, price, moq, image, image2, image3, description FROM products WHERE status = 'active'";
     const params = [];
@@ -265,13 +266,19 @@ router.get('/products', async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    queryStr += ' ORDER BY created_at DESC';
+    queryStr += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), offset);
 
     const products = await db.getMany(queryStr, params);
 
     res.json({
       success: true,
-      data: products
+      data: products,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: products.length
+      }
     });
   } catch (error) {
     logger.error('Get products error:', error);

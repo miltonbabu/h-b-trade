@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -31,7 +31,7 @@ interface Product {
   description: string;
 }
 
-function ProductImageSlider({ images, productName, category }: { images: string[], productName: string, category?: string }) {
+const ProductImageSlider = memo(function ProductImageSlider({ images, productName, category }: { images: string[], productName: string, category?: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const hasMultipleImages = images.length > 1;
 
@@ -63,6 +63,7 @@ function ProductImageSlider({ images, productName, category }: { images: string[
       <img
         src={images[currentIndex]}
         alt={`${productName} - Image ${currentIndex + 1}`}
+        loading="lazy"
         className="w-full h-full object-cover transition-opacity duration-300"
       />
       
@@ -109,7 +110,7 @@ function ProductImageSlider({ images, productName, category }: { images: string[
       )}
     </div>
   );
-}
+});
 
 export default function WholesaleProductsPage() {
   const { items, addItem, updateQuantity, getTotalItems } = useCart();
@@ -163,10 +164,10 @@ export default function WholesaleProductsPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     fetchProducts();
-  };
+  }, []);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -177,6 +178,15 @@ export default function WholesaleProductsPage() {
       fetchProducts();
     }
   }, [selectedCategory]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm) {
+        fetchProducts();
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const updateCart = (productId: string, change: number) => {
     const current = cart[productId] || 0;
