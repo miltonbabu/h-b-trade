@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Settings, Save, Loader2, Upload, X } from 'lucide-react';
+import { Settings, Save, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 
 interface SettingsData {
@@ -45,8 +45,6 @@ export default function AdminSettingsPage() {
     wechat_qr: '',
     alipay_qr: '',
   });
-  const [wechatQrFile, setWechatQrFile] = useState<File | null>(null);
-  const [alipayQrFile, setAlipayQrFile] = useState<File | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -87,49 +85,8 @@ export default function AdminSettingsPage() {
     try {
       await api.put('/admin/settings', formData);
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
-      
-      // If there are QR codes selected, upload them automatically
-      if (wechatQrFile || alipayQrFile) {
-        await handleQrUpload();
-      }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleQrUpload = async () => {
-    if (!wechatQrFile && !alipayQrFile) {
-      return; // Silently return if no files selected (for auto-upload)
-    }
-
-    setSaving(true);
-    setMessage({ type: '', text: '' });
-
-    try {
-      const uploadFormData = new FormData();
-      if (wechatQrFile) {
-        uploadFormData.append('wechat_qr', wechatQrFile);
-      }
-      if (alipayQrFile) {
-        uploadFormData.append('alipay_qr', alipayQrFile);
-      }
-
-      const response = await api.post('/admin/settings/qr-upload', uploadFormData);
-
-      const settings = response.data.data;
-      setFormData(prev => ({
-        ...prev,
-        wechat_qr: settings.wechat_qr || prev.wechat_qr,
-        alipay_qr: settings.alipay_qr || prev.alipay_qr,
-      }));
-
-      setWechatQrFile(null);
-      setAlipayQrFile(null);
-      setMessage({ type: 'success', text: 'QR codes uploaded successfully!' });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to upload QR codes. Please try again.' });
     } finally {
       setSaving(false);
     }
@@ -340,7 +297,7 @@ Dhaka, Bangladesh"
           </CardContent>
         </Card>
 
-        {/* QR Code Upload */}
+        {/* QR Code Setup */}
         <Card>
           <CardHeader>
             <CardTitle>QR Code Images (WeChat & Alipay)</CardTitle>
@@ -349,7 +306,7 @@ Dhaka, Bangladesh"
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-800 font-medium mb-2">
-                  💡 <strong>Recommended:</strong> Place QR code images in <code className="bg-blue-100 px-2 py-1 rounded">frontend/public/qr-codes/</code> folder
+                  💡 <strong>QR Code Storage:</strong> Place QR code images in <code className="bg-blue-100 px-2 py-1 rounded">frontend/public/qr-codes/</code> folder
                 </p>
                 <p className="text-xs text-blue-700">
                   Files named <code>wechat-qr.png</code> and <code>alipay-qr.png</code> will automatically appear in cart page
@@ -357,99 +314,38 @@ Dhaka, Bangladesh"
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* WeChat QR */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  WeChat Pay QR Code Image
-                </label>
-                {formData.wechat_qr && (
-                  <div className="mb-3 relative inline-block">
-                    <img
-                      src={getImageSrc(formData.wechat_qr)}
-                      alt="WeChat QR"
-                      className="w-40 h-40 object-contain border rounded-lg"
-                    />
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setWechatQrFile(file);
-                    }}
-                    className="hidden"
-                    id="wechat-qr-input"
-                  />
-                  <label
-                    htmlFor="wechat-qr-input"
-                    className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <Upload size={16} />
-                    {wechatQrFile ? wechatQrFile.name : 'Choose Image'}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    WeChat QR Code File Path
                   </label>
-                  {wechatQrFile && (
-                    <button
-                      type="button"
-                      onClick={() => setWechatQrFile(null)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
+                  <input
+                    type="text"
+                    value={formData.wechat_qr_path}
+                    onChange={(e) => setFormData({...formData, wechat_qr_path: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="wechat-qr.png"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default: wechat-qr.png
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alipay QR Code File Path
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.alipay_qr_path}
+                    onChange={(e) => setFormData({...formData, alipay_qr_path: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="alipay-qr.png"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Default: alipay-qr.png
+                  </p>
                 </div>
               </div>
-
-              {/* Alipay QR */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Alipay QR Code Image
-                </label>
-                {formData.alipay_qr && (
-                  <div className="mb-3 relative inline-block">
-                    <img
-                      src={getImageSrc(formData.alipay_qr)}
-                      alt="Alipay QR"
-                      className="w-40 h-40 object-contain border rounded-lg"
-                    />
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setAlipayQrFile(file);
-                    }}
-                    className="hidden"
-                    id="alipay-qr-input"
-                  />
-                  <label
-                    htmlFor="alipay-qr-input"
-                    className="cursor-pointer flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <Upload size={16} />
-                    {alipayQrFile ? alipayQrFile.name : 'Choose Image'}
-                  </label>
-                  {alipayQrFile && (
-                    <button
-                      type="button"
-                      onClick={() => setAlipayQrFile(null)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm text-gray-500 mb-2">
-                QR codes will be uploaded automatically when you save settings
-              </p>
             </div>
           </CardContent>
         </Card>
