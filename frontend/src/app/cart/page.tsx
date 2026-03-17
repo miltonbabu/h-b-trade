@@ -73,7 +73,8 @@ export default function CartPage() {
   const getImageSrc = (path: string | undefined) => {
     if (!path) return '';
     if (path.startsWith('data:')) return path;
-    return `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${path}`;
+    if (path.startsWith('http')) return path;
+    return `/qr-codes/${path}`;
   };
 
   const handleUserInfoChange = (field: string, value: string) => {

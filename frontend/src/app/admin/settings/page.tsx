@@ -21,8 +21,8 @@ interface SettingsData {
   bank_account: string;
   wechat: string;
   alipay: string;
-  wechat_qr: string;
-  alipay_qr: string;
+  wechat_qr_path: string;
+  alipay_qr_path: string;
 }
 
 export default function AdminSettingsPage() {
@@ -69,8 +69,8 @@ export default function AdminSettingsPage() {
         bank_account: settings.bank_account || '',
         wechat: settings.wechat || '',
         alipay: settings.alipay || '',
-        wechat_qr: settings.wechat_qr || '',
-        alipay_qr: settings.alipay_qr || '',
+        wechat_qr_path: settings.wechat_qr_path || 'wechat-qr.png',
+        alipay_qr_path: settings.alipay_qr_path || 'alipay-qr.png',
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -346,7 +346,17 @@ Dhaka, Bangladesh"
             <CardTitle>QR Code Images (WeChat & Alipay)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-800 font-medium mb-2">
+                  💡 <strong>Recommended:</strong> Place QR code images in <code className="bg-blue-100 px-2 py-1 rounded">frontend/public/qr-codes/</code> folder
+                </p>
+                <p className="text-xs text-blue-700">
+                  Files named <code>wechat-qr.png</code> and <code>alipay-qr.png</code> will automatically appear in cart page
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* WeChat QR */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
