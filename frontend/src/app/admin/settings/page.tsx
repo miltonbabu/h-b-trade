@@ -87,6 +87,11 @@ export default function AdminSettingsPage() {
     try {
       await api.put('/admin/settings', formData);
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
+      
+      // If there are QR codes selected, upload them automatically
+      if (wechatQrFile || alipayQrFile) {
+        await handleQrUpload();
+      }
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
     } finally {
@@ -96,8 +101,7 @@ export default function AdminSettingsPage() {
 
   const handleQrUpload = async () => {
     if (!wechatQrFile && !alipayQrFile) {
-      setMessage({ type: 'error', text: 'Please select at least one QR code image to upload.' });
-      return;
+      return; // Silently return if no files selected (for auto-upload)
     }
 
     setSaving(true);
@@ -437,24 +441,9 @@ Dhaka, Bangladesh"
             </div>
 
             <div className="mt-4 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleQrUpload}
-                disabled={saving || (!wechatQrFile && !alipayQrFile)}
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 animate-spin" size={16} />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2" size={16} />
-                    Upload QR Codes
-                  </>
-                )}
-              </Button>
+              <p className="text-sm text-gray-500 mb-2">
+                QR codes will be uploaded automatically when you save settings
+              </p>
             </div>
           </CardContent>
         </Card>
