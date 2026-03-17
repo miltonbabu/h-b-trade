@@ -53,8 +53,29 @@
   * {
     @apply border-border;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Mobile-specific optimizations */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
   }
 }
 
@@ -294,4 +315,124 @@
 .ripple:active::after {
   width: 200px;
   height: 200px;
+}
+
+/* Mobile Responsive Improvements */
+@media (max-width: 640px) {
+  /* Improve touch targets for mobile */
+  button, a, input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Better text rendering on mobile */
+  .hero-gradient h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  /* Adjust hero section for mobile */
+  .hero-gradient {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  /* Mobile-friendly card hover - disable transform on mobile */
+  .card-hover:hover {
+    transform: none;
+  }
+
+  /* Improve button sizing on mobile */
+  .container button {
+    white-space: nowrap;
+  }
+
+  /* Better spacing for mobile sections */
+  section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Mobile-friendly footer */
+  footer .grid {
+    gap: 2rem;
+  }
+
+  /* Improve scroll behavior on mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide decorative elements on very small screens */
+  .hero-gradient .absolute.opacity-20 {
+    display: none;
+  }
+
+  /* Better font sizes for mobile */
+  h1 {
+    font-size: 1.875rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  p {
+    font-size: 1rem;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-gradient h1 {
+    font-size: 3rem;
+  }
+
+  section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Improve image handling on mobile */
+@media (max-width: 768px) {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Better grid layouts for mobile */
+  .grid-cols-1 {
+    gap: 1rem;
+  }
+}
+
+/* Fix iOS input zoom issue */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area support for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  footer {
+    padding-bottom: calc(3rem + env(safe-area-inset-bottom));
+  }
+
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
 }
