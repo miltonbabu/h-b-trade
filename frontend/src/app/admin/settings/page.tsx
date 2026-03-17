@@ -116,11 +116,7 @@ export default function AdminSettingsPage() {
         uploadFormData.append('alipay_qr', alipayQrFile);
       }
 
-      const response = await api.post('/admin/settings/qr-upload', uploadFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post('/admin/settings/qr-upload', uploadFormData);
 
       const settings = response.data.data;
       setFormData(prev => ({
