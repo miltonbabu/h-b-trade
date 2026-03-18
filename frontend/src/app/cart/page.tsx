@@ -697,19 +697,14 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "wechat" &&
-                          (paymentInfo.wechat || paymentInfo.wechatQr) && (
+                        {paymentMethod === "wechat" && paymentInfo.wechatQr && (
                             <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
                               <p className="font-bold text-green-700 mb-2">
                                 WeChat Pay QR Code:
                               </p>
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
-                                  src={
-                                    paymentInfo.wechatQr
-                                      ? getImageSrc(paymentInfo.wechatQr)
-                                      : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentInfo.wechat || "")}`
-                                  }
+                                  src={getImageSrc(paymentInfo.wechatQr)}
                                   alt="WeChat Pay QR Code"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
@@ -723,19 +718,14 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "alipay" &&
-                          (paymentInfo.alipay || paymentInfo.alipayQr) && (
+                        {paymentMethod === "alipay" && paymentInfo.alipayQr && (
                             <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
                               <p className="font-bold text-blue-700 mb-2">
                                 Alipay QR Code:
                               </p>
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
-                                  src={
-                                    paymentInfo.alipayQr
-                                      ? getImageSrc(paymentInfo.alipayQr)
-                                      : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(paymentInfo.alipay || "")}`
-                                  }
+                                  src={getImageSrc(paymentInfo.alipayQr)}
                                   alt="Alipay QR Code"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
