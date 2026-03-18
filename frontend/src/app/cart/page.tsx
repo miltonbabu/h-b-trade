@@ -38,8 +38,8 @@ export default function CartPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
-    bkash: '',
-    nagad: '',
+    bkash: '0183522072',
+    nagad: '0183522072',
     bankAccount: `Bank: The City Bank
 Name: MD ARIFUL ISLAM RONY
 Account Number: 2183964509001
