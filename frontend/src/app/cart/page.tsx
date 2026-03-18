@@ -134,15 +134,28 @@ Dhaka, Bangladesh`,
         },
       };
 
+      console.log('Submitting order:', orderData);
       const response = await api.post("/orders", orderData);
+      console.log('Order response:', response.data);
+      
       setTrackingNumber(
         response.data.data.trackingNumber || response.data.data.orderNumber,
       );
       setOrderSuccess(true);
       clearCart();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to place order:", error);
-      alert("Failed to place order. Please try again.");
+      
+      let errorMessage = "Failed to place order. Please try again.";
+      
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        errorMessage = error.response.data?.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsProcessing(false);
     }

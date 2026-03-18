@@ -407,7 +407,7 @@ router.post('/orders', [
     );
 
     logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total: ${serverTotal}`);
-
+    
     res.status(201).json({
       success: true,
       message: 'Order placed successfully',
@@ -422,7 +422,19 @@ router.post('/orders', [
     });
   } catch (error) {
     logger.error('Create order error:', error);
-    res.status(500).json({ error: 'Failed to place order' });
+    console.error('Order creation failed:', error);
+    
+    const errorMessage = error.message || 'Failed to place order';
+    logger.error(`Order error details: ${JSON.stringify({
+      error: errorMessage,
+      stack: error.stack,
+      requestBody: { items, status, customerInfo, payment, shippingMethod }
+    })}`);
+    
+    res.status(500).json({ 
+      error: errorMessage,
+      details: error.message 
+    });
   }
 });
 
