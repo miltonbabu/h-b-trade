@@ -269,6 +269,7 @@ router.get('/products', async (req, res) => {
     queryStr += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), offset);
 
+    logger.info(`Fetching products - Category: ${category}, Search: ${search}, Page: ${page}`);
     const products = await db.getMany(queryStr, params);
 
     res.json({
@@ -282,7 +283,19 @@ router.get('/products', async (req, res) => {
     });
   } catch (error) {
     logger.error('Get products error:', error);
-    res.status(500).json({ error: 'Failed to get products' });
+    console.error('Products fetch failed:', error);
+    
+    const errorMessage = error.message || 'Failed to get products';
+    logger.error(`Products error details: ${JSON.stringify({
+      error: errorMessage,
+      stack: error.stack,
+      query: { category, search, page }
+    })}`);
+    
+    res.status(500).json({ 
+      error: errorMessage,
+      details: error.message 
+    });
   }
 });
 
