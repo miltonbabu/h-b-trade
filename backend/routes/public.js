@@ -234,22 +234,31 @@ router.get('/settings', async (req, res) => {
 // Get product categories (must be before /products route)
 router.get('/products/categories', async (req, res) => {
   try {
+    console.log('=== Fetching categories ===');
     const categories = await db.getMany(
       "SELECT DISTINCT category FROM products WHERE status = 'active' AND category IS NOT NULL AND category != '' ORDER BY category"
     );
 
+    console.log('Categories fetched:', categories);
     res.json({
       success: true,
       data: categories.map(c => c.category)
     });
   } catch (error) {
     logger.error('Get categories error:', error);
-    res.status(500).json({ error: 'Failed to get categories' });
+    console.error('Categories fetch error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get categories',
+      details: error.message 
+    });
   }
 });
 
 router.get('/products', async (req, res) => {
   try {
+    console.log('=== Products endpoint called ===');
+    console.log('Query params:', req.query);
+    
     const { category, search, page = 1, limit = 12 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     
@@ -270,8 +279,13 @@ router.get('/products', async (req, res) => {
     params.push(parseInt(limit), offset);
 
     logger.info(`Fetching products - Category: ${category}, Search: ${search}, Page: ${page}`);
+    console.log('Query:', queryStr);
+    console.log('Params:', params);
+    
     const products = await db.getMany(queryStr, params);
 
+    console.log('Products fetched:', products.length);
+    
     res.json({
       success: true,
       data: products,
