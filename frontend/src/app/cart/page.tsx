@@ -37,7 +37,20 @@ export default function CartPage() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
+    bkash: '',
+    nagad: '',
+    bankAccount: `Bank: The City Bank
+Name: MD ARIFUL ISLAM RONY
+Account Number: 2183964509001
+Branch: Gulshan-02 Avenue
+Routing Number: 225261732
+Dhaka, Bangladesh`,
+    wechat: '',
+    alipay: '',
+    wechatQr: 'wechat-qr.png',
+    alipayQr: 'alipay-qr.png',
+  });
 
   // User information state
   const [userInfo, setUserInfo] = useState({
@@ -56,19 +69,6 @@ export default function CartPage() {
 
   // Shipping state
   const [shippingMethod, setShippingMethod] = useState("");
-
-  useEffect(() => {
-    fetchPaymentInfo();
-  }, []);
-
-  const fetchPaymentInfo = async () => {
-    try {
-      const response = await api.get("/settings");
-      setPaymentInfo(response.data.data || {});
-    } catch (error) {
-      console.error("Failed to fetch payment info:", error);
-    }
-  };
 
   const getImageSrc = (path: string | undefined) => {
     if (!path) return '';
@@ -497,68 +497,40 @@ export default function CartPage() {
                     Payment Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    {paymentInfo.bkash && (
-                      <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
-                        <p className="font-bold text-pink-700 mb-1">bKash</p>
-                        <p className="text-lg font-semibold text-gray-800">
-                          {paymentInfo.bkash}
-                        </p>
-                      </div>
-                    )}
-                    {paymentInfo.nagad && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                        <p className="font-bold text-orange-700 mb-1">Nagad</p>
-                        <p className="text-lg font-semibold text-gray-800">
-                          {paymentInfo.nagad}
-                        </p>
-                      </div>
-                    )}
                     {paymentInfo.bankAccount && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="font-bold text-blue-700 mb-1">
-                          Bank Account
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:col-span-2">
+                        <p className="font-bold text-blue-700 mb-2">
+                          Bank Account Details
                         </p>
                         <p className="text-sm font-semibold text-gray-800 whitespace-pre-line">
                           {paymentInfo.bankAccount}
                         </p>
                       </div>
                     )}
-                    {paymentInfo.wechat && (
+                    {paymentInfo.wechatQr && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="font-bold text-green-700 mb-1">
+                        <p className="font-bold text-green-700 mb-2">
                           WeChat Pay
                         </p>
-                        {paymentInfo.wechatQr ? (
-                          <div className="mt-2">
-                            <img
-                              src={getImageSrc(paymentInfo.wechatQr)}
-                              alt="WeChat Pay QR"
-                              className="w-32 h-32 object-contain rounded-lg"
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-lg font-semibold text-gray-800">
-                            {paymentInfo.wechat}
-                          </p>
-                        )}
+                        <div className="mt-2">
+                          <img
+                            src={getImageSrc(paymentInfo.wechatQr)}
+                            alt="WeChat Pay QR"
+                            className="w-40 h-40 object-contain rounded-lg mx-auto"
+                          />
+                        </div>
                       </div>
                     )}
-                    {paymentInfo.alipay && (
+                    {paymentInfo.alipayQr && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="font-bold text-blue-700 mb-1">Alipay</p>
-                        {paymentInfo.alipayQr ? (
-                          <div className="mt-2">
-                            <img
-                              src={getImageSrc(paymentInfo.alipayQr)}
-                              alt="Alipay QR"
-                              className="w-32 h-32 object-contain rounded-lg"
-                            />
-                          </div>
-                        ) : (
-                          <p className="text-lg font-semibold text-gray-800">
-                            {paymentInfo.alipay}
-                          </p>
-                        )}
+                        <p className="font-bold text-blue-700 mb-2">Alipay</p>
+                        <div className="mt-2">
+                          <img
+                            src={getImageSrc(paymentInfo.alipayQr)}
+                            alt="Alipay QR"
+                            className="w-40 h-40 object-contain rounded-lg mx-auto"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -636,8 +608,6 @@ export default function CartPage() {
                             required
                           >
                             <option value="">Select payment method</option>
-                            <option value="bkash">bKash</option>
-                            <option value="nagad">Nagad</option>
                             <option value="bank">Bank Transfer</option>
                             <option value="wechat">WeChat Pay</option>
                             <option value="alipay">Alipay</option>
