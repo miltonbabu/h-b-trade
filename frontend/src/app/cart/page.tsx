@@ -497,6 +497,22 @@ Dhaka, Bangladesh`,
                     Payment Information
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {paymentInfo.bkash && (
+                      <div className="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                        <p className="font-bold text-pink-700 mb-2">bKash</p>
+                        <p className="text-lg font-semibold text-gray-800">
+                          {paymentInfo.bkash}
+                        </p>
+                      </div>
+                    )}
+                    {paymentInfo.nagad && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <p className="font-bold text-orange-700 mb-2">Nagad</p>
+                        <p className="text-lg font-semibold text-gray-800">
+                          {paymentInfo.nagad}
+                        </p>
+                      </div>
+                    )}
                     {paymentInfo.bankAccount && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:col-span-2">
                         <p className="font-bold text-blue-700 mb-2">
@@ -608,6 +624,8 @@ Dhaka, Bangladesh`,
                             required
                           >
                             <option value="">Select payment method</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
                             <option value="bank">Bank Transfer</option>
                             <option value="wechat">WeChat Pay</option>
                             <option value="alipay">Alipay</option>
