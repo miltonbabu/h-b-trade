@@ -42,8 +42,8 @@ export default function AdminSettingsPage() {
     bank_account: '',
     wechat: '',
     alipay: '',
-    wechat_qr: '',
-    alipay_qr: '',
+    wechat_qr_path: '',
+    alipay_qr_path: '',
   });
 
   useEffect(() => {
