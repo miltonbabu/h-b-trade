@@ -330,13 +330,13 @@ router.post('/orders', [
     let products = [];
     if (productIds.length > 0) {
       const placeholders = productIds.map(() => '?').join(',');
-      products = await db.all(
+      products = await db.getMany(
         `SELECT id, product_code, name, price, moq FROM products WHERE id IN (${placeholders})`,
         productIds
       );
     } else if (productCodes.length > 0) {
       const placeholders = productCodes.map(() => '?').join(',');
-      products = await db.all(
+      products = await db.getMany(
         `SELECT id, product_code, name, price, moq FROM products WHERE product_code IN (${placeholders})`,
         productCodes
       );
