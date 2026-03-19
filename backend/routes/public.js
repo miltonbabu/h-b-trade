@@ -364,13 +364,11 @@ router.post('/orders', [
       
       // Use server-side price (ignore client-submitted price)
       const serverPrice = parseFloat(product.price);
-      const quantity = parseInt(item.quantity) || 1;
+      let quantity = parseInt(item.quantity) || 1;
       
-      // Check MOQ
+      // Check MOQ - if quantity is less than MOQ, use MOQ instead
       if (product.moq && quantity < product.moq) {
-        return res.status(400).json({ 
-          error: `Minimum order quantity for ${product.name} is ${product.moq}` 
-        });
+        quantity = product.moq;
       }
       
       const itemTotal = serverPrice * quantity;
