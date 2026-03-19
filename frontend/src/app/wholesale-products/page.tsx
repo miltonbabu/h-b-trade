@@ -144,10 +144,7 @@ export default function WholesaleProductsPage() {
         params.append("category", selectedCategory);
       if (searchTerm) params.append("search", searchTerm);
 
-      console.log('Fetching products with params:', params.toString());
       const response = await api.get(`/products?${params}`);
-      console.log('Products response:', response.data);
-      
       setProducts(response.data?.data || []);
     } catch (err: any) {
       console.error("Failed to fetch products:", err);
@@ -155,10 +152,7 @@ export default function WholesaleProductsPage() {
       let errorMessage = "Failed to load products. Please try again.";
       
       if (err.response) {
-        console.error('Error response:', err.response.data);
         errorMessage = err.response.data?.error || errorMessage;
-      } else if (err.message) {
-        errorMessage = err.message;
       } else if (err.code === 'ECONNABORTED' || err.code === 'ERR_NETWORK') {
         errorMessage = "Network error. Please check your internet connection.";
       }
@@ -182,23 +176,19 @@ export default function WholesaleProductsPage() {
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     fetchProducts();
-  }, []);
+  }, [selectedCategory, searchTerm]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
 
   useEffect(() => {
-    if (!loading) {
-      fetchProducts();
-    }
+    fetchProducts();
   }, [selectedCategory]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchTerm) {
-        fetchProducts();
-      }
+      fetchProducts();
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);

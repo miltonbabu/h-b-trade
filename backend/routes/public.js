@@ -7,8 +7,6 @@ const { upload, handleUploadError } = require('../config/multer');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 
-console.log('=== PUBLIC ROUTES LOADED ===');
-
 router.use(xssProtection);
 
 const contactValidation = [
@@ -26,26 +24,16 @@ const productRequestValidation = [
 ];
 
 router.post('/product-request', (req, res, next) => {
-  console.log('=== Before Multer ===');
-  console.log('Content-Type:', req.headers['content-type']);
-
   upload.single('image')(req, res, (err) => {
     if (err) {
-      console.error('=== Multer Error ===');
-      console.error('Error:', err);
       return res.status(400).json({
         error: 'File upload error',
         details: err.message
       });
     }
-    console.log('=== Multer Success ===');
-    console.log('Body:', req.body);
-    console.log('File:', req.file);
     next();
   });
 }, async (req, res) => {
-  console.log('=== Product Request Route Hit ===');
-
   try {
     const {
       name,
@@ -71,10 +59,6 @@ router.post('/product-request', (req, res, next) => {
     const id = uuidv4();
     const trackingNumber = `PR${Date.now().toString().slice(-10)}`;
 
-    console.log('Inserting with ID:', id);
-    console.log('Tracking Number:', trackingNumber);
-
-    // Ensure all values are either the value or null (not undefined)
     const values = [
       id,
       name || null,
@@ -96,8 +80,6 @@ router.post('/product-request', (req, res, next) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values
     );
-
-    console.log('Insert successful');
 
     logger.info(`New product request from: ${email} - ${product_name} - Tracking: ${trackingNumber}`);
 
@@ -234,32 +216,25 @@ router.get('/settings', async (req, res) => {
 // Get product categories (must be before /products route)
 router.get('/products/categories', async (req, res) => {
   try {
-    console.log('=== Fetching categories ===');
     const categories = await db.getMany(
       "SELECT DISTINCT category FROM products WHERE status = 'active' AND category IS NOT NULL AND category != '' ORDER BY category"
     );
-
-    console.log('Categories fetched:', categories);
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({
       success: true,
       data: categories.map(c => c.category)
     });
   } catch (error) {
     logger.error('Get categories error:', error);
-    console.error('Categories fetch error:', error);
     res.status(500).json({ 
-      error: 'Failed to get categories',
-      details: error.message 
+      error: 'Failed to get categories'
     });
   }
 });
 
 router.get('/products', async (req, res) => {
   try {
-    console.log('=== Products endpoint called ===');
-    console.log('Query params:', req.query);
-    
-    const { category, search, page = 1, limit = 12 } = req.query;
+    const { category, search, page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     
     let queryStr = "SELECT id, product_code, name, category, price, moq, image, image2, image3, description FROM products WHERE status = 'active'";
@@ -278,14 +253,9 @@ router.get('/products', async (req, res) => {
     queryStr += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), offset);
 
-    logger.info(`Fetching products - Category: ${category}, Search: ${search}, Page: ${page}`);
-    console.log('Query:', queryStr);
-    console.log('Params:', params);
-    
     const products = await db.getMany(queryStr, params);
-
-    console.log('Products fetched:', products.length);
     
+    res.set('Cache-Control', 'public, max-age=60');
     res.json({
       success: true,
       data: products,
@@ -297,18 +267,8 @@ router.get('/products', async (req, res) => {
     });
   } catch (error) {
     logger.error('Get products error:', error);
-    console.error('Products fetch failed:', error);
-    
-    const errorMessage = error.message || 'Failed to get products';
-    logger.error(`Products error details: ${JSON.stringify({
-      error: errorMessage,
-      stack: error.stack,
-      query: { category, search, page }
-    })}`);
-    
     res.status(500).json({ 
-      error: errorMessage,
-      details: error.message 
+      error: 'Failed to get products'
     });
   }
 });
@@ -447,18 +407,8 @@ router.post('/orders', [
     });
   } catch (error) {
     logger.error('Create order error:', error);
-    console.error('Order creation failed:', error);
-    
-    const errorMessage = error.message || 'Failed to place order';
-    logger.error(`Order error details: ${JSON.stringify({
-      error: errorMessage,
-      stack: error.stack,
-      requestBody: { items, status, customerInfo, payment, shippingMethod }
-    })}`);
-    
     res.status(500).json({ 
-      error: errorMessage,
-      details: error.message 
+      error: 'Failed to place order'
     });
   }
 });

@@ -86,15 +86,6 @@ app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 
-// Debug middleware to log all requests
-app.use('/api/*', (req, res, next) => {
-  console.log('=== API REQUEST ===');
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
-  console.log('Original URL:', req.originalUrl);
-  next();
-});
-
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -104,15 +95,11 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.log('=== GLOBAL ERROR HANDLER ===');
-  console.log('Error:', err);
   logger.error('Unhandled error:', err);
-  console.error('Unhandled error:', err);
   res.status(err.status || 500).json({
     error: process.env.NODE_ENV === 'production'
       ? 'Something went wrong!'
-      : err.message,
-    details: err.stack
+      : err.message
   });
 });
 
