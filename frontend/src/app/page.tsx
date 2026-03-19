@@ -134,7 +134,7 @@ export default function HomePage() {
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600/20 to-green-600/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 animate-bounce-in border border-white/20">
               <Sparkles className="text-yellow-300" size={20} />
               <span className="text-sm font-semibold">
-                中孟贸易伙伴 | Trusted by 500+ businesses
+                Trusted by 500+ businesses
               </span>
             </div>
 
@@ -144,7 +144,7 @@ export default function HomePage() {
                 HELP & BENEFIT TRADE
               </span>
               <span className="block mt-2 text-2xl md:text-3xl font-medium text-yellow-200">
-                中孟贸易桥梁 | China-Bangladesh Trade Bridge
+                China-Bangladesh Trade Bridge
               </span>
             </h1>
 
@@ -152,11 +152,11 @@ export default function HomePage() {
               className="text-xl md:text-2xl mb-10 text-white/90 animate-fade-in leading-relaxed"
               style={{ animationDelay: "0.2s" }}
             >
-              পণ্য সংগ্রহ | Product Sourcing • পাইকারি সরবরাহ | Wholesale Supply
+              Product Sourcing • Wholesale Supply
               <br className="hidden md:block"/>
-              বিমান পরিবহন 7-10 দিন | Air Shipping 7-10 Days • সমুদ্র পরিবহন 35-40 দিন | Sea Shipping 35-40 Days
+              Air Shipping 7-10 Days • Sea Shipping 35-40 Days
               <br className="hidden md:block"/>
-              ব্যক্তিগত বহন 72 ঘন্টা | Hand Carry 72 Hours
+              Hand Carry 72 Hours
             </p>
 
             {/* CTA buttons with cultural styling */}
@@ -199,12 +199,12 @@ export default function HomePage() {
             <div className="mt-12 flex justify-center items-center gap-8 animate-fade-in" style={{ animationDelay: "0.6s" }}>
               <div className="text-center">
                 <div className="text-3xl mb-1">🇨🇳</div>
-                <div className="text-xs text-white/70">中国</div>
+                <div className="text-xs text-white/70">China</div>
               </div>
               <div className="text-2xl text-yellow-300">↔️</div>
               <div className="text-center">
                 <div className="text-3xl mb-1">🇧🇩</div>
-                <div className="text-xs text-white/70">বাংলাদেশ</div>
+                <div className="text-xs text-white/70">Bangladesh</div>
               </div>
             </div>
           </div>
