@@ -32,13 +32,36 @@ export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
     processing: 'bg-blue-100 text-blue-800',
-    shipped: 'bg-purple-100 text-purple-800',
+    guangzhou_warehouse: 'bg-purple-100 text-purple-800',
+    in_transit: 'bg-indigo-100 text-indigo-800',
     'in-transit': 'bg-indigo-100 text-indigo-800',
+    dhaka_customs: 'bg-orange-100 text-orange-800',
+    dhaka_office: 'bg-teal-100 text-teal-800',
     delivered: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
     completed: 'bg-green-100 text-green-800',
     active: 'bg-green-100 text-green-800',
     inactive: 'bg-gray-100 text-gray-800',
+    shipped: 'bg-purple-100 text-purple-800',
   }
   return colors[(status || '').toLowerCase()] || 'bg-gray-100 text-gray-800'
+}
+
+export function getStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: 'Pending',
+    processing: 'Processing',
+    guangzhou_warehouse: 'Guangzhou Warehouse',
+    in_transit: 'In Transit',
+    'in-transit': 'In Transit',
+    dhaka_customs: 'Dhaka Customs',
+    dhaka_office: 'Dhaka Office',
+    delivered: 'Delivered',
+    cancelled: 'Cancelled',
+    completed: 'Completed',
+    active: 'Active',
+    inactive: 'Inactive',
+    shipped: 'Shipped',
+  }
+  return labels[(status || '').toLowerCase()] || status
 }

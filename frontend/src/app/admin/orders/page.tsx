@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Package, Plus, Search, Edit, Trash2, X, Eye, Download, FileText, FileDown } from 'lucide-react';
 import api from '@/lib/api';
-import { formatDate, getStatusColor } from '@/lib/utils';
+import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 import { Order } from '@/types';
 
 export default function AdminOrdersPage() {
@@ -405,7 +405,7 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {order.status}
+                          {getStatusLabel(order.status)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm">{order.tracking_number || '-'}</td>
@@ -511,9 +511,11 @@ export default function AdminOrdersPage() {
                 >
                   <option value="pending">Pending</option>
                   <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="in-transit">In Transit</option>
-                  <option value="delivered">Delivered</option>
+                  <option value="guangzhou_warehouse">Guangzhou Warehouse Received</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="dhaka_customs">Dhaka Customs Clearance</option>
+                  <option value="dhaka_office">Dhaka Office</option>
+                  <option value="delivered">Delivered To Customer</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
@@ -564,7 +566,7 @@ export default function AdminOrdersPage() {
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
-                      {selectedOrder.status}
+                      {getStatusLabel(selectedOrder.status)}
                     </span>
                   </div>
                   <div>

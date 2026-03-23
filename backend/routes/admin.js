@@ -11,11 +11,80 @@ const { upload, handleUploadError } = require("../config/multer");
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../config/logger");
 
+const ORDER_STATUS_SEQUENCE = [
+  { value: 'pending', label: 'Pending', description: 'Order received, awaiting processing' },
+  { value: 'processing', label: 'Processing', description: 'Order is being prepared' },
+  { value: 'guangzhou_warehouse', label: 'Guangzhou Warehouse Received', description: 'Package received at Guangzhou warehouse' },
+  { value: 'in_transit', label: 'In Transit', description: 'Package is in transit to Bangladesh' },
+  { value: 'dhaka_customs', label: 'Dhaka Customs Clearance', description: 'Package is at Dhaka customs' },
+  { value: 'dhaka_office', label: 'Dhaka Office', description: 'Package arrived at Dhaka office' },
+  { value: 'delivered', label: 'Delivered To Customer', description: 'Package delivered to customer' },
+  { value: 'cancelled', label: 'Cancelled', description: 'Order cancelled' },
+];
+
+const STATUS_TRANSITIONS = {
+  'pending': ['processing', 'cancelled'],
+  'processing': ['guangzhou_warehouse', 'cancelled'],
+  'guangzhou_warehouse': ['in_transit', 'cancelled'],
+  'in_transit': ['dhaka_customs', 'cancelled'],
+  'dhaka_customs': ['dhaka_office', 'cancelled'],
+  'dhaka_office': ['delivered', 'cancelled'],
+  'delivered': [],
+  'cancelled': [],
+};
+
+const STATUS_LOCATION_MAP = {
+  'pending': 'System',
+  'processing': 'Processing Center',
+  'guangzhou_warehouse': 'Guangzhou, China',
+  'in_transit': 'In Transit',
+  'dhaka_customs': 'Dhaka Customs, Bangladesh',
+  'dhaka_office': 'Dhaka Office, Bangladesh',
+  'delivered': 'Customer Location',
+  'cancelled': 'System',
+};
+
+const STATUS_DESCRIPTIONS = {
+  'pending': 'Your order has been received and is awaiting processing. We will begin preparing your items shortly.',
+  'processing': 'Your order is being processed. We are preparing your items for shipment.',
+  'guangzhou_warehouse': 'Your package has been received at our Guangzhou warehouse in China and is ready for international shipping.',
+  'in_transit': 'Your package is in transit from China to Bangladesh. Estimated transit time varies by shipping method.',
+  'dhaka_customs': 'Your package has arrived in Dhaka and is currently going through customs clearance. This process typically takes 2-5 business days.',
+  'dhaka_office': 'Your package has cleared customs and is now at our Dhaka office. You will be contacted for delivery arrangements.',
+  'delivered': 'Your package has been successfully delivered. Thank you for choosing H&B Trade!',
+  'cancelled': 'This order has been cancelled. Please contact support for more information.',
+};
+
+function isValidTransition(currentStatus, newStatus) {
+  if (currentStatus === newStatus) return true;
+  const allowedTransitions = STATUS_TRANSITIONS[currentStatus] || [];
+  return allowedTransitions.includes(newStatus);
+}
+
+function getNextStatus(currentStatus) {
+  const currentIndex = ORDER_STATUS_SEQUENCE.findIndex(s => s.value === currentStatus);
+  if (currentIndex === -1 || currentIndex >= ORDER_STATUS_SEQUENCE.length - 2) {
+    return null;
+  }
+  return ORDER_STATUS_SEQUENCE[currentIndex + 1];
+}
+
 router.use(xssProtection);
 router.use(protect);
 router.use(adminOnly);
 
-// Get notification counts for admin sidebar badges
+router.get("/order-statuses", (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      statuses: ORDER_STATUS_SEQUENCE,
+      transitions: STATUS_TRANSITIONS,
+      descriptions: STATUS_DESCRIPTIONS,
+      locations: STATUS_LOCATION_MAP,
+    },
+  });
+});
+
 router.get("/notifications", async (req, res) => {
   try {
     // Count unread messages
@@ -407,6 +476,8 @@ router.put("/orders/:id", async (req, res) => {
       price,
       status,
       tracking_number,
+      location,
+      note,
     } = req.body;
 
     const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [
@@ -415,6 +486,34 @@ router.put("/orders/:id", async (req, res) => {
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (status && status !== order.status) {
+      if (!isValidTransition(order.status, status)) {
+        const nextStatus = getNextStatus(order.status);
+        return res.status(400).json({ 
+          error: `Invalid status transition from "${order.status}" to "${status}". ${
+            nextStatus 
+              ? `Next valid status is "${nextStatus.label}".` 
+              : 'No further transitions allowed from current status.'
+          }`,
+          currentStatus: order.status,
+          allowedTransitions: STATUS_TRANSITIONS[order.status] || [],
+        });
+      }
+
+      const historyId = uuidv4();
+      await db.run(
+        `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [historyId, order.id, order.tracking_number, order.status, status, location || STATUS_LOCATION_MAP[status], note || null, req.user?.id || null],
+      );
+
+      await db.run(
+        `INSERT INTO tracking (id, tracking_number, status, location, note)
+         VALUES (?, ?, ?, ?, ?)`,
+        [uuidv4(), order.tracking_number, status, location || STATUS_LOCATION_MAP[status], note || STATUS_DESCRIPTIONS[status]],
+      );
     }
 
     await db.run(
@@ -443,7 +542,7 @@ router.put("/orders/:id", async (req, res) => {
       req.params.id,
     ]);
 
-    logger.info(`Order updated: ${order.order_number}`);
+    logger.info(`Order updated: ${order.order_number} - Status: ${order.status} → ${status || order.status}`);
 
     res.json({
       success: true,
@@ -492,13 +591,36 @@ router.post(
   async (req, res) => {
     try {
       const { tracking_number, status, location, note } = req.body;
+      
+      const order = await db.getOne(
+        "SELECT * FROM orders WHERE tracking_number = ?",
+        [tracking_number]
+      );
+      
+      if (order && !isValidTransition(order.status, status)) {
+        return res.status(400).json({
+          error: `Invalid status transition from "${order.status}" to "${status}"`,
+          currentStatus: order.status,
+          allowedTransitions: STATUS_TRANSITIONS[order.status] || [],
+        });
+      }
+      
       const id = uuidv4();
 
       await db.run(
         `INSERT INTO tracking (id, tracking_number, status, location, note) 
        VALUES (?, ?, ?, ?, ?)`,
-        [id, tracking_number, status, location, note],
+        [id, tracking_number, status, location || STATUS_LOCATION_MAP[status], note || STATUS_DESCRIPTIONS[status]],
       );
+
+      if (order) {
+        const historyId = uuidv4();
+        await db.run(
+          `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [historyId, order.id, tracking_number, order.status, status, location || STATUS_LOCATION_MAP[status], note || null, req.user?.id || null],
+        );
+      }
 
       await db.run(`UPDATE orders SET status = ? WHERE tracking_number = ?`, [
         status,
@@ -518,6 +640,35 @@ router.post(
     }
   },
 );
+
+router.get("/orders/:id/history", async (req, res) => {
+  try {
+    const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const history = await db.getMany(
+      `SELECT sh.*, u.name as changed_by_name 
+       FROM status_history sh 
+       LEFT JOIN users u ON sh.changed_by = u.id
+       WHERE sh.order_id = ? 
+       ORDER BY sh.created_at DESC`,
+      [req.params.id],
+    );
+
+    res.json({
+      success: true,
+      data: history,
+    });
+  } catch (error) {
+    logger.error("Get status history error:", error);
+    res.status(500).json({ error: "Failed to get status history" });
+  }
+});
 
 router.get("/tracking/:tracking_number", async (req, res) => {
   try {

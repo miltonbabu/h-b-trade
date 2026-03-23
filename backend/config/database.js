@@ -153,6 +153,20 @@ const initPostgresTables = async () => {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS status_history (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        order_id UUID NOT NULL,
+        tracking_number VARCHAR(100),
+        old_status VARCHAR(100),
+        new_status VARCHAR(100) NOT NULL,
+        location VARCHAR(255),
+        note TEXT,
+        changed_by UUID,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(255) NOT NULL,
@@ -342,6 +356,20 @@ const initSQLite = async () => {
       status TEXT NOT NULL,
       location TEXT,
       note TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS status_history (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      tracking_number TEXT,
+      old_status TEXT,
+      new_status TEXT NOT NULL,
+      location TEXT,
+      note TEXT,
+      changed_by TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);

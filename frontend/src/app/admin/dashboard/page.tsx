@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Package, FileText, MessageSquare, Clock, TrendingUp, Users } from 'lucide-react';
 import api from '@/lib/api';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 
 interface DashboardData {
   stats: {
@@ -144,13 +144,8 @@ export default function AdminDashboard() {
                       <p className="text-sm text-gray-600">{order.customer_name}</p>
                     </div>
                     <div className="text-right">
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                        order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {order.status}
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getStatusColor(order.status)}`}>
+                        {getStatusLabel(order.status)}
                       </span>
                       <p className="text-xs text-gray-500 mt-1">{formatDate(order.created_at)}</p>
                     </div>
@@ -214,7 +209,7 @@ export default function AdminDashboard() {
               <div className="space-y-3">
                 {data.ordersByStatus.map((item, index) => (
                   <div key={index} className="flex items-center justify-between">
-                    <span className="capitalize">{item.status}</span>
+                    <span>{getStatusLabel(item.status)}</span>
                     <div className="flex items-center gap-2">
                       <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
