@@ -20,7 +20,10 @@ interface CartContextType {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
+  getTotalUnits: () => number;
   getTotalAmount: () => number;
+  getItemTotalUnits: (item: CartItem) => number;
+  getItemTotalPrice: (item: CartItem) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,7 +31,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -40,7 +42,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
@@ -83,8 +84,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return items.reduce((sum, item) => sum + item.quantity, 0);
   };
 
+  const getItemTotalUnits = (item: CartItem): number => {
+    const moq = item.moq || 1;
+    return moq * item.quantity;
+  };
+
+  const getItemTotalPrice = (item: CartItem): number => {
+    const totalUnits = getItemTotalUnits(item);
+    return totalUnits * item.price;
+  };
+
+  const getTotalUnits = () => {
+    return items.reduce((sum, item) => sum + getItemTotalUnits(item), 0);
+  };
+
   const getTotalAmount = () => {
-    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return items.reduce((sum, item) => sum + getItemTotalPrice(item), 0);
   };
 
   return (
@@ -96,7 +111,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         getTotalItems,
+        getTotalUnits,
         getTotalAmount,
+        getItemTotalUnits,
+        getItemTotalPrice,
       }}
     >
       {children}

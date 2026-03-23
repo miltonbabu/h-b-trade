@@ -31,7 +31,7 @@ interface PaymentInfo {
 }
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, getTotalAmount, clearCart } =
+  const { items, removeItem, updateQuantity, getTotalAmount, getTotalUnits, getItemTotalUnits, getItemTotalPrice, clearCart } =
     useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -113,10 +113,13 @@ Dhaka, Bangladesh`,
           productCode: item.productCode,
           productName: item.name,
           quantity: item.quantity,
-          price: item.price,
-          total: item.price * item.quantity,
+          moq: item.moq || 1,
+          unitPrice: item.price,
+          totalUnits: getItemTotalUnits(item),
+          totalPrice: getItemTotalPrice(item),
         })),
         totalAmount: getTotalAmount(),
+        totalUnits: getTotalUnits(),
         status: "pending",
         customerInfo: {
           name: userInfo.name,
@@ -298,14 +301,30 @@ Dhaka, Bangladesh`,
                           </span>
                           <span className="text-sm text-gray-500">|</span>
                           <span className="text-sm text-gray-500">
-                            MOQ: {item.moq}
+                            MOQ: {item.moq || 1}
                           </span>
                         </div>
 
-                        {/* Quantity Controls */}
+                        <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-500">MOQ Batches:</span>
+                              <span className="font-semibold ml-1">{item.quantity}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Units per Batch:</span>
+                              <span className="font-semibold ml-1">{item.moq || 1}</span>
+                            </div>
+                            <div className="col-span-2 border-t border-gray-200 pt-2 mt-1">
+                              <span className="text-gray-500">Total Units:</span>
+                              <span className="font-bold text-orange-600 ml-1">{getItemTotalUnits(item)} units</span>
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-medium text-gray-700">
-                            Quantity:
+                            Batches:
                           </span>
                           <div className="flex items-center gap-2">
                             <Button
@@ -335,9 +354,11 @@ Dhaka, Bangladesh`,
                     {/* Item Total */}
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Item Total:</span>
+                        <span className="text-gray-600">
+                          Item Total ({getItemTotalUnits(item)} units × ৳{item.price.toFixed(2)}):
+                        </span>
                         <span className="text-2xl font-bold text-gray-800">
-                          ৳{(item.price * item.quantity).toFixed(2)}
+                          ৳{getItemTotalPrice(item).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -794,8 +815,7 @@ Dhaka, Bangladesh`,
                     <div className="flex justify-between text-gray-600">
                       <span>Items ({items.length})</span>
                       <span>
-                        {items.reduce((sum, item) => sum + item.quantity, 0)}{" "}
-                        units
+                        {getTotalUnits()} units total
                       </span>
                     </div>
                     <div className="flex justify-between text-gray-600">

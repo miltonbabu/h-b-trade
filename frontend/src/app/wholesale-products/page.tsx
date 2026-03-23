@@ -330,6 +330,15 @@ export default function WholesaleProductsPage() {
                         </div>
                       </div>
 
+                      <div className="bg-orange-50 rounded-lg p-2 mb-3 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">1 batch = {product.moq ?? 1} units</span>
+                          <span className="font-semibold text-orange-700">
+                            ৳{((product.moq ?? 1) * Number(product.price ?? 0)).toFixed(2)}/batch
+                          </span>
+                        </div>
+                      </div>
+
                       <Button
                         onClick={() => shareOnWhatsApp(product)}
                         className="w-full bg-green-500 hover:bg-green-600 text-white mb-3 flex items-center justify-center gap-2"
@@ -346,8 +355,9 @@ export default function WholesaleProductsPage() {
                         >
                           <Minus size={18} />
                         </Button>
-                        <div className="flex-1 text-center font-bold text-lg">
-                          {cart[product.id] || 0}
+                        <div className="flex-1 text-center">
+                          <span className="font-bold text-lg">{cart[product.id] || 0}</span>
+                          <span className="text-xs text-gray-500 block">batches</span>
                         </div>
                         <Button
                           onClick={() => updateCart(product.id, 1)}

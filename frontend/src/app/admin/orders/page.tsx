@@ -197,8 +197,8 @@ export default function AdminOrdersPage() {
           .status-delivered { background: #d1fae5; color: #065f46; }
           .status-cancelled { background: #fee2e2; color: #991b1b; }
           .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          .items-table th, .items-table td { border: 1px solid #e5e7eb; padding: 10px; text-align: left; }
-          .items-table th { background: #f9fafb; }
+          .items-table th, .items-table td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 12px; }
+          .items-table th { background: #f9fafb; font-weight: 600; }
           .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; color: #0d9488; }
           .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
           @media print { body { padding: 20px; } }
@@ -254,8 +254,11 @@ export default function AdminOrdersPage() {
                 <tr>
                   <th>Product</th>
                   <th>Code</th>
-                  <th>Qty</th>
-                  <th>Price</th>
+                  <th>Unit Price</th>
+                  <th>MOQ</th>
+                  <th>Batches</th>
+                  <th>Total Units</th>
+                  <th>Total Price</th>
                 </tr>
               </thead>
               <tbody>
@@ -263,12 +266,18 @@ export default function AdminOrdersPage() {
                   <tr>
                     <td>${item.productName}</td>
                     <td>${item.productCode || '-'}</td>
+                    <td>৳${(item.unitPrice || item.price || 0).toFixed(2)}</td>
+                    <td>${item.moq || 1}</td>
                     <td>${item.quantity}</td>
-                    <td>৳${item.total}</td>
+                    <td>${item.totalUnits || (item.moq || 1) * item.quantity}</td>
+                    <td>৳${(item.totalPrice || item.total || 0).toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
             </table>
+            <div style="margin-top: 10px; text-align: right;">
+              <strong>Total Units: ${itemsInfo.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)}</strong>
+            </div>
           ` : `
             <div class="grid">
               <div class="field" style="grid-column: span 2;">
@@ -651,12 +660,37 @@ export default function AdminOrdersPage() {
                                   )}
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                                  <p className="font-bold text-green-600">৳{item.total}</p>
+                                  <p className="font-bold text-green-600">৳{(item.totalPrice || item.total || 0).toFixed(2)}</p>
+                                </div>
+                              </div>
+                              <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-4 gap-2 text-xs">
+                                <div>
+                                  <span className="text-gray-500">Unit Price:</span>
+                                  <span className="font-medium ml-1">৳{(item.unitPrice || item.price || 0).toFixed(2)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">MOQ:</span>
+                                  <span className="font-medium ml-1">{item.moq || 1}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Batches:</span>
+                                  <span className="font-medium ml-1">{item.quantity}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Total Units:</span>
+                                  <span className="font-bold text-orange-600 ml-1">{item.totalUnits || (item.moq || 1) * item.quantity}</span>
                                 </div>
                               </div>
                             </div>
                           ))}
+                          <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 mt-3">
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-gray-700">Total Units:</span>
+                              <span className="font-bold text-orange-600">
+                                {items.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)} units
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       );
                     } catch (e) {

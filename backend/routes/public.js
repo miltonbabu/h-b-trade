@@ -283,7 +283,6 @@ router.post('/orders', [
   try {
     const { items, status, customerInfo, payment, shippingMethod } = req.body;
     
-    // Fetch actual product prices from database for validation
     const productIds = items.map(item => item.productId).filter(Boolean);
     const productCodes = items.map(item => item.productCode).filter(Boolean);
     
@@ -302,15 +301,14 @@ router.post('/orders', [
       );
     }
     
-    // Create a map for quick lookup
     const productMap = new Map();
     products.forEach(p => {
       productMap.set(p.id, p);
       if (p.product_code) productMap.set(p.product_code, p);
     });
     
-    // Validate items and calculate server-side total
     let serverTotal = 0;
+    let serverTotalUnits = 0;
     const validatedItems = [];
     
     for (const item of items) {
@@ -322,25 +320,25 @@ router.post('/orders', [
         });
       }
       
-      // Use server-side price (ignore client-submitted price)
-      const serverPrice = parseFloat(product.price);
-      let quantity = parseInt(item.quantity) || 1;
+      const unitPrice = parseFloat(product.price);
+      const moq = parseInt(product.moq) || 1;
+      const quantity = parseInt(item.quantity) || 1;
       
-      // Check MOQ - if quantity is less than MOQ, use MOQ instead
-      if (product.moq && quantity < product.moq) {
-        quantity = product.moq;
-      }
+      const totalUnits = moq * quantity;
+      const itemTotalPrice = totalUnits * unitPrice;
       
-      const itemTotal = serverPrice * quantity;
-      serverTotal += itemTotal;
+      serverTotal += itemTotalPrice;
+      serverTotalUnits += totalUnits;
       
       validatedItems.push({
         productId: product.id,
         productCode: product.product_code,
         productName: product.name,
         quantity: quantity,
-        price: serverPrice,
-        total: itemTotal
+        moq: moq,
+        unitPrice: unitPrice,
+        totalUnits: totalUnits,
+        totalPrice: itemTotalPrice
       });
     }
     
@@ -348,21 +346,13 @@ router.post('/orders', [
     const orderNumber = `HB${Date.now().toString().slice(-8)}`;
     const trackingNumber = `TRK${Date.now().toString().slice(-10)}`;
     
-    // Create a summary of products for the order
     const productNames = validatedItems.map(item => item.productName).join(', ');
     const productCodesStr = validatedItems.map(item => item.productCode).filter(Boolean).join(', ');
-    const totalQuantity = validatedItems.reduce((sum, item) => sum + item.quantity, 0);
     
-    // Store customer info as JSON
     const customerInfoJson = JSON.stringify(customerInfo);
-    
-    // Store payment info as JSON
     const paymentInfoJson = payment ? JSON.stringify(payment) : null;
-    
-    // Store validated items as JSON
     const itemsJson = JSON.stringify(validatedItems);
     
-    // Map shipping method to display name
     const shippingMethodMap = {
       'air': 'Air Cargo',
       'sea': 'Sea Freight',
@@ -383,7 +373,7 @@ router.post('/orders', [
         productNames,
         productCodesStr,
         itemsJson, 
-        totalQuantity,
+        serverTotalUnits,
         shippingMethodName,
         serverTotal, 
         status || 'pending',
@@ -391,7 +381,7 @@ router.post('/orders', [
       ]
     );
 
-    logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total: ${serverTotal}`);
+    logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total Units: ${serverTotalUnits} - Total: ${serverTotal}`);
     
     res.status(201).json({
       success: true,
@@ -402,6 +392,7 @@ router.post('/orders', [
         orderNumber,
         trackingNumber,
         totalAmount: serverTotal,
+        totalUnits: serverTotalUnits,
         itemCount: validatedItems.length 
       }
     });
