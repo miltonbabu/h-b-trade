@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   
-  // Enable standalone output for Docker
-  output: 'standalone',
+  // Enable static export
+  output: 'export',
 
   // Image optimization
   images: {
