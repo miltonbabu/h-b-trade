@@ -125,8 +125,8 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
+      {/* Hero Section */
+      <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden" style={{ backgroundImage: "url('/hero-image.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
         {/* Chinese and Bangladeshi pattern overlay */}
         <div className="absolute inset-0 opacity-5">
           {/* Chinese cloud pattern */}
