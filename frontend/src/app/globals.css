@@ -131,11 +131,12 @@
   }
 }
 
-/* Hero gradient - Dynamic gradient with red and greenish colors */
+/* Hero section styling */
 .hero-gradient {
-  background: linear-gradient(-45deg, #dc2626, #16a34a, #b91c1c, #15803d);
-  background-size: 400% 400%;
-  animation: gradient 15s ease infinite;
+  background-color: #1e293b;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
   position: relative;
 }
 
@@ -145,18 +146,6 @@
   inset: 0;
   background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
   z-index: 0;
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 /* Card hover effect - Enhanced */
@@ -349,8 +338,8 @@
 
   /* Adjust hero section for mobile */
   .hero-gradient {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    min-height: 100vh;
+    padding: 2rem 1rem;
   }
 
   /* Mobile-friendly card hover - disable transform on mobile */
