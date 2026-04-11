@@ -498,6 +498,8 @@ export default function AdminOrdersPage() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Net Weight (kg)</label>
                   <Input
+                    type="number"
+                    step="0.1"
                     value={formData.net_weight}
                     onChange={(e) => setFormData({ ...formData, net_weight: e.target.value })}
                     placeholder="e.g., 2.5"
