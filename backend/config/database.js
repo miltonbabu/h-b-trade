@@ -209,6 +209,18 @@ const initPostgresTables = async () => {
     }
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS videos (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title VARCHAR(255) NOT NULL,
+        youtube_url TEXT NOT NULL,
+        description TEXT,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         phone VARCHAR(50),
@@ -427,6 +439,18 @@ const initSQLite = async () => {
       db.run("ALTER TABLE orders ADD COLUMN items_info TEXT");
     }
   }
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS videos (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      youtube_url TEXT NOT NULL,
+      description TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
   db.run(`
     CREATE TABLE IF NOT EXISTS settings (
