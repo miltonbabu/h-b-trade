@@ -452,11 +452,11 @@ router.get('/videos', async (req, res) => {
   }
 });
 
-// Featured videos endpoint (for homepage - limit 2)
+// Featured videos endpoint (for homepage)
 router.get('/videos/featured', async (req, res) => {
   try {
     const videos = await db.getMany(
-      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT 2',
+      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT 6',
       ['active']
     );
     

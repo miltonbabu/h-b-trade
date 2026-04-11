@@ -24,6 +24,7 @@ export default function AdminOrdersPage() {
     quantity: '',
     shipping_method: '',
     price: '',
+    net_weight: '',
     status: 'pending',
     tracking_number: '',
   });
@@ -66,7 +67,7 @@ export default function AdminOrdersPage() {
 
   const handleCreate = async () => {
     try {
-      await api.post('/admin/orders', formData);
+      await api.post('/admin/orders', { ...formData, net_weight: formData.net_weight || null });
       setShowModal(false);
       resetForm();
       fetchOrders();
@@ -78,7 +79,7 @@ export default function AdminOrdersPage() {
   const handleUpdate = async () => {
     if (!selectedOrder) return;
     try {
-      await api.put(`/admin/orders/${selectedOrder.id}`, formData);
+      await api.put(`/admin/orders/${selectedOrder.id}`, { ...formData, net_weight: formData.net_weight || null });
       setShowModal(false);
       resetForm();
       fetchOrders();
@@ -111,6 +112,7 @@ export default function AdminOrdersPage() {
       quantity: order.quantity || '',
       shipping_method: order.shipping_method || '',
       price: order.price?.toString() || '',
+      net_weight: order.net_weight || '',
       status: order.status,
       tracking_number: order.tracking_number || '',
     });
@@ -134,6 +136,7 @@ export default function AdminOrdersPage() {
       quantity: '',
       shipping_method: '',
       price: '',
+      net_weight: '',
       status: 'pending',
       tracking_number: '',
     });
@@ -298,6 +301,10 @@ export default function AdminOrdersPage() {
             <div class="field">
               <div class="label">Shipping Method</div>
               <div class="value">${order.shipping_method || 'Not specified'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Net Weight</div>
+              <div class="value">${order.net_weight ? order.net_weight + ' kg' : 'Not specified'}</div>
             </div>
             <div class="field">
               <div class="label">Total Amount</div>
@@ -486,6 +493,14 @@ export default function AdminOrdersPage() {
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Net Weight (kg)</label>
+                  <Input
+                    value={formData.net_weight}
+                    onChange={(e) => setFormData({ ...formData, net_weight: e.target.value })}
+                    placeholder="e.g., 2.5"
                   />
                 </div>
               </div>
@@ -735,6 +750,10 @@ export default function AdminOrdersPage() {
                         <span className="text-gray-400">Not specified</span>
                       )}
                     </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Net Weight</p>
+                    <p className="font-medium text-orange-600">{selectedOrder.net_weight ? `${selectedOrder.net_weight} kg` : '-'}</p>
                   </div>
                 </div>
               </div>

@@ -53,6 +53,7 @@ CREATE TABLE orders (
     quantity VARCHAR(100),
     shipping_method VARCHAR(100),
     price DECIMAL(10, 2),
+    net_weight VARCHAR(50),
     status VARCHAR(50) DEFAULT 'pending',
     notes TEXT,
     estimated_delivery DATE,

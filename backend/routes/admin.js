@@ -428,6 +428,7 @@ router.post(
         quantity,
         shipping_method,
         price,
+        net_weight,
         status,
         tracking_number,
       } = req.body;
@@ -437,8 +438,8 @@ router.post(
 
       await db.run(
         `INSERT INTO orders 
-       (id, order_number, customer_name, product_name, quantity, shipping_method, price, status, tracking_number) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, order_number, customer_name, product_name, quantity, shipping_method, price, net_weight, status, tracking_number) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           orderNumber,
@@ -447,6 +448,7 @@ router.post(
           quantity,
           shipping_method,
           price,
+          net_weight,
           status || "pending",
           tracking_number,
         ],
@@ -474,6 +476,7 @@ router.put("/orders/:id", async (req, res) => {
       quantity,
       shipping_method,
       price,
+      net_weight,
       status,
       tracking_number,
       location,
@@ -523,6 +526,7 @@ router.put("/orders/:id", async (req, res) => {
            quantity = COALESCE(?, quantity),
            shipping_method = COALESCE(?, shipping_method),
            price = COALESCE(?, price),
+           net_weight = COALESCE(?, net_weight),
            status = COALESCE(?, status),
            tracking_number = COALESCE(?, tracking_number)
        WHERE id = ?`,
@@ -532,6 +536,7 @@ router.put("/orders/:id", async (req, res) => {
         quantity,
         shipping_method,
         price,
+        net_weight,
         status,
         tracking_number,
         req.params.id,

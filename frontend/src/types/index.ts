@@ -34,6 +34,7 @@ export interface Order {
   quantity?: string;
   shipping_method?: string;
   price?: number;
+  net_weight?: string;
   status: string;
   tracking_number?: string;
   customer_info?: {
