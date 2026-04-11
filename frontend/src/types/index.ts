@@ -151,3 +151,14 @@ export interface ProductRequestFormData {
   shipping_method?: string;
   message?: string;
 }
+
+// Video types
+export interface Video {
+  id: string;
+  title: string;
+  youtube_url: string;
+  description?: string;
+  status: string;
+  created_at: string;
+  updated_at?: string;
+}

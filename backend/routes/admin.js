@@ -1569,4 +1569,195 @@ router.put("/admins/:id/password", superAdminOnly, async (req, res) => {
   }
 });
 
+// ============ VIDEOS MANAGEMENT ============
+
+router.get("/videos", async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let queryStr = "SELECT * FROM videos WHERE 1=1";
+    const params = [];
+
+    if (status && status !== "all") {
+      queryStr += " AND status = ?";
+      params.push(status);
+    }
+
+    if (search) {
+      queryStr += " AND (title LIKE ? OR description LIKE ?)";
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    params.push(parseInt(limit), parseInt(offset));
+
+    const videos = await db.getMany(queryStr, params);
+
+    let countQuery = "SELECT COUNT(*) as count FROM videos WHERE 1=1";
+    const countParams = [];
+
+    if (status && status !== "all") {
+      countQuery += " AND status = ?";
+      countParams.push(status);
+    }
+
+    if (search) {
+      countQuery += " AND (title LIKE ? OR description LIKE ?)";
+      countParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    const totalResult = await db.getOne(countQuery, countParams);
+
+    res.json({
+      success: true,
+      data: videos,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalResult.count,
+        pages: Math.ceil(totalResult.count / limit),
+      },
+    });
+  } catch (error) {
+    logger.error("Get videos error:", error);
+    res.status(500).json({ error: "Failed to get videos" });
+  }
+});
+
+router.get("/videos/:id", async (req, res) => {
+  try {
+    const video = await db.getOne("SELECT * FROM videos WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    res.json({
+      success: true,
+      data: video,
+    });
+  } catch (error) {
+    logger.error("Get video error:", error);
+    res.status(500).json({ error: "Failed to get video" });
+  }
+});
+
+router.post(
+  "/videos",
+  [
+    body("title").notEmpty().withMessage("Video title is required"),
+    body("youtube_url").notEmpty().withMessage("YouTube URL is required"),
+    handleValidationErrors,
+  ],
+  async (req, res) => {
+    try {
+      const { title, youtube_url, description, status } = req.body;
+
+      const id = uuidv4();
+
+      await db.run(
+        `INSERT INTO videos (id, title, youtube_url, description, status) 
+       VALUES (?, ?, ?, ?, ?)`,
+        [
+          id,
+          title,
+          youtube_url,
+          description || null,
+          status || "active",
+        ],
+      );
+
+      logger.info(`Video created: ${title}`);
+
+      res.status(201).json({
+        success: true,
+        message: "Video created successfully",
+        data: {
+          id,
+          title,
+          youtube_url,
+          description,
+          status,
+        },
+      });
+    } catch (error) {
+      logger.error("Create video error:", error);
+      res.status(500).json({ error: "Failed to create video" });
+    }
+  },
+);
+
+router.put("/videos/:id", async (req, res) => {
+  try {
+    const { title, youtube_url, description, status } = req.body;
+
+    const video = await db.getOne("SELECT * FROM videos WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    await db.run(
+      `UPDATE videos 
+       SET title = COALESCE(?, title),
+           youtube_url = COALESCE(?, youtube_url),
+           description = COALESCE(?, description),
+           status = COALESCE(?, status)
+       WHERE id = ?`,
+      [
+        title || null,
+        youtube_url || null,
+        description || null,
+        status || null,
+        req.params.id,
+      ],
+    );
+
+    const updatedVideo = await db.getOne(
+      "SELECT * FROM videos WHERE id = ?",
+      [req.params.id],
+    );
+
+    logger.info(`Video updated: ${video.title}`);
+
+    res.json({
+      success: true,
+      message: "Video updated successfully",
+      data: updatedVideo,
+    });
+  } catch (error) {
+    logger.error("Update video error:", error);
+    res.status(500).json({ error: "Failed to update video" });
+  }
+});
+
+router.delete("/videos/:id", canDelete, async (req, res) => {
+  try {
+    const video = await db.getOne("SELECT * FROM videos WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (!video) {
+      return res.status(404).json({ error: "Video not found" });
+    }
+
+    await db.run("DELETE FROM videos WHERE id = ?", [req.params.id]);
+
+    logger.info(`Video deleted: ${video.title}`);
+
+    res.json({
+      success: true,
+      message: "Video deleted successfully",
+    });
+  } catch (error) {
+    logger.error("Delete video error:", error);
+    res.status(500).json({ error: "Failed to delete video" });
+  }
+});
+
 module.exports = router;

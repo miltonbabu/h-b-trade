@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -16,9 +17,45 @@ import {
   CheckCircle,
   Sparkles,
   Zap,
+  Play,
 } from "lucide-react";
+import api from "@/lib/api";
+import { Video } from "@/types";
 
 export default function HomePage() {
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [videosLoading, setVideosLoading] = useState(true);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  useEffect(() => {
+    fetchFeaturedVideos();
+  }, []);
+
+  const fetchFeaturedVideos = async () => {
+    setVideosLoading(true);
+    try {
+      const response = await api.get('/videos/featured');
+      setVideos(response.data?.data || []);
+    } catch (error) {
+      console.error('Failed to fetch featured videos:', error);
+      setVideos([]);
+    } finally {
+      setVideosLoading(false);
+    }
+  };
+
+  const convertToEmbedUrl = (youtubeUrl: string): string => {
+    const videoIdMatch = youtubeUrl.match(
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    );
+    
+    if (videoIdMatch && videoIdMatch[1]) {
+      return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+    }
+    
+    return youtubeUrl;
+  };
+
   const services = [
     {
       icon: ShoppingCart,
@@ -288,6 +325,104 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Explore Videos Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Explore <span className="gradient-text">Videos</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Watch our informative videos about China-Bangladesh trade and shipping
+            </p>
+          </div>
+
+          {videosLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : videos.length === 0 ? (
+            <div className="text-center py-12">
+              <Play className="mx-auto text-gray-400 mb-4" size={48} />
+              <p className="text-gray-500">No videos available</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {videos.map((video) => (
+                  <Card
+                    key={video.id}
+                    className="card-hover overflow-hidden cursor-pointer group"
+                    onClick={() => setSelectedVideo(video)}
+                  >
+                    <div className="relative aspect-video">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src={convertToEmbedUrl(video.youtube_url)}
+                        title={video.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <div className="w-14 h-14 bg-white/0 group-hover:bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <Play className="text-primary ml-1" size={24} fill="currentColor" />
+                        </div>
+                      </div>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="text-xl font-semibold mb-2">{video.title}</h3>
+                      {video.description && (
+                        <p className="text-gray-600">{video.description}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="text-center mt-10">
+                <Link href="/videos">
+                  <Button size="lg" variant="gradient" className="px-8">
+                    View More Videos
+                    <ArrowRight className="ml-2" size={20} />
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Video Modal */}
+      {selectedVideo && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <div className="w-full max-w-4xl bg-white rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="relative aspect-video">
+              <iframe
+                width="100%"
+                height="100%"
+                src={convertToEmbedUrl(selectedVideo.youtube_url)}
+                title={selectedVideo.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold mb-2">{selectedVideo.title}</h3>
+              {selectedVideo.description && (
+                <p className="text-gray-600">{selectedVideo.description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Shipping Methods */}
       <section className="py-16 md:py-24">

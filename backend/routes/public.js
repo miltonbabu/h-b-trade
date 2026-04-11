@@ -423,4 +423,54 @@ router.post('/orders', [
   }
 });
 
+// Public videos endpoint
+router.get('/videos', async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    
+    const videos = await db.getMany(
+      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+      ['active', parseInt(limit), offset]
+    );
+    
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json({
+      success: true,
+      data: videos,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: videos.length
+      }
+    });
+  } catch (error) {
+    logger.error('Get videos error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get videos'
+    });
+  }
+});
+
+// Featured videos endpoint (for homepage - limit 2)
+router.get('/videos/featured', async (req, res) => {
+  try {
+    const videos = await db.getMany(
+      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT 2',
+      ['active']
+    );
+    
+    res.set('Cache-Control', 'public, max-age=300');
+    res.json({
+      success: true,
+      data: videos
+    });
+  } catch (error) {
+    logger.error('Get featured videos error:', error);
+    res.status(500).json({ 
+      error: 'Failed to get featured videos'
+    });
+  }
+});
+
 module.exports = router;

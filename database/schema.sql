@@ -110,7 +110,27 @@ CREATE TABLE products (
 );
 
 -- ============================================
--- 7. SETTINGS TABLE (Site Configuration)
+-- 7. VIDEOS TABLE (YouTube Videos)
+-- ============================================
+CREATE TABLE videos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    youtube_url TEXT NOT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_videos_status ON videos(status);
+
+CREATE TRIGGER update_videos_updated_at 
+    BEFORE UPDATE ON videos 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- 8. SETTINGS TABLE (Site Configuration)
 -- ============================================
 CREATE TABLE settings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -130,7 +150,7 @@ CREATE TABLE settings (
 );
 
 -- ============================================
--- 8. CREATE INDEXES FOR PERFORMANCE
+-- 9. CREATE INDEXES FOR PERFORMANCE
 -- ============================================
 CREATE INDEX idx_orders_tracking_number ON orders(tracking_number);
 CREATE INDEX idx_orders_customer_name ON orders(customer_name);
@@ -145,7 +165,7 @@ CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_product_code ON products(product_code);
 
 -- ============================================
--- 9. CREATE TRIGGERS FOR updated_at
+-- 10. CREATE TRIGGERS FOR updated_at
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -176,7 +196,7 @@ CREATE TRIGGER update_settings_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- 10. INSERT DEFAULT DATA
+-- 11. INSERT DEFAULT DATA
 -- ============================================
 
 -- Default Settings
@@ -218,3 +238,4 @@ VALUES (
 -- ✓ Contact messages management
 -- ✓ Settings with QR codes
 -- ✓ Analytics and reporting
+-- ✓ Video management
