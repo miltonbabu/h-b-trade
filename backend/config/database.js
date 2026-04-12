@@ -119,13 +119,17 @@ const initPostgresTables = async () => {
         customer_name VARCHAR(255) NOT NULL,
         customer_info TEXT,
         product_name VARCHAR(500) NOT NULL,
+        product_link TEXT,
         product_codes VARCHAR(500),
         items_info TEXT,
         quantity VARCHAR(100),
         shipping_method VARCHAR(100),
         price DECIMAL(10, 2),
+        net_weight VARCHAR(50),
         status VARCHAR(50) DEFAULT 'pending',
         tracking_number VARCHAR(100),
+        notes TEXT,
+        estimated_delivery DATE,
         payment_info TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -134,9 +138,13 @@ const initPostgresTables = async () => {
 
     try {
       await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_info TEXT");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_link TEXT");
       await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_codes VARCHAR(500)");
       await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS items_info TEXT");
       await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_info TEXT");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS net_weight VARCHAR(50)");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS notes TEXT");
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS estimated_delivery DATE");
     } catch (e) {
       // Columns already exist, ignore error
     }
@@ -351,10 +359,14 @@ const initSQLite = async () => {
       customer_name TEXT NOT NULL,
       customer_info TEXT,
       product_name TEXT NOT NULL,
+      product_link TEXT,
       quantity TEXT,
       shipping_method TEXT,
       price REAL,
+      net_weight TEXT,
       status TEXT DEFAULT 'pending',
+      notes TEXT,
+      estimated_delivery DATE,
       payment_info TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -437,6 +449,18 @@ const initSQLite = async () => {
     }
     if (!orderColumns.includes("items_info")) {
       db.run("ALTER TABLE orders ADD COLUMN items_info TEXT");
+    }
+    if (!orderColumns.includes("product_link")) {
+      db.run("ALTER TABLE orders ADD COLUMN product_link TEXT");
+    }
+    if (!orderColumns.includes("net_weight")) {
+      db.run("ALTER TABLE orders ADD COLUMN net_weight TEXT");
+    }
+    if (!orderColumns.includes("notes")) {
+      db.run("ALTER TABLE orders ADD COLUMN notes TEXT");
+    }
+    if (!orderColumns.includes("estimated_delivery")) {
+      db.run("ALTER TABLE orders ADD COLUMN estimated_delivery DATE");
     }
   }
 
