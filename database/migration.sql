@@ -3,6 +3,21 @@
 -- Run this AFTER the main schema.sql
 
 -- ============================================
+-- 0. STATUS HISTORY TABLE - Create if not exists
+-- ============================================
+CREATE TABLE IF NOT EXISTS status_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id),
+    tracking_number VARCHAR(100),
+    old_status VARCHAR(50),
+    new_status VARCHAR(50),
+    location VARCHAR(255),
+    note TEXT,
+    changed_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- 1. ORDERS TABLE - Add missing fields
 -- ============================================
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_info TEXT;

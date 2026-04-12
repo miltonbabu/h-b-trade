@@ -62,7 +62,22 @@ CREATE TABLE orders (
 );
 
 -- ============================================
--- 4. TRACKING TABLE
+-- 4. STATUS HISTORY TABLE
+-- ============================================
+CREATE TABLE status_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id UUID REFERENCES orders(id),
+    tracking_number VARCHAR(100),
+    old_status VARCHAR(50),
+    new_status VARCHAR(50),
+    location VARCHAR(255),
+    note TEXT,
+    changed_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- 5. TRACKING TABLE
 -- ============================================
 CREATE TABLE tracking (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
