@@ -154,7 +154,7 @@ export default function HomePage() {
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-6 border border-white/20 animate-bounce-in">
               <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="text-white" size={12} md:size={14} />
+                <CheckCircle className="text-white" size={14} />
               </div>
               <span className="text-xs md:text-sm font-semibold text-white/90">
                 Trusted by 500+ Businesses Worldwide
@@ -178,15 +178,15 @@ export default function HomePage() {
 
             <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-4 md:mb-6">
               <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Plane className="text-teal-400" size={12} md:size={16} />
+                <Plane className="text-teal-400" size={14} />
                 <span className="text-xs font-medium">Air: 7-10 Days</span>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Ship className="text-orange-400" size={12} md:size={16} />
+                <Ship className="text-orange-400" size={14} />
                 <span className="text-xs font-medium">Sea: 35-40 Days</span>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Zap className="text-yellow-400" size={12} md:size={16} />
+                <Zap className="text-yellow-400" size={14} />
                 <span className="text-xs font-medium">Hand Carry: 72 Hours</span>
               </div>
             </div>
