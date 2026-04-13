@@ -132,13 +132,12 @@ export default function HomePage() {
           style={{ 
             backgroundImage: "url('/hero-image.png')",
             backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed"
+            backgroundPosition: "center"
           }}
         ></div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-slate-900/80"></div>
         
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
           <div className="absolute top-0 left-0 w-full h-full">
             <div className="absolute top-20 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
@@ -151,109 +150,105 @@ export default function HomePage() {
           <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-teal-300 rounded-full animate-float opacity-60" style={{ animationDelay: "1.5s" }}></div>
         </div>
 
-        <div className="absolute top-0 left-0 right-0 h-32 overflow-hidden">
-          <svg className="absolute top-0 w-full h-full text-primary/20" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,60 C300,120 600,0 900,60 C1050,90 1150,30 1200,60 L1200,0 L0,0 Z" fill="currentColor"></path>
-          </svg>
-        </div>
-
-        <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-4 md:pt-0">
           <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5 mb-6 md:mb-8 border border-white/20 animate-bounce-in">
-              <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="text-white" size={14} />
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-6 border border-white/20 animate-bounce-in">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="text-white" size={12} md:size={14} />
               </div>
-              <span className="text-sm md:text-base font-semibold text-white/90">
+              <span className="text-xs md:text-sm font-semibold text-white/90">
                 Trusted by 500+ Businesses Worldwide
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4 leading-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
                 HELP & BENEFIT TRADE
               </span>
-              <span className="block mt-2 md:mt-3 text-xl md:text-2xl lg:text-3xl font-medium text-yellow-200/90">
+              <span className="block mt-1 md:mt-2 text-base md:text-xl lg:text-2xl font-medium text-yellow-200/90">
                 China-Bangladesh Trade Bridge
               </span>
             </h1>
 
-            <p className="text-base md:text-lg lg:text-xl text-white/80 mb-6 md:mb-10 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xs md:text-sm lg:text-base text-white/80 mb-3 md:mb-6 max-w-lg md:max-w-3xl mx-auto leading-relaxed hidden sm:block">
               Your trusted partner for <span className="text-white font-semibold">Product Sourcing</span>,{' '}
               <span className="text-white font-semibold">Wholesale Supply</span>, and{' '}
               <span className="text-white font-semibold">Fast Shipping</span> from China to Bangladesh
             </p>
 
-            <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8 md:mb-10">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
-                <Plane className="text-teal-400" size={16} />
-                <span className="text-sm font-medium">Air: 7-10 Days</span>
+            <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-4 md:mb-6">
+              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
+                <Plane className="text-teal-400" size={12} md:size={16} />
+                <span className="text-xs font-medium">Air: 7-10 Days</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
-                <Ship className="text-orange-400" size={16} />
-                <span className="text-sm font-medium">Sea: 35-40 Days</span>
+              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
+                <Ship className="text-orange-400" size={12} md:size={16} />
+                <span className="text-xs font-medium">Sea: 35-40 Days</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
-                <Zap className="text-yellow-400" size={16} />
-                <span className="text-sm font-medium">Hand Carry: 72 Hours</span>
+              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
+                <Zap className="text-yellow-400" size={12} md:size={16} />
+                <span className="text-xs font-medium">Hand Carry: 72 Hours</span>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-col md:flex-row gap-3 md:gap-4 justify-center">
+            <div className="flex flex-col gap-2 md:gap-3 justify-center">
               <Link href="/product-request">
                 <Button
-                  size="lg"
-                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/40"
+                  size="sm"
+                  className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300"
                 >
-                  <Zap className="mr-2" size={20} />
-                  Request Product Quote
-                  <ArrowRight className="ml-2" size={20} />
+                  <Zap className="mr-1 md:mr-2" size={16} md:size={20} />
+                  <span className="text-xs md:text-sm">Request Product</span>
+                  <ArrowRight className="ml-1 md:ml-2" size={16} md:size={20} />
                 </Button>
               </Link>
-              <Link href="/tracking">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-transparent backdrop-blur-sm text-white border-2 border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300 hover:scale-105"
-                >
-                  <Ship className="mr-2" size={20} />
-                  Track Your Shipment
-                </Button>
-              </Link>
-              <Link href="/wholesale-products">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-yellow-500/30 border border-yellow-400/50 transition-all duration-300 hover:scale-105 animate-pulse"
-                >
-                  <ShoppingCart className="mr-2" size={20} />
-                  Browse Wholesale
-                </Button>
-              </Link>
+              <div className="flex gap-2 md:gap-3 justify-center">
+                <Link href="/tracking">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
+                  >
+                    <Ship className="mr-1 md:mr-2" size={16} md:size={20} />
+                    <span className="text-xs md:text-sm">Track Shipment</span>
+                  </Button>
+                </Link>
+                <Link href="/wholesale-products">
+                  <Button
+                    size="sm"
+                    className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-yellow-500/30 border border-yellow-400/50 transition-all duration-300"
+                  >
+                    <ShoppingCart className="mr-1 md:mr-2" size={16} md:size={20} />
+                    <span className="text-xs md:text-sm">Wholesale</span>
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <div className="mt-10 md:mt-14 flex justify-center items-center gap-6 md:gap-10">
+            <div className="mt-6 md:mt-8 flex justify-center items-center gap-4 md:gap-8 hidden sm:block">
               <div className="flex flex-col items-center group">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-2xl md:text-3xl mb-1 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
                   🇨🇳
                 </div>
-                <span className="text-xs md:text-sm text-white/70">China</span>
+                <span className="text-xs text-white/70">China</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-12 md:w-16 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
-                <ArrowRight className="text-yellow-400 rotate-180" size={20} />
-                <ArrowRight className="text-yellow-400" size={20} />
-                <div className="w-12 md:w-16 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+                <ArrowRight className="text-yellow-400 rotate-180" size={16} />
+                <ArrowRight className="text-yellow-400" size={16} />
+                <div className="w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
               </div>
               <div className="flex flex-col items-center group">
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-2xl md:text-3xl mb-1 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
                   🇧🇩
                 </div>
-                <span className="text-xs md:text-sm text-white/70">Bangladesh</span>
+                <span className="text-xs text-white/70">Bangladesh</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24 overflow-hidden">
           <svg className="absolute bottom-0 w-full h-full text-gray-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
             <path d="M0,60 C300,0 600,120 900,60 C1050,30 1150,90 1200,60 L1200,120 L0,120 Z" fill="currentColor"></path>
           </svg>
