@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import FloatingCartButton from "@/components/FloatingCartButton";
 import { CartProvider } from "@/context/CartContext";
+import PWAServiceWorker from "@/components/PWAServiceWorker";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,10 +31,12 @@ export const metadata: Metadata = {
     "Your trusted partner for China to Bangladesh product sourcing, wholesale supply, shipping, air cargo, and hand carry services.",
   keywords:
     "China sourcing, Bangladesh import, wholesale, logistics, shipping, air cargo, hand carry, Canton Fair",
+  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo-hb.png", sizes: "512x512", type: "image/png" },
     ],
     shortcut: "/favicon-32x32.png",
     apple: [
@@ -68,9 +71,17 @@ export default function RootLayout({
           href="/apple-touch-icon.png"
           sizes="180x180"
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="application-name" content="H&B Trade" />
+        <meta name="theme-color" content="#0d9488" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="H&B Trade" />
       </head>
       <body className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
         <CartProvider>
+          <PWAServiceWorker />
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />

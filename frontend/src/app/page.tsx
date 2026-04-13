@@ -125,169 +125,141 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="hero-gradient text-white min-h-screen flex items-center relative overflow-hidden" style={{ backgroundImage: "url('/hero-image.png')" }}>
-        {/* Chinese and Bangladeshi pattern overlay */}
-        <div className="absolute inset-0 opacity-5">
-          {/* Chinese cloud pattern */}
-          <svg className="absolute top-0 left-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="chinese-cloud" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                <path d="M10,50 Q25,30 40,50 T70,50 T100,50" fill="none" stroke="white" strokeWidth="2"/>
-                <path d="M5,65 Q20,45 35,65 T65,65 T95,65" fill="none" stroke="white" strokeWidth="2"/>
-                <circle cx="50" cy="35" r="3" fill="white"/>
-                <circle cx="30" cy="70" r="2" fill="white"/>
-                <circle cx="70" cy="70" r="2" fill="white"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#chinese-cloud)"/>
-          </svg>
-          {/* Bangladeshi geometric pattern */}
-          <svg className="absolute bottom-0 right-0 w-1/2 h-1/2" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="bangladeshi-geo" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-                <polygon points="30,5 55,55 5,55" fill="none" stroke="white" strokeWidth="1"/>
-                <polygon points="30,55 55,5 5,5" fill="none" stroke="white" strokeWidth="1"/>
-                <circle cx="30" cy="30" r="8" fill="none" stroke="white" strokeWidth="1"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#bangladeshi-geo)"/>
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
+        <div 
+          className="absolute inset-0 opacity-30" 
+          style={{ 
+            backgroundImage: "url('/hero-image.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundAttachment: "fixed"
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-slate-900/80"></div>
+        
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full">
+            <div className="absolute top-20 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl"></div>
+          </div>
+          
+          <div className="absolute top-1/4 left-10 w-3 h-3 bg-red-400 rounded-full animate-float opacity-60"></div>
+          <div className="absolute top-1/3 right-20 w-4 h-4 bg-green-400 rounded-full animate-float opacity-60" style={{ animationDelay: "0.5s" }}></div>
+          <div className="absolute bottom-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-float opacity-60" style={{ animationDelay: "1s" }}></div>
+          <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-teal-300 rounded-full animate-float opacity-60" style={{ animationDelay: "1.5s" }}></div>
+        </div>
+
+        <div className="absolute top-0 left-0 right-0 h-32 overflow-hidden">
+          <svg className="absolute top-0 w-full h-full text-primary/20" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 C300,120 600,0 900,60 C1050,90 1150,30 1200,60 L1200,0 L0,0 Z" fill="currentColor"></path>
           </svg>
         </div>
 
-        {/* Decorative border elements - Chinese style */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-600 via-green-500 to-red-600"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-green-500 via-red-600 to-green-500"></div>
-
-        {/* Corner decorations - Chinese lattice style */}
-        <div className="absolute top-4 left-4 w-16 h-16 border-t-4 border-l-4 border-white/30"></div>
-        <div className="absolute top-4 right-4 w-16 h-16 border-t-4 border-r-4 border-white/30"></div>
-        <div className="absolute bottom-4 left-4 w-16 h-16 border-b-4 border-l-4 border-white/30"></div>
-        <div className="absolute bottom-4 right-4 w-16 h-16 border-b-4 border-r-4 border-white/30"></div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Trust badge with cultural styling */}
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600/20 to-green-600/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8 animate-bounce-in border border-white/20">
-              <Sparkles className="text-yellow-300" size={20} />
-              <span className="text-sm font-semibold">
-                Trusted by 500+ businesses
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5 mb-6 md:mb-8 border border-white/20 animate-bounce-in">
+              <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                <CheckCircle className="text-white" size={14} />
+              </div>
+              <span className="text-sm md:text-base font-semibold text-white/90">
+                Trusted by 500+ Businesses Worldwide
               </span>
             </div>
 
-            {/* Main heading with cultural emphasis */}
-            <h1 className="text-4xl md:text-7xl font-bold mb-6 animate-fade-in">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-200 via-white to-green-200">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 leading-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
                 HELP & BENEFIT TRADE
               </span>
-              <span className="block mt-2 text-2xl md:text-3xl font-medium text-yellow-200">
+              <span className="block mt-2 md:mt-3 text-xl md:text-2xl lg:text-3xl font-medium text-yellow-200/90">
                 China-Bangladesh Trade Bridge
               </span>
             </h1>
 
-            <p
-              className="text-xl md:text-2xl mb-10 text-white/90 animate-fade-in leading-relaxed"
-              style={{ animationDelay: "0.2s" }}
-            >
-              Product Sourcing • Wholesale Supply
-              <br className="hidden md:block"/>
-              Air Shipping 7-10 Days • Sea Shipping 35-40 Days
-              <br className="hidden md:block"/>
-              Hand Carry 72 Hours
+            <p className="text-base md:text-lg lg:text-xl text-white/80 mb-6 md:mb-10 max-w-3xl mx-auto leading-relaxed">
+              Your trusted partner for <span className="text-white font-semibold">Product Sourcing</span>,{' '}
+              <span className="text-white font-semibold">Wholesale Supply</span>, and{' '}
+              <span className="text-white font-semibold">Fast Shipping</span> from China to Bangladesh
             </p>
 
-            {/* CTA buttons with cultural styling */}
-            <div
-              className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in"
-              style={{ animationDelay: "0.4s" }}
-            >
+            <div className="flex flex-wrap justify-center gap-3 md:gap-4 mb-8 md:mb-10">
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
+                <Plane className="text-teal-400" size={16} />
+                <span className="text-sm font-medium">Air: 7-10 Days</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
+                <Ship className="text-orange-400" size={16} />
+                <span className="text-sm font-medium">Sea: 35-40 Days</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10">
+                <Zap className="text-yellow-400" size={16} />
+                <span className="text-sm font-medium">Hand Carry: 72 Hours</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-col md:flex-row gap-3 md:gap-4 justify-center">
               <Link href="/product-request">
                 <Button
                   size="lg"
-                  className="px-10 py-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold shadow-2xl shadow-red-600/40 border-2 border-red-400/50"
+                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/40"
                 >
-                  <Zap className="mr-2" size={24} />
-                  Request Product
-                  <ArrowRight className="ml-2" size={24} />
+                  <Zap className="mr-2" size={20} />
+                  Request Product Quote
+                  <ArrowRight className="ml-2" size={20} />
                 </Button>
               </Link>
               <Link href="/tracking">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-10 py-6 bg-gradient-to-r from-green-600/20 to-green-700/20 backdrop-blur-sm text-white border-2 border-green-400/50 hover:bg-green-600/30 hover:border-green-400 font-semibold"
+                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-transparent backdrop-blur-sm text-white border-2 border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Track Shipment
+                  <Ship className="mr-2" size={20} />
+                  Track Your Shipment
                 </Button>
               </Link>
               <Link href="/wholesale-products">
                 <Button
                   size="lg"
-                  className="px-10 py-6 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-2xl shadow-yellow-500/40 border-2 border-yellow-300/50 animate-pulse"
+                  className="w-full sm:w-auto px-6 md:px-8 py-4 md:py-5 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-yellow-500/30 border border-yellow-400/50 transition-all duration-300 hover:scale-105 animate-pulse"
                 >
-                  <ShoppingCart className="mr-2" size={24} />
-                  Wholesale Products
-                  <Sparkles className="ml-2" size={24} />
+                  <ShoppingCart className="mr-2" size={20} />
+                  Browse Wholesale
                 </Button>
               </Link>
             </div>
 
-            {/* Cultural motifs */}
-            <div className="mt-12 flex justify-center items-center gap-8 animate-fade-in" style={{ animationDelay: "0.6s" }}>
-              <div className="text-center">
-                <div className="text-3xl mb-1">🇨🇳</div>
-                <div className="text-xs text-white/70">China</div>
+            <div className="mt-10 md:mt-14 flex justify-center items-center gap-6 md:gap-10">
+              <div className="flex flex-col items-center group">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
+                  🇨🇳
+                </div>
+                <span className="text-xs md:text-sm text-white/70">China</span>
               </div>
-              <div className="text-2xl text-yellow-300">↔️</div>
-              <div className="text-center">
-                <div className="text-3xl mb-1">🇧🇩</div>
-                <div className="text-xs text-white/70">Bangladesh</div>
+              <div className="flex items-center gap-2">
+                <div className="w-12 md:w-16 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+                <ArrowRight className="text-yellow-400 rotate-180" size={20} />
+                <ArrowRight className="text-yellow-400" size={20} />
+                <div className="w-12 md:w-16 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
+              </div>
+              <div className="flex flex-col items-center group">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
+                  🇧🇩
+                </div>
+                <span className="text-xs md:text-sm text-white/70">Bangladesh</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Floating elements with cultural colors */}
-        <div
-          className="absolute top-20 left-10 w-24 h-24 bg-gradient-to-br from-red-500/20 to-red-600/10 rounded-full floating border-2 border-red-400/20"
-          style={{ animationDelay: "0s" }}
-        ></div>
-        <div
-          className="absolute top-32 right-16 w-20 h-20 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-full floating border-2 border-green-400/20"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute bottom-24 left-1/4 w-16 h-16 bg-gradient-to-br from-yellow-400/20 to-yellow-500/10 rounded-full floating border-2 border-yellow-400/20"
-          style={{ animationDelay: "2s" }}
-        ></div>
-        <div
-          className="absolute bottom-32 right-1/3 w-12 h-12 bg-gradient-to-br from-red-400/20 to-green-400/20 rounded-full floating border-2 border-white/20"
-          style={{ animationDelay: "1.5s" }}
-        ></div>
-
-        {/* Traditional Chinese lantern decoration */}
-        <div className="absolute top-16 right-8 opacity-20 animate-fade-in" style={{ animationDelay: "0.8s" }}>
-          <svg width="40" height="50" viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="20" cy="25" rx="15" ry="20" fill="#dc2626" />
-            <rect x="18" y="45" width="4" height="5" fill="#dc2626" />
-            <rect x="10" y="5" width="20" height="3" fill="#dc2626" />
-            <path d="M20 10 L20 40" stroke="#fef08a" strokeWidth="1" />
-          </svg>
-        </div>
-
-        {/* Bangladeshi water lily decoration */}
-        <div className="absolute bottom-16 left-8 opacity-20 animate-fade-in" style={{ animationDelay: "1s" }}>
-          <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="25" cy="25" r="8" fill="#16a34a" />
-            <ellipse cx="25" cy="15" rx="6" ry="10" fill="#16a34a" />
-            <ellipse cx="35" cy="25" rx="6" ry="10" fill="#16a34a" transform="rotate(90 35 25)" />
-            <ellipse cx="25" cy="35" rx="6" ry="10" fill="#16a34a" />
-            <ellipse cx="15" cy="25" rx="6" ry="10" fill="#16a34a" transform="rotate(-90 15 25)" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden">
+          <svg className="absolute bottom-0 w-full h-full text-gray-50" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,60 C300,0 600,120 900,60 C1050,30 1150,90 1200,60 L1200,120 L0,120 Z" fill="currentColor"></path>
           </svg>
         </div>
       </section>
 
-      {/* Services Preview */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -326,7 +298,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Explore Videos Section */}
       <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -396,7 +367,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Video Modal */}
       {selectedVideo && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
@@ -424,7 +394,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Shipping Methods */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -460,7 +429,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose Us */}
       <section className="py-16 md:py-24 bg-gradient-to-br from-primary via-primary-700 to-primary-800 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
@@ -507,7 +475,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
