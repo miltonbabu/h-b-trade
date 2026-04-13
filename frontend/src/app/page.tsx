@@ -150,7 +150,7 @@ export default function HomePage() {
           <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-teal-300 rounded-full animate-float opacity-60" style={{ animationDelay: "1.5s" }}></div>
         </div>
 
-        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-4 md:pt-0">
+        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-1 md:pt-0">
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-6 border border-white/20 animate-bounce-in">
               <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
