@@ -225,24 +225,24 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-6 md:mt-8 flex justify-center items-center gap-4 md:gap-8 hidden sm:block">
+            <div className="mt-4 md:mt-6 flex justify-center items-center gap-3 md:gap-6 sm:gap-8">
               <div className="flex flex-col items-center group">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-2xl md:text-3xl mb-1 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
+                <div className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-1.5 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
                   🇨🇳
                 </div>
-                <span className="text-xs text-white/70">China</span>
+                <span className="text-[10px] sm:text-xs text-white/70">China</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
                 <ArrowRight className="text-yellow-400 rotate-180" size={16} />
                 <ArrowRight className="text-yellow-400" size={16} />
-                <div className="w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
+                <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
               </div>
               <div className="flex flex-col items-center group">
-                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-2xl md:text-3xl mb-1 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
+                <div className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-1.5 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
                   🇧🇩
                 </div>
-                <span className="text-xs text-white/70">Bangladesh</span>
+                <span className="text-[10px] sm:text-xs text-white/70">Bangladesh</span>
               </div>
             </div>
           </div>
