@@ -197,9 +197,9 @@ export default function HomePage() {
                   size="sm"
                   className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300"
                 >
-                  <Zap className="mr-1 md:mr-2" size={16} md:size={20} />
+                  <Zap className="mr-1 md:mr-2" size={18} />
                   <span className="text-xs md:text-sm">Request Product</span>
-                  <ArrowRight className="ml-1 md:ml-2" size={16} md:size={20} />
+                  <ArrowRight className="ml-1 md:ml-2" size={18} />
                 </Button>
               </Link>
               <div className="flex gap-2 md:gap-3 justify-center">
@@ -209,7 +209,7 @@ export default function HomePage() {
                     variant="outline"
                     className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
                   >
-                    <Ship className="mr-1 md:mr-2" size={16} md:size={20} />
+                    <Ship className="mr-1 md:mr-2" size={18} />
                     <span className="text-xs md:text-sm">Track Shipment</span>
                   </Button>
                 </Link>
@@ -218,7 +218,7 @@ export default function HomePage() {
                     size="sm"
                     className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-yellow-500/30 border border-yellow-400/50 transition-all duration-300"
                   >
-                    <ShoppingCart className="mr-1 md:mr-2" size={16} md:size={20} />
+                    <ShoppingCart className="mr-1 md:mr-2" size={18} />
                     <span className="text-xs md:text-sm">Wholesale</span>
                   </Button>
                 </Link>
