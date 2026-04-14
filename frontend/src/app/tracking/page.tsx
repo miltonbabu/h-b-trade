@@ -112,8 +112,8 @@ export default function TrackingPage() {
 
   return (
     <div>
-      <section className="hero-gradient text-white py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative hero-gradient text-white py-16">
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Track Your Shipment
@@ -122,16 +122,17 @@ export default function TrackingPage() {
               Enter your tracking number to get real-time updates on your shipment status.
             </p>
 
-            <form onSubmit={handleSearch} className="max-w-xl mx-auto">
+            <form onSubmit={handleSearch} className="max-w-xl mx-auto relative z-10">
               <div className="flex gap-2">
                 <Input
                   type="text"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
                   placeholder="Enter tracking number (e.g., TRK1234567890)"
-                  className="bg-white text-gray-900"
+                  className="bg-white text-gray-900 z-10"
+                  autoFocus
                 />
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className="z-10">
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={20} />
                   ) : (
