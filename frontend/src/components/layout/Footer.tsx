@@ -194,7 +194,7 @@ export default function Footer() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-40 ${
+        className={`fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-[60] ${
           showScrollTop
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-10 pointer-events-none"
