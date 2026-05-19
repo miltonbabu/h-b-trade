@@ -46,13 +46,13 @@ export default function ContactPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-16">
+      <section className="hero-gradient text-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               Contact Us
             </h1>
-            <p className="text-xl text-blue-100">
+            <p className="text-base sm:text-lg md:text-xl text-blue-100">
               Have questions? We&apos;re here to help. Reach out to us through any of the channels below.
             </p>
           </div>
@@ -60,16 +60,16 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16">
+      <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Contact Information */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
+              <h2 className="text-2xl font-bold mb-4 sm:mb-6">Get in Touch</h2>
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <Card>
-                  <CardContent className="p-6 flex items-start gap-4">
+                  <CardContent className="p-4 sm:p-6 flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Phone className="text-primary" size={24} />
                     </div>
@@ -82,7 +82,7 @@ export default function ContactPage() {
                 </Card>
 
                 <Card>
-                  <CardContent className="p-6 flex items-start gap-4">
+                  <CardContent className="p-4 sm:p-6 flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Mail className="text-primary" size={24} />
                     </div>
@@ -95,7 +95,7 @@ export default function ContactPage() {
                 </Card>
 
                 <Card>
-                  <CardContent className="p-6 flex items-start gap-4">
+                  <CardContent className="p-4 sm:p-6 flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                       <MapPin className="text-primary" size={24} />
                     </div>
@@ -119,7 +119,7 @@ export default function ContactPage() {
               </div>
 
               {/* Social Links */}
-              <div className="mt-8">
+              <div className="mt-6 sm:mt-8">
                 <h3 className="font-semibold mb-4">Connect With Us</h3>
                 <div className="flex gap-4">
                   <a
@@ -149,11 +149,11 @@ export default function ContactPage() {
               {isSuccess ? (
                 <Card className="text-center">
                   <CardContent className="p-8">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
                       <CheckCircle className="text-green-500" size={40} />
                     </div>
                     <h2 className="text-2xl font-bold mb-4">Message Sent!</h2>
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 mb-4 sm:mb-6">
                       Thank you for contacting us. We&apos;ll get back to you within 24 hours.
                     </p>
                     <Button onClick={() => setIsSuccess(false)}>
@@ -163,17 +163,17 @@ export default function ContactPage() {
                 </Card>
               ) : (
                 <Card>
-                  <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
+                  <CardContent className="p-4 sm:p-6">
+                    <h2 className="text-2xl font-bold mb-4 sm:mb-6">Send Us a Message</h2>
                     
                     {error && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 sm:mb-6">
                         {error}
                       </div>
                     )}
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Your Name *
@@ -263,14 +263,14 @@ export default function ContactPage() {
       </section>
 
       {/* Map Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold">Our Locations</h2>
             <p className="text-gray-600">Visit us at our offices in China and Bangladesh</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <Card>
               <CardContent className="p-0">
                 <div className="bg-gray-200 h-64 flex items-center justify-center">

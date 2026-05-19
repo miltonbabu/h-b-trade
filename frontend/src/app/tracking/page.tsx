@@ -112,13 +112,13 @@ export default function TrackingPage() {
 
   return (
     <div>
-      <section className="relative hero-gradient text-white py-16">
+      <section className="relative hero-gradient text-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               Track Your Shipment
             </h1>
-            <p className="text-xl text-blue-100 mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-4 sm:mb-6 md:mb-8">
               Enter your tracking number to get real-time updates on your shipment status.
             </p>
 
@@ -149,14 +149,14 @@ export default function TrackingPage() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           {trackingData ? (
             <div className="max-w-4xl mx-auto">
-              <Card className="mb-8">
-                <CardContent className="p-6">
+              <Card className="mb-4 sm:mb-6 md:mb-8">
+                <CardContent className="p-4 sm:p-6">
                   <h2 className="text-2xl font-bold mb-4">Order Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <p className="text-gray-600">Order Number</p>
                       <p className="font-semibold">{trackingData.order.order_number}</p>
@@ -195,9 +195,9 @@ export default function TrackingPage() {
                 </CardContent>
               </Card>
 
-              <Card className="mb-8">
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">Shipment Progress</h2>
+              <Card className="mb-4 sm:mb-6 md:mb-8">
+                <CardContent className="p-4 sm:p-6">
+                  <h2 className="text-2xl font-bold mb-4 sm:mb-6">Shipment Progress</h2>
                   
                   <div className="relative">
                     {STATUS_SEQUENCE.map((status, index) => {
@@ -257,8 +257,8 @@ export default function TrackingPage() {
               </Card>
 
               {trackingData.order.status === 'cancelled' && (
-                <Card className="mb-8 border-red-200 bg-red-50">
-                  <CardContent className="p-6">
+                <Card className="mb-4 sm:mb-6 md:mb-8 border-red-200 bg-red-50">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <XCircle className="text-red-500" size={24} />
                       <div>
@@ -273,8 +273,8 @@ export default function TrackingPage() {
               )}
 
               {trackingData.order.status === 'delivered' && (
-                <Card className="mb-8 border-green-200 bg-green-50">
-                  <CardContent className="p-6">
+                <Card className="mb-4 sm:mb-6 md:mb-8 border-green-200 bg-green-50">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex items-center gap-3">
                       <CheckCircle className="text-green-500" size={24} />
                       <div>
@@ -290,8 +290,8 @@ export default function TrackingPage() {
 
               {trackingData.tracking.length > 0 && (
                 <Card>
-                  <CardContent className="p-6">
-                    <h2 className="text-2xl font-bold mb-6">Detailed Tracking History</h2>
+                  <CardContent className="p-4 sm:p-6">
+                    <h2 className="text-2xl font-bold mb-4 sm:mb-6">Detailed Tracking History</h2>
                     
                     <div className="relative">
                       {trackingData.tracking.map((track, index) => {
@@ -329,7 +329,7 @@ export default function TrackingPage() {
           ) : (
             <div className="max-w-2xl mx-auto text-center">
               <Card>
-                <CardContent className="p-12">
+                <CardContent className="p-6 sm:p-8 md:p-12">
                   <Package className="mx-auto text-gray-400 mb-4" size={64} />
                   <h3 className="text-xl font-semibold mb-2">Track Your Shipment</h3>
                   <p className="text-gray-600">
@@ -342,13 +342,13 @@ export default function TrackingPage() {
         </div>
       </section>
 
-      <section className="py-16 bg-gray-50">
+      <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">Need Help?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <h2 className="text-2xl font-bold text-center mb-4 sm:mb-6 md:mb-8">Need Help?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <Card className="text-center">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Package className="text-primary" size={24} />
                   </div>
@@ -357,7 +357,7 @@ export default function TrackingPage() {
                 </CardContent>
               </Card>
               <Card className="text-center">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Truck className="text-primary" size={24} />
                   </div>
@@ -366,7 +366,7 @@ export default function TrackingPage() {
                 </CardContent>
               </Card>
               <Card className="text-center">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Home className="text-primary" size={24} />
                   </div>

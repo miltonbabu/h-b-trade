@@ -229,14 +229,14 @@ export default function WholesaleProductsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12">
+      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 sm:py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
                 Wholesale Products
               </h1>
-              <p className="text-xl opacity-90">
+              <p className="text-base sm:text-lg md:text-xl opacity-90">
                 Premium quality products at competitive prices
               </p>
             </div>
@@ -250,9 +250,9 @@ export default function WholesaleProductsPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 items-center">
             <form onSubmit={handleSearch} className="relative flex-1 w-full">
               <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -284,11 +284,11 @@ export default function WholesaleProductsPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-6 sm:py-8 md:py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-12">
+          <div className="text-center py-6 sm:py-8 md:py-12">
             <Package size={64} className="mx-auto text-red-400 mb-4" />
             <p className="text-xl text-red-600">{error}</p>
             <Button onClick={fetchProducts} className="mt-4">
@@ -297,7 +297,7 @@ export default function WholesaleProductsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {products.map((product) => {
                 const images = [product.image, product.image2, product.image3].filter((img): img is string => Boolean(img));
                 
@@ -373,7 +373,7 @@ export default function WholesaleProductsPage() {
             </div>
 
             {products.length === 0 && (
-              <div className="text-center py-12">
+              <div className="text-center py-6 sm:py-8 md:py-12">
                 <Package size={64} className="mx-auto text-gray-400 mb-4" />
                 <p className="text-xl text-gray-600">No products found</p>
                 <p className="text-gray-500">

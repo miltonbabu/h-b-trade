@@ -88,18 +88,18 @@ export default function ProductRequestPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           <Card className="max-w-lg mx-auto text-center border-0 shadow-2xl">
-            <CardContent className="p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/30">
+            <CardContent className="p-5 sm:p-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-green-500/30">
                 <CheckCircle className="text-white" size={40} />
               </div>
               <h2 className="text-2xl font-bold mb-4 gradient-text">Request Submitted!</h2>
               <p className="text-gray-600 mb-4">
                 Thank you for your product request. Our team will review it and get back to you within 24-48 hours.
               </p>
-              <div className="bg-primary/10 rounded-xl p-4 mb-6">
+              <div className="bg-primary/10 rounded-xl p-4 mb-4 sm:mb-6">
                 <p className="text-sm text-gray-600 mb-1">Your Tracking Number</p>
                 <p className="text-2xl font-bold text-primary">{trackingNumber}</p>
                 <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
@@ -117,18 +117,18 @@ export default function ProductRequestPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-16 relative overflow-hidden">
+      <section className="hero-gradient text-white py-8 sm:py-12 md:py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-4 sm:mb-6">
               <Package className="text-yellow-300" size={18} />
               <span className="text-sm font-medium">Product Sourcing Made Easy</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
               Request a <span className="text-yellow-300">Product</span>
             </h1>
-            <p className="text-xl text-teal-100">
+            <p className="text-base sm:text-lg md:text-xl text-teal-100">
               Tell us about the products you need and we&apos;ll source them from China for you.
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function ProductRequestPage() {
       </section>
 
       {/* Form Section */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <Card className="max-w-3xl mx-auto border-0 shadow-xl">
             <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b">
@@ -145,16 +145,16 @@ export default function ProductRequestPage() {
                 Fill out the form below with your product details. Our team will contact you within 24-48 hours.
               </p>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 sm:mb-6 flex items-center gap-2">
                   <span>⚠️</span> {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
                 {/* Personal Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Your Name <span className="text-red-500">*</span>
@@ -191,7 +191,7 @@ export default function ProductRequestPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number
@@ -245,7 +245,7 @@ export default function ProductRequestPage() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Quantity

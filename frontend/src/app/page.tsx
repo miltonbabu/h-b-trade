@@ -225,7 +225,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mt-4 md:mt-6 flex justify-center items-center gap-3 md:gap-6 sm:gap-8">
+            <div className="mt-4 md:mt-6 flex justify-center items-center gap-3 md:gap-4 sm:gap-6 sm:gap-8">
               <div className="flex flex-col items-center group">
                 <div className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-1.5 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
                   🇨🇳
@@ -255,21 +255,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-8 sm:py-12 md:py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Our <span className="gradient-text">Services</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Comprehensive solutions for all your China-Bangladesh trade needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
             {services.map((service, index) => (
               <Card key={index} className="card-hover group">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                     <service.icon className="text-white" size={28} />
                   </div>
@@ -282,7 +282,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="text-center mt-10">
+          <div className="text-center mt-6 sm:mt-8 md:mt-10">
             <Link href="/services">
               <Button size="lg" variant="gradient" className="px-8">
                 View All Services
@@ -293,13 +293,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-8 sm:py-12 md:py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Explore <span className="gradient-text">Videos</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Watch our informative videos about China-Bangladesh trade and shipping
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                 {videos.map((video) => (
                   <Card
                     key={video.id}
@@ -349,7 +349,7 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="text-center mt-10">
+              <div className="text-center mt-6 sm:mt-8 md:mt-10">
                 <Link href="/videos">
                   <Button size="lg" variant="gradient" className="px-8">
                     View More Videos
@@ -389,24 +389,24 @@ export default function HomePage() {
         </div>
       )}
 
-      <section className="py-16 md:py-24">
+      <section className="py-8 sm:py-12 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Shipping <span className="gradient-text">Methods</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Choose the shipping method that best fits your needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {shippingMethods.map((method, index) => (
               <Card
                 key={index}
                 className="card-hover text-center overflow-hidden group"
               >
-                <CardContent className="p-8 relative">
+                <CardContent className="p-5 sm:p-8 relative">
                   <div
                     className={`w-20 h-20 bg-gradient-to-br ${method.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
                   >
@@ -424,20 +424,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 bg-gradient-to-br from-primary via-primary-700 to-primary-800 text-white relative overflow-hidden">
+      <section className="py-8 sm:py-12 md:py-24 bg-gradient-to-br from-primary via-primary-700 to-primary-800 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">
                 Why Choose <span className="text-yellow-300">HELP & BENEFIT TRADE LTD</span>?
               </h2>
-              <p className="text-xl text-teal-100 mb-8">
+              <p className="text-base sm:text-lg md:text-xl text-teal-100 mb-4 sm:mb-6 md:mb-8">
                 With years of experience in China-Bangladesh trade, we provide
                 reliable, efficient, and cost-effective solutions for your
                 business.
               </p>
-              <ul className="space-y-4">
+              <ul className="space-y-3 sm:space-y-4">
                 {whyChooseUs.map((item, index) => (
                   <li key={index} className="flex items-start gap-3 group">
                     <CheckCircle
@@ -451,7 +451,7 @@ export default function HomePage() {
                 ))}
               </ul>
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {stats.map((stat, index) => (
                 <div
                   key={index}
@@ -470,12 +470,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
+      <section className="py-8 sm:py-12 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+          <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl p-5 sm:p-8 md:p-12 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-5"></div>
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Ready to Start Your{" "}
                 <span className="gradient-text">Import Journey</span>?
               </h2>
