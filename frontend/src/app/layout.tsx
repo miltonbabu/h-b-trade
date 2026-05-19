@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MobileBottomTabs from "@/components/layout/MobileBottomTabs";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import FloatingCartButton from "@/components/FloatingCartButton";
 import { CartProvider } from "@/context/CartContext";
@@ -83,7 +84,8 @@ export default function RootLayout({
         <CartProvider>
           <PWAServiceWorker />
           <Navbar />
-          <main className="min-h-screen">{children}</main>
+          <main className="flex-1 pb-16 md:pb-0">{children}</main>
+          <MobileBottomTabs />
           <Footer />
           <FloatingCartButton />
           <WhatsAppButton />
