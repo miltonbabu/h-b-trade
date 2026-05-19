@@ -33,10 +33,10 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-4 sm:py-8 md:py-24">
+      <section className="hero-gradient text-white py-3 sm:py-6 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
               About H&B Trade
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-blue-100">
@@ -47,7 +47,7 @@ export default function AboutPage() {
       </section>
 
       {/* Our Story */}
-      <section className="py-4 sm:py-8 md:py-24">
+      <section className="py-4 sm:py-8 md:py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div>
@@ -91,7 +91,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-4 sm:py-8 md:py-24 bg-gray-50">
+      <section className="py-4 sm:py-8 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <Card className="border-l-4 border-l-primary">
@@ -126,7 +126,7 @@ export default function AboutPage() {
       </section>
 
       {/* Our Values */}
-      <section className="py-4 sm:py-8 md:py-24">
+      <section className="py-4 sm:py-8 md:py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-6 sm:mb-8 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -154,7 +154,7 @@ export default function AboutPage() {
       </section>
 
       {/* Services Overview */}
-      <section className="py-4 sm:py-8 md:py-24 bg-primary text-white">
+      <section className="py-4 sm:py-8 md:py-16 bg-primary text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-6 sm:mb-8 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
@@ -198,7 +198,7 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-4 sm:py-8 md:py-24">
+      <section className="py-4 sm:py-8 md:py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-6 sm:mb-8 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
