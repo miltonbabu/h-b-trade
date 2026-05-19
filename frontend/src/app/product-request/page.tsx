@@ -117,15 +117,15 @@ export default function ProductRequestPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-8 sm:py-12 md:py-16 relative overflow-hidden">
+      <section className="hero-gradient text-white py-3 sm:py-8 md:py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-4 sm:mb-6">
+            <div className="hidden sm:inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-4 sm:mb-6">
               <Package className="text-yellow-300" size={18} />
               <span className="text-sm font-medium">Product Sourcing Made Easy</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
+            <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
               Request a <span className="text-yellow-300">Product</span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-teal-100">
@@ -136,11 +136,11 @@ export default function ProductRequestPage() {
       </section>
 
       {/* Form Section */}
-      <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <Card className="max-w-3xl mx-auto border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b">
-              <CardTitle className="text-2xl gradient-text">Submit Your Product Request</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b px-4 py-3 sm:px-6 sm:py-4">
+              <CardTitle className="text-lg sm:text-2xl gradient-text">Submit Your Product Request</CardTitle>
               <p className="text-gray-600">
                 Fill out the form below with your product details. Our team will contact you within 24-48 hours.
               </p>
