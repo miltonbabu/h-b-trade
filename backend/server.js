@@ -44,6 +44,11 @@ app.use(cors({
     'http://localhost:3000',
     'http://10.60.13.169:3000',
     'https://hbtrade-frontend.onrender.com',
+    'https://h-b-trade.vercel.app',
+    'https://hbtrade.ltd',
+    'https://www.hbtrade.ltd',
+    'http://hbtrade.ltd',
+    'http://www.hbtrade.ltd',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
