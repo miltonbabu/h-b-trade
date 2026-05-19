@@ -125,7 +125,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
         <div 
           className="absolute inset-0 opacity-30" 

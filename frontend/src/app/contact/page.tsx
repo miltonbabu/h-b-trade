@@ -273,7 +273,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <Card>
               <CardContent className="p-0">
-                <div className="bg-gray-200 h-64 flex items-center justify-center">
+                <div className="bg-gray-200 h-40 sm:h-64 flex items-center justify-center">
                   <div className="text-center">
                     <MapPin className="mx-auto text-gray-400 mb-2" size={48} />
                     <p className="text-gray-600">Guangzhou, China</p>
@@ -288,7 +288,7 @@ export default function ContactPage() {
 
             <Card>
               <CardContent className="p-0">
-                <div className="bg-gray-200 h-64 flex items-center justify-center">
+                <div className="bg-gray-200 h-40 sm:h-64 flex items-center justify-center">
                   <div className="text-center">
                     <MapPin className="mx-auto text-gray-400 mb-2" size={48} />
                     <p className="text-gray-600">Dhaka, Bangladesh</p>

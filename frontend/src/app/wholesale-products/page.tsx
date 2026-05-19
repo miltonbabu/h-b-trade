@@ -241,8 +241,8 @@ export default function WholesaleProductsPage() {
               </p>
             </div>
             <Link href="/cart">
-              <Button className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-6 py-4 shadow-xl">
-                <ShoppingBag className="mr-2" size={24} />
+              <Button className="bg-white text-orange-600 hover:bg-gray-100 font-bold px-3 py-2 sm:px-6 sm:py-4 shadow-xl text-xs sm:text-sm">
+                <ShoppingBag className="mr-1 sm:mr-2" size={16} />
                 Cart ({getTotalItems()})
               </Button>
             </Link>

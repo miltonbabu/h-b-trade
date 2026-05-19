@@ -338,8 +338,8 @@
 
   /* Adjust hero section for mobile */
   .hero-gradient {
-    min-height: 100vh;
-    padding: 2rem 1rem;
+    min-height: auto;
+    padding: 0.75rem 1rem;
   }
 
   /* Mobile-friendly card hover - disable transform on mobile */
@@ -352,15 +352,12 @@
     white-space: nowrap;
   }
 
-  /* Better spacing for mobile sections */
-  section {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+  /* Better spacing for mobile sections - REMOVED global section padding override */
+  /* section padding is now controlled by Tailwind classes per-page */
 
   /* Mobile-friendly footer */
   footer .grid {
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   /* Improve scroll behavior on mobile */
@@ -373,18 +370,8 @@
     display: none;
   }
 
-  /* Better font sizes for mobile */
-  h1 {
-    font-size: 1.875rem !important;
-  }
-
-  h2 {
-    font-size: 1.5rem !important;
-  }
-
-  p {
-    font-size: 1rem;
-  }
+  /* Better font sizes for mobile - REMOVED !important to not override Tailwind responsive classes */
+  /* h1, h2, p sizes are now controlled by Tailwind responsive classes per-page */
 }
 
 /* Tablet improvements */
