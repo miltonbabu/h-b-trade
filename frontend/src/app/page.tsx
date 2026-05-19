@@ -167,7 +167,7 @@ export default function HomePage() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
               </span>
               <span className="text-xs md:text-sm font-semibold text-green-300">
-                International Sourcing & Shipping Active
+                International Sourcing & Shipping Live Now
               </span>
             </div>
 
