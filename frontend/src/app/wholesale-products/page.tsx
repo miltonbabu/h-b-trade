@@ -229,14 +229,14 @@ export default function WholesaleProductsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-6 sm:py-8 md:py-12">
+      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-3 sm:py-6 md:py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
+              <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
                 Wholesale Products
               </h1>
-              <p className="text-base sm:text-lg md:text-xl opacity-90">
+              <p className="hidden sm:block text-base sm:text-lg md:text-xl opacity-90">
                 Premium quality products at competitive prices
               </p>
             </div>

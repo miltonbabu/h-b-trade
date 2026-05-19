@@ -33,13 +33,13 @@ export default function AboutPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-16 md:py-24">
+      <section className="hero-gradient text-white py-4 sm:py-8 md:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
               About H&B Trade
             </h1>
-            <p className="text-xl text-blue-100">
+            <p className="text-base sm:text-lg md:text-xl text-blue-100">
               Your trusted bridge between China and Bangladesh for quality products and reliable logistics services.
             </p>
           </div>
@@ -47,14 +47,14 @@ export default function AboutPage() {
       </section>
 
       {/* Our Story */}
-      <section className="py-16 md:py-24">
+      <section className="py-4 sm:py-8 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12 items-center">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Our Story
               </h2>
-              <div className="space-y-4 text-gray-600 text-lg">
+              <div className="space-y-3 sm:space-y-4 text-base sm:text-lg text-gray-600">
                 <p>
                   H&B Trade was founded with a simple mission: to make international trade between China and Bangladesh accessible, efficient, and profitable for businesses of all sizes.
                 </p>
@@ -66,8 +66,8 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="bg-gray-100 rounded-2xl p-8">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="bg-gray-100 rounded-2xl p-5 sm:p-8">
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">5+</div>
                   <div className="text-gray-600">Years Experience</div>
@@ -91,11 +91,11 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-4 sm:py-8 md:py-24 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <Card className="border-l-4 border-l-primary">
-              <CardContent className="p-8">
+              <CardContent className="p-5 sm:p-8">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center">
                     <Target className="text-primary" size={28} />
@@ -109,7 +109,7 @@ export default function AboutPage() {
             </Card>
 
             <Card className="border-l-4 border-l-secondary">
-              <CardContent className="p-8">
+              <CardContent className="p-5 sm:p-8">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center">
                     <Eye className="text-secondary" size={28} />
@@ -126,25 +126,25 @@ export default function AboutPage() {
       </section>
 
       {/* Our Values */}
-      <section className="py-16 md:py-24">
+      <section className="py-4 sm:py-8 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Our Core Values
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               The principles that guide everything we do
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {values.map((value, index) => (
               <Card key={index} className="text-center card-hover">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <value.icon className="text-primary" size={32} />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{value.title}</h3>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2">{value.title}</h3>
                   <p className="text-gray-600">{value.description}</p>
                 </CardContent>
               </Card>
@@ -154,20 +154,20 @@ export default function AboutPage() {
       </section>
 
       {/* Services Overview */}
-      <section className="py-16 md:py-24 bg-primary text-white">
+      <section className="py-4 sm:py-8 md:py-24 bg-primary text-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               What We Offer
             </h2>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
               Comprehensive solutions for all your China-Bangladesh trade needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/10 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Product Sourcing</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+            <div className="bg-white/10 rounded-lg p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Product Sourcing</h3>
               <ul className="space-y-2 text-blue-100">
                 <li>- Supplier verification</li>
                 <li>- Quality inspection</li>
@@ -175,8 +175,8 @@ export default function AboutPage() {
                 <li>- Sample arrangement</li>
               </ul>
             </div>
-            <div className="bg-white/10 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Logistics Services</h3>
+            <div className="bg-white/10 rounded-lg p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Logistics Services</h3>
               <ul className="space-y-2 text-blue-100">
                 <li>- Air cargo</li>
                 <li>- Sea shipping</li>
@@ -184,8 +184,8 @@ export default function AboutPage() {
                 <li>- Customs clearance</li>
               </ul>
             </div>
-            <div className="bg-white/10 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-4">Business Support</h3>
+            <div className="bg-white/10 rounded-lg p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Business Support</h3>
               <ul className="space-y-2 text-blue-100">
                 <li>- Canton Fair assistance</li>
                 <li>- Translation services</li>
@@ -198,22 +198,22 @@ export default function AboutPage() {
       </section>
 
       {/* Team Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-4 sm:py-8 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-6 sm:mb-8 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Our Team
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Dedicated professionals committed to your success
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto text-center">
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 md:mb-8">
               Our team consists of experienced sourcing specialists, logistics experts, and customer service professionals who understand the intricacies of China-Bangladesh trade. With offices in both Guangzhou, China and Dhaka, Bangladesh, we provide local expertise with global reach.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               <div>
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Users className="text-gray-400" size={40} />

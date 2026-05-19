@@ -46,10 +46,10 @@ export default function ContactPage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-8 sm:py-12 md:py-16">
+      <section className="hero-gradient text-white py-3 sm:py-6 md:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
               Contact Us
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-blue-100">
@@ -60,7 +60,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-8 sm:py-12 md:py-16">
+      <section className="py-4 sm:py-8 md:py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Contact Information */}
