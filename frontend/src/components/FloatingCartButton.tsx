@@ -14,7 +14,7 @@ export default function FloatingCartButton() {
   const totalItems = getTotalItems();
 
   useEffect(() => {
-    setIsVisible(!pathname.startsWith("/admin") && !pathname.startsWith("/cart"));
+    setIsVisible(pathname.startsWith("/wholesale-products"));
   }, [pathname]);
 
   useEffect(() => {

@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { X, MessageCircle } from "lucide-react";
 
 export default function WhatsAppButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    setIsVisible(!pathname.startsWith("/admin"));
-  }, [pathname]);
 
   if (!isVisible) return null;
 
