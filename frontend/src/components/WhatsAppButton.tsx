@@ -21,7 +21,7 @@ export default function WhatsAppButton() {
   );
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed top-[800px] right-6 z-50">
       {isOpen && (
         <div className="mb-4 bg-white rounded-2xl shadow-2xl w-72 overflow-hidden animate-slide-up border border-gray-100">
           <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 flex items-center justify-between">
