@@ -1,0 +1,140 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Supabase Local Development Stack
+  # Run: docker compose -f docker-compose.supabase.yml up -d
+  # ============================================
+
+  db:
+    image: postgres:15
+    container_name: hbtrade-supabase-db
+    restart: unless-stopped
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POST_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - supabase-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Supabase Studio (Dashboard UI)
+  studio:
+    image: supabase/studio:latest
+    container_name: hbtrade-supabase-studio
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "54323:3000"
+    environment:
+      STUDIO_PG_DB_URL: postgresql://postgres:postgres@db:5432/postgres
+      SUPABASE_URL: http://localhost:54321
+      PUBLIC_BACKEND_URL: http://host.docker.internal:54321
+
+  # Supabase API (Auth, REST, Realtime, Storage)
+  api:
+    image: supabase/postgrest:latest
+    container_name: hbtrade-supabase-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "54321:3000"
+    environment:
+      PGRST_DB_URI: postgres://authenticator:postgres@db:5432/postgres
+      PGRST_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      PGRST_ANON_ROLE: anon
+      PGRST_DB_SCHEMA: public,storage
+      PGRST_DB_USE_LEGACY_GUCS: false
+
+  # Realtime server for subscriptions
+  realtime:
+    image: supabase/realtime:v2.26.13
+    container_name: hbtrade-supabase-realtime
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "54324:4000"
+    command: >
+      bash -c "./bin/realtime eval 'Realtime.Application.start()'"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: postgres
+      DB_USER: supabase_admin
+      DB_PASSWORD: postgres
+      PORT: 4000
+      SECURE_CHANNELS: "true"
+      JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+
+  # Storage API for file uploads
+  storage:
+    image: supabase/storage-api:v0.51.0
+    container_name: hbtrade-supabase-storage
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+    ports:
+      - "54325:5000"
+    environment:
+      ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+      SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+      PGRST_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      DATABASE_URL: postgres://supabase_storage_admin:postgres@db:5432/postgres
+      FILE_SIZE_LIMIT: 5242880
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BASE_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: us-east-1
+      GLOBAL_S3_BUCKET: stub
+    volumes:
+      - storage-data:/var/lib/storage
+
+  # Your existing backend (connecting to local Supabase)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hbtrade-backend-local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/postgres
+      JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:3000
+      UPLOAD_DIR: uploads
+      MAX_FILE_SIZE: 5242880
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+volumes:
+  supabase-db-data:
+    driver: local
+  storage-data:
+    driver: local
+
+networks:
+  default:
+    name: hbtrade-supabase-network
