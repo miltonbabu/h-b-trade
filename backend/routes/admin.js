@@ -88,59 +88,27 @@ router.get("/order-statuses", (req, res) => {
 
 router.get("/notifications", async (req, res) => {
   try {
-    // Count unread messages - handle missing deleted_at column gracefully
-    let unreadMessages;
-    try {
-      unreadMessages = await db.getOne(
-        "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND (deleted_at IS NULL)"
-      );
-    } catch {
-      unreadMessages = await db.getOne(
-        "SELECT COUNT(*) as count FROM messages WHERE is_read = 0"
-      );
-    }
-
-    let pendingRequests;
-    try {
-      pendingRequests = await db.getOne(
-        "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND (deleted_at IS NULL)"
-      );
-    } catch {
-      pendingRequests = await db.getOne(
-        "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending'"
-      );
-    }
-
-    let pendingServiceRequests;
-    try {
-      pendingServiceRequests = await db.getOne(
-        "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received' AND (deleted_at IS NULL)"
-      );
-    } catch {
-      pendingServiceRequests = await db.getOne(
-        "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received'"
-      );
-    }
-
-    let pendingOrders;
-    try {
-      pendingOrders = await db.getOne(
-        "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND (deleted_at IS NULL)"
-      );
-    } catch {
-      pendingOrders = await db.getOne(
-        "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
-      );
-    }
+    const unreadMessages = await safeGetOne(
+      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL"
+    );
+    const pendingRequests = await safeGetOne(
+      "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND deleted_at IS NULL"
+    );
+    const pendingServiceRequests = await safeGetOne(
+      "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received' AND deleted_at IS NULL"
+    );
+    const pendingOrders = await safeGetOne(
+      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL"
+    );
 
     res.json({
       success: true,
       data: {
-        messages: unreadMessages.count || 0,
-        requests: pendingRequests.count || 0,
-        serviceRequests: pendingServiceRequests.count || 0,
-        orders: pendingOrders.count || 0,
-        total: (unreadMessages.count || 0) + (pendingRequests.count || 0) + (pendingServiceRequests.count || 0) + (pendingOrders.count || 0)
+        messages: unreadMessages?.count || 0,
+        requests: pendingRequests?.count || 0,
+        serviceRequests: pendingServiceRequests?.count || 0,
+        orders: pendingOrders?.count || 0,
+        total: (unreadMessages?.count || 0) + (pendingRequests?.count || 0) + (pendingServiceRequests?.count || 0) + (pendingOrders?.count || 0)
       }
     });
   } catch (error) {
@@ -403,7 +371,7 @@ router.get("/orders", async (req, res) => {
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const orders = await db.getMany(queryStr, params);
+    const orders = await safeGetMany(queryStr, params);
 
     let countQuery = "SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL";
     const countParams = [];
@@ -419,7 +387,7 @@ router.get("/orders", async (req, res) => {
       countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    const totalResult = await db.getOne(countQuery, countParams);
+    const totalResult = await safeGetOne(countQuery, countParams);
 
     res.json({
       success: true,
@@ -520,7 +488,7 @@ router.post(
 router.put("/orders/:id", [
   body("customer_name").optional().trim(),
   body("product_name").optional().trim(),
-  body("price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
+  body("price").optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage("Price must be a positive number"),
   body("status").optional().isIn(['pending', 'processing', 'guangzhou_warehouse', 'in_transit', 'dhaka_customs', 'dhaka_office', 'delivered', 'cancelled']).withMessage("Invalid status"),
   handleValidationErrors
 ], async (req, res) => {
@@ -547,11 +515,6 @@ router.put("/orders/:id", [
     }
 
     if (status && status !== order.status) {
-      // Allow flexible status changes for admins (quick dropdown)
-      // Only warn about non-standard transitions but don't block them
-      const isValid = isValidTransition(order.status, status);
-      const nextStatus = getNextStatus(order.status);
-
       // Always record history and tracking for any status change
       const historyId = uuidv4();
       await db.run(
@@ -611,7 +574,7 @@ router.put("/orders/:id", [
 
 router.delete("/orders/:id", canDelete, async (req, res) => {
   try {
-    const order = await db.getOne("SELECT * FROM orders WHERE id = ? AND deleted_at IS NULL", [
+    const order = await safeGetOne("SELECT * FROM orders WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -744,7 +707,7 @@ router.get("/tracking/:tracking_number", async (req, res) => {
 
 router.delete("/tracking/:id", canDelete, async (req, res) => {
   try {
-    const tracking = await db.getOne("SELECT * FROM tracking WHERE id = ? AND deleted_at IS NULL", [
+    const tracking = await safeGetOne("SELECT * FROM tracking WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -781,7 +744,7 @@ router.get("/requests", async (req, res) => {
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const requests = await db.getMany(queryStr, params);
+    const requests = await safeGetMany(queryStr, params);
 
     let countQuery = "SELECT COUNT(*) as count FROM product_requests WHERE deleted_at IS NULL";
     const countParams = [];
@@ -791,7 +754,7 @@ router.get("/requests", async (req, res) => {
       countParams.push(status);
     }
 
-    const totalResult = await db.getOne(countQuery, countParams);
+    const totalResult = await safeGetOne(countQuery, countParams);
 
     res.json({
       success: true,
@@ -895,7 +858,7 @@ router.put("/requests/:id", [
 
 router.delete("/requests/:id", canDelete, async (req, res) => {
   try {
-    const request = await db.getOne(
+    const request = await safeGetOne(
       "SELECT * FROM product_requests WHERE id = ? AND deleted_at IS NULL",
       [req.params.id],
     );
@@ -1020,13 +983,13 @@ router.get("/messages", async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    const messages = await db.getMany(
-      "SELECT * FROM messages ORDER BY created_at DESC LIMIT ? OFFSET ?",
+    const messages = await safeGetMany(
+      "SELECT * FROM messages WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT ? OFFSET ?",
       [parseInt(limit), parseInt(offset)],
     );
 
-    const totalResult = await db.getOne(
-      "SELECT COUNT(*) as count FROM messages",
+    const totalResult = await safeGetOne(
+      "SELECT COUNT(*) as count FROM messages WHERE deleted_at IS NULL",
     );
 
     res.json({
@@ -1071,7 +1034,7 @@ router.put("/messages/:id/read", async (req, res) => {
 
 router.delete("/messages/:id", canDelete, async (req, res) => {
   try {
-    const message = await db.getOne("SELECT * FROM messages WHERE id = ? AND deleted_at IS NULL", [
+    const message = await safeGetOne("SELECT * FROM messages WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -1297,7 +1260,7 @@ router.get("/products", async (req, res) => {
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const products = await db.getMany(queryStr, params);
+    const products = await safeGetMany(queryStr, params);
 
     let countQuery = "SELECT COUNT(*) as count FROM products WHERE deleted_at IS NULL";
     const countParams = [];
@@ -1317,7 +1280,7 @@ router.get("/products", async (req, res) => {
       countParams.push(`%${search}%`, `%${search}%`);
     }
 
-    const totalResult = await db.getOne(countQuery, countParams);
+    const totalResult = await safeGetOne(countQuery, countParams);
 
     res.json({
       success: true,
@@ -1480,7 +1443,7 @@ router.put("/products/:id", [
 
 router.delete("/products/:id", canDelete, async (req, res) => {
   try {
-    const product = await db.getOne("SELECT * FROM products WHERE id = ? AND deleted_at IS NULL", [
+    const product = await safeGetOne("SELECT * FROM products WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -1701,7 +1664,7 @@ router.get("/service-requests", async (req, res) => {
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const requests = await db.getMany(queryStr, params);
+    const requests = await safeGetMany(queryStr, params);
 
     let countQuery = "SELECT COUNT(*) as count FROM service_requests WHERE deleted_at IS NULL";
     const countParams = [];
@@ -1721,7 +1684,7 @@ router.get("/service-requests", async (req, res) => {
       countParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    const totalResult = await db.getOne(countQuery, countParams);
+    const totalResult = await safeGetOne(countQuery, countParams);
 
     res.json({
       success: true,
@@ -1837,7 +1800,7 @@ router.put("/service-requests/:id", [
 // Delete service request
 router.delete("/service-requests/:id", canDelete, async (req, res) => {
   try {
-    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ? AND deleted_at IS NULL", [req.params.id]);
+    const request = await safeGetOne("SELECT * FROM service_requests WHERE id = ? AND deleted_at IS NULL", [req.params.id]);
 
     if (!request) {
       return res.status(404).json({ error: "Service request not found" });
@@ -1973,7 +1936,7 @@ router.get("/videos", async (req, res) => {
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const videos = await db.getMany(queryStr, params);
+    const videos = await safeGetMany(queryStr, params);
 
     let countQuery = "SELECT COUNT(*) as count FROM videos WHERE deleted_at IS NULL";
     const countParams = [];
@@ -1988,7 +1951,7 @@ router.get("/videos", async (req, res) => {
       countParams.push(`%${search}%`, `%${search}%`);
     }
 
-    const totalResult = await db.getOne(countQuery, countParams);
+    const totalResult = await safeGetOne(countQuery, countParams);
 
     res.json({
       success: true,
@@ -2124,7 +2087,7 @@ router.put("/videos/:id", [
 
 router.delete("/videos/:id", canDelete, async (req, res) => {
   try {
-    const video = await db.getOne("SELECT * FROM videos WHERE id = ? AND deleted_at IS NULL", [
+    const video = await safeGetOne("SELECT * FROM videos WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 

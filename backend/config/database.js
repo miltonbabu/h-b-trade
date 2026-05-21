@@ -290,6 +290,16 @@ const initPostgresTables = async () => {
       `);
     }
 
+    // Add deleted_at column to all tables for soft delete support
+    const tablesToAddDeletedAt = ['orders', 'product_requests', 'service_requests', 'messages', 'products', 'videos', 'tracking'];
+    for (const table of tablesToAddDeletedAt) {
+      try {
+        await client.query(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE`);
+      } catch (e) {
+        // Column already exists, ignore
+      }
+    }
+
     const adminResult = await client.query(
       "SELECT COUNT(*) FROM users WHERE email = $1",
       ["admin@hbtrade.com"],
@@ -563,6 +573,22 @@ const initSQLite = async () => {
       INSERT INTO settings (id, phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name, bkash, nagad, bank_account, wechat, alipay)
       VALUES ('settings-1', '+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade', '0183522072', '0183522072', 'Bank: The City Bank\nName: MD ARIFUL ISLAM RONY\nAccount Number: 2183964509001\nBranch: Gulshan-02 Avenue\nRouting Number: 225261732\nDhaka, Bangladesh', 'wechat_hbtrade', 'alipay_hbtrade')
     `);
+  }
+
+  // Add deleted_at column to all tables for soft delete support
+  const sqliteTables = ['orders', 'product_requests', 'service_requests', 'messages', 'products', 'videos', 'tracking'];
+  for (const table of sqliteTables) {
+    try {
+      const tableInfo = db.exec(`PRAGMA table_info(${table})`);
+      if (tableInfo.length > 0) {
+        const columns = tableInfo[0].values.map(col => col[1]);
+        if (!columns.includes('deleted_at')) {
+          db.run(`ALTER TABLE ${table} ADD COLUMN deleted_at DATETIME`);
+        }
+      }
+    } catch (e) {
+      // Table doesn't exist or column already exists, ignore
+    }
   }
 
   const adminResult = db.exec(
