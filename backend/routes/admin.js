@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body, param } = require("express-validator");
 const db = require("../config/database");
+const { getDateSQL } = db;
 const { protect, adminOnly, superAdminOnly, canDelete } = require("../middleware/auth");
 const {
   handleValidationErrors,
@@ -97,6 +98,11 @@ router.get("/notifications", async (req, res) => {
       "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending'"
     );
 
+    // Count received service requests
+    const pendingServiceRequests = await db.getOne(
+      "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received'"
+    );
+
     // Count pending orders
     const pendingOrders = await db.getOne(
       "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
@@ -107,8 +113,9 @@ router.get("/notifications", async (req, res) => {
       data: {
         messages: unreadMessages.count || 0,
         requests: pendingRequests.count || 0,
+        serviceRequests: pendingServiceRequests.count || 0,
         orders: pendingOrders.count || 0,
-        total: (unreadMessages.count || 0) + (pendingRequests.count || 0) + (pendingOrders.count || 0)
+        total: (unreadMessages.count || 0) + (pendingRequests.count || 0) + (pendingServiceRequests.count || 0) + (pendingOrders.count || 0)
       }
     });
   } catch (error) {
@@ -138,13 +145,13 @@ router.get("/analytics", async (req, res) => {
     const dateParams = [];
     
     if (period === 'today') {
-      dateFilter = "DATE(created_at) = DATE('now')";
+      dateFilter = `${getDateSQL.date}(created_at) = ${getDateSQL.today}`;
     } else if (period === 'week') {
-      dateFilter = "created_at >= datetime('now', '-7 days')";
+      dateFilter = `created_at >= ${getDateSQL.daysAgo(7)}`;
     } else if (period === 'month') {
-      dateFilter = "created_at >= datetime('now', '-30 days')";
+      dateFilter = `created_at >= ${getDateSQL.daysAgo(30)}`;
     } else if (period === 'year') {
-      dateFilter = "created_at >= datetime('now', '-365 days')";
+      dateFilter = `created_at >= ${getDateSQL.daysAgo(365)}`;
     } else if (startDate && endDate) {
       dateFilter = "created_at BETWEEN ? AND ?";
       dateParams.push(startDate, endDate);
@@ -207,10 +214,10 @@ router.get("/analytics", async (req, res) => {
 
     // Get daily sales for chart (last 30 days)
     const dailySales = await db.getMany(
-      `SELECT DATE(created_at) as date, COUNT(*) as orders, COALESCE(SUM(price), 0) as sales
-       FROM orders 
-       WHERE status != 'cancelled' AND created_at >= datetime('now', '-30 days')
-       GROUP BY DATE(created_at)
+      `SELECT ${getDateSQL.date}(created_at) as date, COUNT(*) as orders, COALESCE(SUM(price), 0) as sales
+       FROM orders
+       WHERE status != 'cancelled' AND created_at >= ${getDateSQL.daysAgo(30)}
+       GROUP BY ${getDateSQL.date}(created_at)
        ORDER BY date DESC`,
       []
     );
@@ -273,6 +280,9 @@ router.get("/dashboard", async (req, res) => {
     const requestsCount = await db.getOne(
       "SELECT COUNT(*) as count FROM product_requests",
     );
+    const serviceRequestsCount = await db.getOne(
+      "SELECT COUNT(*) as count FROM service_requests",
+    );
     const messagesCount = await db.getOne(
       "SELECT COUNT(*) as count FROM messages",
     );
@@ -285,28 +295,35 @@ router.get("/dashboard", async (req, res) => {
     );
 
     const recentOrders = await db.getMany(
-      `SELECT id, order_number, customer_name, product_name, status, created_at 
-       FROM orders 
-       ORDER BY created_at DESC 
+      `SELECT id, order_number, customer_name, product_name, status, created_at
+       FROM orders
+       ORDER BY created_at DESC
        LIMIT 5`,
     );
 
     const recentRequests = await db.getMany(
-      `SELECT id, name, product_name, status, created_at 
-       FROM product_requests 
-       ORDER BY created_at DESC 
+      `SELECT id, name, product_name, status, created_at
+       FROM product_requests
+       ORDER BY created_at DESC
+       LIMIT 5`,
+    );
+
+    const recentServiceRequests = await db.getMany(
+      `SELECT id, service_type, name, status, tracking_number, created_at
+       FROM service_requests
+       ORDER BY created_at DESC
        LIMIT 5`,
     );
 
     const ordersByStatus = await db.getMany(
-      `SELECT status, COUNT(*) as count 
-       FROM orders 
+      `SELECT status, COUNT(*) as count
+       FROM orders
        GROUP BY status`,
     );
 
     const ordersByShipping = await db.getMany(
-      `SELECT shipping_method, COUNT(*) as count 
-       FROM orders 
+      `SELECT shipping_method, COUNT(*) as count
+       FROM orders
        GROUP BY shipping_method`,
     );
 
@@ -316,12 +333,14 @@ router.get("/dashboard", async (req, res) => {
         stats: {
           totalOrders: ordersCount.count,
           totalRequests: requestsCount.count,
+          totalServiceRequests: serviceRequestsCount.count,
           totalMessages: messagesCount.count,
           unreadMessages: unreadMessages.count,
           pendingOrders: pendingOrders.count,
         },
         recentOrders,
         recentRequests,
+        recentServiceRequests,
         ordersByStatus,
         ordersByShipping,
       },
@@ -434,7 +453,7 @@ router.post(
       } = req.body;
 
       const id = uuidv4();
-      const orderNumber = `HB${Date.now().toString().slice(-8)}`;
+      const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
 
       await db.run(
         `INSERT INTO orders 
@@ -468,7 +487,13 @@ router.post(
   },
 );
 
-router.put("/orders/:id", async (req, res) => {
+router.put("/orders/:id", [
+  body("customer_name").optional().trim(),
+  body("product_name").optional().trim(),
+  body("price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
+  body("status").optional().isIn(['pending', 'processing', 'guangzhou_warehouse', 'in_transit', 'dhaka_customs', 'dhaka_office', 'delivered', 'cancelled']).withMessage("Invalid status"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const {
       customer_name,
@@ -528,7 +553,8 @@ router.put("/orders/:id", async (req, res) => {
            price = COALESCE(?, price),
            net_weight = COALESCE(?, net_weight),
            status = COALESCE(?, status),
-           tracking_number = COALESCE(?, tracking_number)
+           tracking_number = COALESCE(?, tracking_number),
+           updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
         customer_name,
@@ -779,7 +805,11 @@ router.get("/requests/:id", async (req, res) => {
   }
 });
 
-router.put("/requests/:id", async (req, res) => {
+router.put("/requests/:id", [
+  body("status").optional().isIn(['pending', 'processing', 'completed', 'cancelled']).withMessage("Invalid status"),
+  body("tracking_number").optional().trim(),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { status, tracking_number } = req.body;
 
@@ -833,9 +863,8 @@ router.put("/requests/:id", async (req, res) => {
       data: updatedRequest,
     });
   } catch (error) {
-    console.error("Update request error details:", error);
-    logger.error("Update request error:", error.message, error.stack);
-    res.status(500).json({ error: "Failed to update request", details: error.message });
+    logger.error("Update request error:", error);
+    res.status(500).json({ error: "Failed to update request" });
   }
 });
 
@@ -880,8 +909,8 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     }
 
     // Generate order number and tracking number
-    const orderNumber = `HB${Date.now().toString().slice(-8)}`;
-    const trackingNumber = request.tracking_number || `TRK${Date.now().toString().slice(-10)}`;
+    const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
+    const trackingNumber = request.tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
     const orderId = uuidv4();
 
     // Create customer info JSON
@@ -1039,7 +1068,11 @@ router.get("/settings", async (req, res) => {
   }
 });
 
-router.put("/settings", async (req, res) => {
+router.put("/settings", [
+  body("email").optional().isEmail().withMessage("Valid email is required"),
+  body("company_name").optional().trim(),
+  handleValidationErrors
+], async (req, res) => {
   try {
     let {
       phone,
@@ -1343,7 +1376,13 @@ router.post(
   },
 );
 
-router.put("/products/:id", async (req, res) => {
+router.put("/products/:id", [
+  body("name").optional().trim().notEmpty().withMessage("Product name cannot be empty"),
+  body("price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
+  body("moq").optional().isInt({ min: 1 }).withMessage("MOQ must be a positive integer"),
+  body("status").optional().isIn(['active', 'inactive']).withMessage("Invalid status"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { name, category, price, moq, image, image2, image3, description, status } = req.body;
 
@@ -1439,15 +1478,16 @@ router.get("/admins", superAdminOnly, async (req, res) => {
 });
 
 // Create new admin
-router.post("/admins", superAdminOnly, async (req, res) => {
+router.post("/admins", superAdminOnly, [
+  body("name").trim().notEmpty().withMessage("Name is required"),
+  body("email").isEmail().withMessage("Valid email is required"),
+  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  body("role").optional().isIn(['admin', 'super_admin']).withMessage("Invalid role"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { name, email, password, role = 'admin' } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "Name, email, and password are required" });
-    }
-
-    // Check if email already exists
     const existingUser = await db.getOne(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -1455,11 +1495,6 @@ router.post("/admins", superAdminOnly, async (req, res) => {
 
     if (existingUser) {
       return res.status(400).json({ error: "Email already exists" });
-    }
-
-    // Validate role
-    if (role !== 'admin' && role !== 'super_admin') {
-      return res.status(400).json({ error: "Invalid role. Must be 'admin' or 'super_admin'" });
     }
 
     const bcrypt = require("bcryptjs");
@@ -1485,7 +1520,12 @@ router.post("/admins", superAdminOnly, async (req, res) => {
 });
 
 // Update admin
-router.put("/admins/:id", superAdminOnly, async (req, res) => {
+router.put("/admins/:id", superAdminOnly, [
+  body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
+  body("email").optional().isEmail().withMessage("Valid email is required"),
+  body("role").optional().isIn(['admin', 'super_admin']).withMessage("Invalid role"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { name, email, role } = req.body;
     const adminId = req.params.id;
@@ -1493,11 +1533,6 @@ router.put("/admins/:id", superAdminOnly, async (req, res) => {
     const admin = await db.getOne("SELECT * FROM users WHERE id = ?", [adminId]);
     if (!admin) {
       return res.status(404).json({ error: "Admin not found" });
-    }
-
-    // Validate role if provided
-    if (role && role !== 'admin' && role !== 'super_admin') {
-      return res.status(400).json({ error: "Invalid role" });
     }
 
     await db.run(
@@ -1546,14 +1581,13 @@ router.delete("/admins/:id", superAdminOnly, async (req, res) => {
 });
 
 // Change admin password
-router.put("/admins/:id/password", superAdminOnly, async (req, res) => {
+router.put("/admins/:id/password", superAdminOnly, [
+  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { password } = req.body;
     const adminId = req.params.id;
-
-    if (!password) {
-      return res.status(400).json({ error: "Password is required" });
-    }
 
     const admin = await db.getOne("SELECT * FROM users WHERE id = ?", [adminId]);
     if (!admin) {
@@ -1571,6 +1605,291 @@ router.put("/admins/:id/password", superAdminOnly, async (req, res) => {
   } catch (error) {
     logger.error("Change admin password error:", error);
     res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
+// ============ SERVICE REQUESTS MANAGEMENT ============
+
+const SERVICE_TYPE_LABELS = {
+  'product_sourcing': 'Product Sourcing',
+  'wholesale_supply': 'Wholesale Supply',
+  'air_cargo': 'Air Cargo',
+  'sea_shipping': 'Sea Shipping',
+  'hand_carry': 'Hand Carry',
+  'canton_fair': 'Canton Fair Support',
+};
+
+const SERVICE_STATUS_TRANSITIONS = {
+  'received': ['in_progress', 'cancelled'],
+  'in_progress': ['completed', 'cancelled'],
+  'completed': [],
+  'cancelled': [],
+};
+
+const SERVICE_STATUS_LABELS = {
+  'received': 'Received',
+  'in_progress': 'In Progress',
+  'completed': 'Completed',
+  'cancelled': 'Cancelled',
+};
+
+// List service requests
+router.get("/service-requests", async (req, res) => {
+  try {
+    const { status, service_type, search, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let queryStr = "SELECT * FROM service_requests WHERE 1=1";
+    const params = [];
+
+    if (status && status !== "all") {
+      queryStr += " AND status = ?";
+      params.push(status);
+    }
+
+    if (service_type && service_type !== "all") {
+      queryStr += " AND service_type = ?";
+      params.push(service_type);
+    }
+
+    if (search) {
+      queryStr += " AND (name LIKE ? OR email LIKE ? OR tracking_number LIKE ? OR company LIKE ?)";
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    params.push(parseInt(limit), parseInt(offset));
+
+    const requests = await db.getMany(queryStr, params);
+
+    let countQuery = "SELECT COUNT(*) as count FROM service_requests WHERE 1=1";
+    const countParams = [];
+
+    if (status && status !== "all") {
+      countQuery += " AND status = ?";
+      countParams.push(status);
+    }
+
+    if (service_type && service_type !== "all") {
+      countQuery += " AND service_type = ?";
+      countParams.push(service_type);
+    }
+
+    if (search) {
+      countQuery += " AND (name LIKE ? OR email LIKE ? OR tracking_number LIKE ? OR company LIKE ?)";
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const totalResult = await db.getOne(countQuery, countParams);
+
+    res.json({
+      success: true,
+      data: requests,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalResult.count,
+        pages: Math.ceil(totalResult.count / limit),
+      },
+    });
+  } catch (error) {
+    logger.error("Get service requests error:", error);
+    res.status(500).json({ error: "Failed to get service requests" });
+  }
+});
+
+// Get single service request
+router.get("/service-requests/:id", async (req, res) => {
+  try {
+    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+
+    if (!request) {
+      return res.status(404).json({ error: "Service request not found" });
+    }
+
+    const tracking = await db.getMany(
+      "SELECT * FROM tracking WHERE tracking_number = ? ORDER BY created_at DESC",
+      [request.tracking_number]
+    );
+
+    // Parse details JSON
+    let parsedDetails = null;
+    if (request.details) {
+      try {
+        parsedDetails = JSON.parse(request.details);
+      } catch (e) {
+        parsedDetails = request.details;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: { ...request, parsedDetails, tracking },
+    });
+  } catch (error) {
+    logger.error("Get service request error:", error);
+    res.status(500).json({ error: "Failed to get service request" });
+  }
+});
+
+// Update service request
+router.put("/service-requests/:id", [
+  body("status").optional().isIn(['received', 'in_progress', 'completed', 'cancelled']).withMessage("Invalid status"),
+  body("price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
+  handleValidationErrors
+], async (req, res) => {
+  try {
+    const { status, admin_notes, price } = req.body;
+
+    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+
+    if (!request) {
+      return res.status(404).json({ error: "Service request not found" });
+    }
+
+    // Validate status transition
+    if (status && status !== request.status) {
+      const allowedTransitions = SERVICE_STATUS_TRANSITIONS[request.status] || [];
+      if (!allowedTransitions.includes(status)) {
+        return res.status(400).json({
+          error: `Invalid status transition from "${SERVICE_STATUS_LABELS[request.status]}" to "${SERVICE_STATUS_LABELS[status] || status}". Allowed transitions: ${allowedTransitions.map(s => SERVICE_STATUS_LABELS[s]).join(', ') || 'None'}`,
+          currentStatus: request.status,
+          allowedTransitions,
+        });
+      }
+
+      // Add tracking entry
+      if (request.tracking_number) {
+        await db.run(
+          `INSERT INTO tracking (id, tracking_number, status, location, note)
+           VALUES (?, ?, ?, ?, ?)`,
+          [uuidv4(), request.tracking_number, status, 'System', `Status changed to ${SERVICE_STATUS_LABELS[status] || status}`]
+        );
+      }
+    }
+
+    await db.run(
+      `UPDATE service_requests
+       SET status = COALESCE(?, status),
+           admin_notes = COALESCE(?, admin_notes),
+           price = COALESCE(?, price),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [status || null, admin_notes !== undefined ? admin_notes : null, price !== undefined ? price : null, req.params.id]
+    );
+
+    const updatedRequest = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+
+    logger.info(`Service request updated: ${request.tracking_number} - Status: ${request.status} → ${status || request.status}`);
+
+    res.json({
+      success: true,
+      message: "Service request updated successfully",
+      data: updatedRequest,
+    });
+  } catch (error) {
+    logger.error("Update service request error:", error);
+    res.status(500).json({ error: "Failed to update service request" });
+  }
+});
+
+// Delete service request
+router.delete("/service-requests/:id", canDelete, async (req, res) => {
+  try {
+    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+
+    if (!request) {
+      return res.status(404).json({ error: "Service request not found" });
+    }
+
+    await db.run("DELETE FROM service_requests WHERE id = ?", [req.params.id]);
+
+    logger.info(`Service request deleted: ${request.tracking_number}`);
+
+    res.json({
+      success: true,
+      message: "Service request deleted successfully",
+    });
+  } catch (error) {
+    logger.error("Delete service request error:", error);
+    res.status(500).json({ error: "Failed to delete service request" });
+  }
+});
+
+// Convert service request to order
+router.post("/service-requests/:id/convert-to-order", async (req, res) => {
+  try {
+    const { price, shipping_method, status = "processing" } = req.body;
+
+    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+
+    if (!request) {
+      return res.status(404).json({ error: "Service request not found" });
+    }
+
+    if (request.converted_order_id) {
+      return res.status(400).json({ error: "This service request has already been converted to an order" });
+    }
+
+    const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
+    const trackingNumber = `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
+    const orderId = uuidv4();
+
+    const customerInfo = JSON.stringify({
+      name: request.name,
+      email: request.email,
+      phone: request.phone,
+      whatsapp: request.whatsapp,
+      company: request.company,
+    });
+
+    // Determine product name from details or service type
+    let productName = SERVICE_TYPE_LABELS[request.service_type] || request.service_type;
+    if (request.details) {
+      try {
+        const details = JSON.parse(request.details);
+        if (details.product_name) productName = details.product_name;
+        else if (details.cargo_description) productName = details.cargo_description;
+        else if (details.item_description) productName = details.item_description;
+        else if (details.cargo_type) productName = details.cargo_type;
+      } catch (e) {}
+    }
+
+    const shippingMethodMap = {
+      'air-cargo': 'Air Cargo',
+      'sea-shipping': 'Sea Shipping',
+      'hand-carry': 'Hand Carry',
+      'air': 'Air Cargo',
+      'sea': 'Sea Freight',
+      'hand': 'Hand Carry',
+    };
+    const shippingMethod = shippingMethodMap[shipping_method] || shipping_method || 'Not specified';
+
+    await db.run(
+      `INSERT INTO orders
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status]
+    );
+
+    // Update service request
+    await db.run(
+      `UPDATE service_requests SET converted_order_id = ?, status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [orderId, req.params.id]
+    );
+
+    const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [orderId]);
+
+    logger.info(`Service request ${request.tracking_number} converted to order ${orderNumber}`);
+
+    res.status(201).json({
+      success: true,
+      message: "Service request converted to order successfully",
+      data: order,
+    });
+  } catch (error) {
+    logger.error("Convert service request to order error:", error);
+    res.status(500).json({ error: "Failed to convert service request to order" });
   }
 });
 
@@ -1654,7 +1973,7 @@ router.post(
   "/videos",
   [
     body("title").notEmpty().withMessage("Video title is required"),
-    body("youtube_url").notEmpty().withMessage("YouTube URL is required"),
+    body("youtube_url").notEmpty().withMessage("YouTube URL is required").matches(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/).withMessage("Must be a valid YouTube URL"),
     handleValidationErrors,
   ],
   async (req, res) => {
@@ -1695,7 +2014,12 @@ router.post(
   },
 );
 
-router.put("/videos/:id", async (req, res) => {
+router.put("/videos/:id", [
+  body("title").optional().trim().notEmpty().withMessage("Title cannot be empty"),
+  body("youtube_url").optional().matches(/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/).withMessage("Must be a valid YouTube URL"),
+  body("status").optional().isIn(['active', 'inactive']).withMessage("Invalid status"),
+  handleValidationErrors
+], async (req, res) => {
   try {
     const { title, youtube_url, description, status } = req.body;
 

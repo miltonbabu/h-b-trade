@@ -229,6 +229,27 @@ const initPostgresTables = async () => {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS service_requests (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        service_type VARCHAR(50) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        whatsapp VARCHAR(50),
+        email VARCHAR(255) NOT NULL,
+        company VARCHAR(255),
+        details TEXT,
+        message TEXT,
+        status VARCHAR(50) DEFAULT 'received',
+        tracking_number VARCHAR(50),
+        admin_notes TEXT,
+        price DECIMAL(10, 2),
+        converted_order_id UUID,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         phone VARCHAR(50),
@@ -274,7 +295,8 @@ const initPostgresTables = async () => {
       ["admin@hbtrade.com"],
     );
     if (parseInt(adminResult.rows[0].count) === 0) {
-      const hashedPassword = bcrypt.hashSync("admin123", 10);
+      const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'HbTrade@2024!';
+      const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
       await client.query(
         `
         INSERT INTO users (name, email, password, role)
@@ -282,6 +304,7 @@ const initPostgresTables = async () => {
       `,
         [hashedPassword],
       );
+      console.log(`Default admin created. Email: admin@hbtrade.com - Please change the default password immediately.`);
     }
 
     await client.query(
@@ -289,6 +312,22 @@ const initPostgresTables = async () => {
     );
 
     await client.query("COMMIT");
+
+    try {
+      await client.query("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_orders_tracking_number ON orders(tracking_number)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_product_requests_status ON product_requests(status)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_messages_is_read ON messages(is_read)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_tracking_tracking_number ON tracking(tracking_number)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_service_requests_tracking_number ON service_requests(tracking_number)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_service_requests_status ON service_requests(status)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_products_status ON products(status)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)");
+    } catch (e) {
+      // Indexes already exist, ignore
+    }
+
     console.log("PostgreSQL tables initialized");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -477,6 +516,27 @@ const initSQLite = async () => {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS service_requests (
+      id TEXT PRIMARY KEY,
+      service_type TEXT NOT NULL,
+      name TEXT NOT NULL,
+      phone TEXT,
+      whatsapp TEXT,
+      email TEXT NOT NULL,
+      company TEXT,
+      details TEXT,
+      message TEXT,
+      status TEXT DEFAULT 'received',
+      tracking_number TEXT,
+      admin_notes TEXT,
+      price REAL,
+      converted_order_id TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       phone TEXT,
@@ -509,7 +569,8 @@ const initSQLite = async () => {
     "SELECT COUNT(*) as count FROM users WHERE email = 'admin@hbtrade.com'",
   );
   if (adminResult.length === 0 || adminResult[0].values[0][0] === 0) {
-    const hashedPassword = bcrypt.hashSync("admin123", 10);
+    const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'HbTrade@2024!';
+    const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
     db.run(
       `
       INSERT INTO users (id, name, email, password, role)
@@ -517,9 +578,27 @@ const initSQLite = async () => {
     `,
       [hashedPassword],
     );
+    console.log(`Default admin created. Email: admin@hbtrade.com - Please change the default password immediately.`);
   }
 
   saveDatabase();
+
+  try {
+    db.run("CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_orders_tracking_number ON orders(tracking_number)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_product_requests_status ON product_requests(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_messages_is_read ON messages(is_read)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_tracking_tracking_number ON tracking(tracking_number)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_service_requests_tracking_number ON service_requests(tracking_number)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_service_requests_status ON service_requests(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_products_status ON products(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)");
+    saveDatabase();
+  } catch (e) {
+    // Indexes already exist, ignore
+  }
+
   console.log("SQLite database initialized");
   return true;
 };
@@ -539,6 +618,14 @@ const convertPlaceholders = (sql, params) => {
     return { sql: convertedSql, params };
   }
   return { sql, params };
+};
+
+const getDateSQL = {
+  now: isProduction ? 'NOW()' : "datetime('now')",
+  today: isProduction ? 'CURRENT_DATE' : "DATE('now')",
+  date: isProduction ? 'DATE' : 'DATE',
+  daysAgo: (days) => isProduction ? `NOW() - INTERVAL '${days} days'` : `datetime('now', '-${days} days')`,
+  isProduction: () => isProduction
 };
 
 const query = async (sql, params = []) => {
@@ -561,7 +648,6 @@ const query = async (sql, params = []) => {
     }
     stmt.free();
 
-    saveDatabase();
     return { rows, rowCount: rows.length };
   } catch (error) {
     console.error("Query error:", error);
@@ -644,4 +730,5 @@ module.exports = {
   getOne,
   getMany,
   run,
+  getDateSQL,
 };
