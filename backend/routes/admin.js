@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body, param } = require("express-validator");
 const db = require("../config/database");
-const { getDateSQL } = db;
+const { getDateSQL, safeGetMany, safeGetOne } = db;
 const { protect, adminOnly, superAdminOnly, canDelete } = require("../middleware/auth");
 const {
   handleValidationErrors,
@@ -88,25 +88,50 @@ router.get("/order-statuses", (req, res) => {
 
 router.get("/notifications", async (req, res) => {
   try {
-    // Count unread messages
-    const unreadMessages = await db.getOne(
-      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL"
-    );
+    // Count unread messages - handle missing deleted_at column gracefully
+    let unreadMessages;
+    try {
+      unreadMessages = await db.getOne(
+        "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND (deleted_at IS NULL)"
+      );
+    } catch {
+      unreadMessages = await db.getOne(
+        "SELECT COUNT(*) as count FROM messages WHERE is_read = 0"
+      );
+    }
 
-    // Count pending product requests (not converted to order yet)
-    const pendingRequests = await db.getOne(
-      "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND deleted_at IS NULL"
-    );
+    let pendingRequests;
+    try {
+      pendingRequests = await db.getOne(
+        "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND (deleted_at IS NULL)"
+      );
+    } catch {
+      pendingRequests = await db.getOne(
+        "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending'"
+      );
+    }
 
-    // Count received service requests
-    const pendingServiceRequests = await db.getOne(
-      "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received' AND deleted_at IS NULL"
-    );
+    let pendingServiceRequests;
+    try {
+      pendingServiceRequests = await db.getOne(
+        "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received' AND (deleted_at IS NULL)"
+      );
+    } catch {
+      pendingServiceRequests = await db.getOne(
+        "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received'"
+      );
+    }
 
-    // Count pending orders
-    const pendingOrders = await db.getOne(
-      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL"
-    );
+    let pendingOrders;
+    try {
+      pendingOrders = await db.getOne(
+        "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND (deleted_at IS NULL)"
+      );
+    } catch {
+      pendingOrders = await db.getOne(
+        "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
+      );
+    }
 
     res.json({
       success: true,
@@ -276,25 +301,25 @@ router.get("/analytics", async (req, res) => {
 
 router.get("/dashboard", async (req, res) => {
   try {
-    const ordersCount = await db.getOne("SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL");
-    const requestsCount = await db.getOne(
+    const ordersCount = await safeGetOne("SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL");
+    const requestsCount = await safeGetOne(
       "SELECT COUNT(*) as count FROM product_requests WHERE deleted_at IS NULL",
     );
-    const serviceRequestsCount = await db.getOne(
+    const serviceRequestsCount = await safeGetOne(
       "SELECT COUNT(*) as count FROM service_requests WHERE deleted_at IS NULL",
     );
-    const messagesCount = await db.getOne(
+    const messagesCount = await safeGetOne(
       "SELECT COUNT(*) as count FROM messages WHERE deleted_at IS NULL",
     );
-    const unreadMessages = await db.getOne(
+    const unreadMessages = await safeGetOne(
       "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL",
     );
 
-    const pendingOrders = await db.getOne(
+    const pendingOrders = await safeGetOne(
       "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL",
     );
 
-    const recentOrders = await db.getMany(
+    const recentOrders = await safeGetMany(
       `SELECT id, order_number, customer_name, product_name, status, created_at
        FROM orders
        WHERE deleted_at IS NULL
@@ -302,7 +327,7 @@ router.get("/dashboard", async (req, res) => {
        LIMIT 5`,
     );
 
-    const recentRequests = await db.getMany(
+    const recentRequests = await safeGetMany(
       `SELECT id, name, product_name, status, created_at
        FROM product_requests
        WHERE deleted_at IS NULL
@@ -310,7 +335,7 @@ router.get("/dashboard", async (req, res) => {
        LIMIT 5`,
     );
 
-    const recentServiceRequests = await db.getMany(
+    const recentServiceRequests = await safeGetMany(
       `SELECT id, service_type, name, status, tracking_number, created_at
        FROM service_requests
        WHERE deleted_at IS NULL
@@ -318,14 +343,14 @@ router.get("/dashboard", async (req, res) => {
        LIMIT 5`,
     );
 
-    const ordersByStatus = await db.getMany(
+    const ordersByStatus = await safeGetMany(
       `SELECT status, COUNT(*) as count
        FROM orders
        WHERE deleted_at IS NULL
        GROUP BY status`,
     );
 
-    const ordersByShipping = await db.getMany(
+    const ordersByShipping = await safeGetMany(
       `SELECT shipping_method, COUNT(*) as count
        FROM orders
        WHERE deleted_at IS NULL
@@ -522,19 +547,12 @@ router.put("/orders/:id", [
     }
 
     if (status && status !== order.status) {
-      if (!isValidTransition(order.status, status)) {
-        const nextStatus = getNextStatus(order.status);
-        return res.status(400).json({ 
-          error: `Invalid status transition from "${order.status}" to "${status}". ${
-            nextStatus 
-              ? `Next valid status is "${nextStatus.label}".` 
-              : 'No further transitions allowed from current status.'
-          }`,
-          currentStatus: order.status,
-          allowedTransitions: STATUS_TRANSITIONS[order.status] || [],
-        });
-      }
+      // Allow flexible status changes for admins (quick dropdown)
+      // Only warn about non-standard transitions but don't block them
+      const isValid = isValidTransition(order.status, status);
+      const nextStatus = getNextStatus(order.status);
 
+      // Always record history and tracking for any status change
       const historyId = uuidv4();
       await db.run(
         `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by)

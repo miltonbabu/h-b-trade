@@ -729,6 +729,32 @@ const softDelete = async (table, id) => {
   await run(`UPDATE ${table} SET deleted_at = ${timestamp} WHERE id = ?`, [id]);
 };
 
+// Safe query wrapper - falls back to query without soft delete filter if column doesn't exist
+const safeGetMany = async (sql, params) => {
+  try {
+    return await getMany(sql, params);
+  } catch (error) {
+    // If error is about missing 'deleted_at' column, retry without it
+    if (error.message && error.message.includes('deleted_at')) {
+      const fallbackSql = sql.replace(/AND\s*deleted_at\s+IS\s*NULL/gi, '').replace(/WHERE\s*deleted_at\s+IS\s*NULL/gi, 'WHERE 1=1');
+      return await getMany(fallbackSql, params);
+    }
+    throw error;
+  }
+};
+
+const safeGetOne = async (sql, params) => {
+  try {
+    return await getOne(sql, params);
+  } catch (error) {
+    if (error.message && error.message.includes('deleted_at')) {
+      const fallbackSql = sql.replace(/AND\s*deleted_at\s+IS\s*NULL/gi, '').replace(/WHERE\s*deleted_at\s+IS\s*NULL/gi, 'WHERE 1=1');
+      return await getOne(fallbackSql, params);
+    }
+    throw error;
+  }
+};
+
 module.exports = {
   initDatabase,
   query,
@@ -737,4 +763,6 @@ module.exports = {
   run,
   getDateSQL,
   softDelete,
+  safeGetMany,
+  safeGetOne,
 };
