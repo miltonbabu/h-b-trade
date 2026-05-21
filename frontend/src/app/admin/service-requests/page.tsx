@@ -42,6 +42,60 @@ const STATUS_LABELS: Record<string, string> = {
   'cancelled': 'Cancelled',
 };
 
+const DETAIL_LABELS: Record<string, string> = {
+  product_name: 'Product Name',
+  product_link: 'Product Link / Reference',
+  target_price: 'Target Price (USD)',
+  quantity: 'Quantity',
+  packaging_type: 'Packaging Type',
+  pack_quantity: 'Qty per Pack / Inner Unit',
+  master_pack_quantity: 'Qty per Master Pack / Outer Unit',
+  pack_dimensions: 'Master Pack Dimensions (L×W×H cm)',
+  weight_per_pack: 'Weight per Master Pack (kg)',
+  specifications: 'Specifications / Requirements',
+  sample_needed: 'Sample Needed?',
+  product_category: 'Product Category',
+  product_names: 'Specific Products Needed',
+  budget_range: 'Total Budget Range (USD)',
+  cargo_description: 'Cargo Description',
+  total_packs: 'Total Number of Packs',
+  total_weight: 'Total Weight (kg)',
+  volume_weight: 'Volume Weight (kg)',
+  cargo_value: 'Total Cargo Value (USD)',
+  hs_code: 'HS Code',
+  origin_airport: 'Origin Airport',
+  destination_airport: 'Destination Airport',
+  origin_port: 'Origin Port',
+  destination_port: 'Destination Port',
+  preferred_date: 'Preferred Shipping Date',
+  incoterm: 'Incoterm',
+  container_type: 'Container Type',
+  cargo_type: 'Cargo Type',
+  total_volume: 'Total Volume (CBM)',
+  item_description: 'Item Description',
+  number_of_items: 'Number of Items',
+  box_dimensions: 'Package Dimensions (L×W×H cm)',
+  declared_value: 'Declared Value (USD)',
+  urgency: 'Urgency Level',
+  pickup_location: 'Pickup Location',
+  delivery_location: 'Delivery Location',
+  fair_name: 'Fair / Phase',
+  visit_date: 'Planned Visit Date',
+  visit_duration: 'Visit Duration (days)',
+  number_of_attendees: 'Number of Attendees',
+  assistance_type: 'Type of Assistance',
+  language_preference: 'Language Preference',
+  product_interest: 'Products of Interest',
+  target_suppliers: 'Target Suppliers to Meet',
+  hotel_preference: 'Hotel Preference',
+  pickup_needed: 'Airport Pickup Needed?',
+  sender_name: 'Sender Name',
+  sender_phone: 'Sender Phone',
+  sender_address: 'Sender Address / Pickup Location',
+  supplier_tracking_code: 'Supplier Tracking Code',
+  delivery_warehouse: 'Delivery Warehouse',
+};
+
 export default function AdminServiceRequestsPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -389,20 +443,55 @@ export default function AdminServiceRequestsPage() {
                 </div>
               </div>
 
-              {/* Service-specific details */}
-              {(selectedRequest as ServiceRequest & { parsedDetails?: Record<string, string>; tracking?: Array<{ status: string; location?: string; note?: string; created_at: string }> }).parsedDetails && (
-                <div className="border-t pt-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Service Details</h4>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    {Object.entries((selectedRequest as ServiceRequest & { parsedDetails?: Record<string, string> }).parsedDetails!).map(([key, value]) => (
-                      <div key={key} className="flex justify-between text-sm">
-                        <span className="text-gray-500 capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-gray-900 font-medium">{value}</span>
+              {/* Service-specific details - FULL DISPLAY */}
+              {selectedRequest.details && (() => {
+                let parsedDetails: Record<string, string>;
+                try {
+                  parsedDetails = typeof selectedRequest.details === 'string'
+                    ? JSON.parse(selectedRequest.details)
+                    : selectedRequest.details;
+                } catch (e) {
+                  return null;
+                }
+
+                const detailEntries = Object.entries(parsedDetails);
+                if (detailEntries.length === 0) return null;
+
+                return (
+                  <div className="border-t pt-4">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <FileText size={18} className="text-primary" />
+                      Service Request Details ({detailEntries.length} fields)
+                    </h4>
+                    <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 sm:p-5 border border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {detailEntries.map(([key, value]) => (
+                          <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'specifications' || key === 'cargo_description' || key === 'item_description' ? 'md:col-span-2' : ''}`}>
+                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                              {DETAIL_LABELS[key] || key.replace(/_/g, ' ')}
+                            </p>
+                            {(key === 'product_link') ? (
+                              <a
+                                href={value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline break-all flex items-center gap-1"
+                              >
+                                {value.length > 50 ? value.substring(0, 50) + '...' : value}
+                                <ExternalLink size={12} />
+                              </a>
+                            ) : (key === 'specifications' || key === 'cargo_description' || key === 'item_description' || key === 'message') ? (
+                              <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{value}</p>
+                            ) : (
+                              <p className="text-sm font-medium text-gray-900 break-all">{value || '-'}</p>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {selectedRequest.message && (
                 <div>

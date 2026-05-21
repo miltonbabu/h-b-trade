@@ -940,22 +940,35 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     };
     const shippingMethod = shippingMethodMap[request.shipping_method] || request.shipping_method || 'Not specified';
 
+    // Build items_info with all request details for full visibility
+    let itemsInfo = null;
+    const detailsFields = ['product_name', 'product_link', 'target_price', 'quantity',
+      'packaging_type', 'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
+      'weight_per_pack', 'sample_needed', 'shipping_method', 'specifications'];
+    const hasDetails = detailsFields.some(f => request[f]);
+    if (hasDetails) {
+      const items: Record<string, any> = {};
+      detailsFields.forEach(f => { if (request[f]) items[f] = request[f]; });
+      if (Object.keys(items).length > 0) itemsInfo = JSON.stringify(items);
+    }
+
     // Insert into orders table
     await db.run(
       `INSERT INTO orders 
-       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         orderId,
         orderNumber,
         trackingNumber,
         request.name,
         customerInfo,
-        request.product_name,
-        request.quantity,
+        request.product_name || productName,
+        request.quantity || '1',
         shippingMethod,
         price || 0,
-        status
+        status,
+        itemsInfo
       ]
     );
 
@@ -1876,11 +1889,26 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
     };
     const shippingMethod = shippingMethodMap[shipping_method] || shipping_method || 'Not specified';
 
+    // Build items_info with all service request details
+    let itemsInfo = null;
+    if (request.details) {
+      try {
+        const parsedDetails = JSON.parse(request.details);
+        if (Object.keys(parsedDetails).length > 0) {
+          itemsInfo = JSON.stringify({
+            ...parsedDetails,
+            _service_type: request.service_type,
+            _original_request_id: req.params.id,
+          });
+        }
+      } catch (e) {}
+    }
+
     await db.run(
       `INSERT INTO orders
-       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status]
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status, itemsInfo]
     );
 
     // Update service request

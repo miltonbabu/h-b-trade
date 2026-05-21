@@ -9,6 +9,20 @@ import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
 
+const DETAIL_LABELS: Record<string, string> = {
+  product_name: 'Product Name',
+  product_link: 'Product Link / Reference',
+  target_price: 'Target Price (USD)',
+  quantity: 'Quantity',
+  packaging_type: 'Packaging Type',
+  pack_quantity: 'Qty per Pack / Inner Unit',
+  master_pack_quantity: 'Qty per Master Pack / Outer Unit',
+  pack_dimensions: 'Pack Dimensions (L×W×H cm)',
+  weight_per_pack: 'Weight per Master Pack (kg)',
+  sample_needed: 'Sample Needed?',
+  shipping_method: 'Shipping Method',
+};
+
 export default function AdminRequestsPage() {
   const [requests, setRequests] = useState<ProductRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -337,6 +351,65 @@ export default function AdminRequestsPage() {
                     <p className="font-medium bg-gray-50 p-3 rounded">{selectedRequest.message}</p>
                   </div>
                 )}
+
+                {/* Full Product Details Section */}
+                <div className="col-span-2 border-t pt-4 mt-2">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText size={18} className="text-primary" />
+                    Complete Request Details
+                  </h4>
+                  <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 sm:p-5 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {Object.entries(DETAIL_LABELS).map(([key, label]) => {
+                        const value = (selectedRequest as any)[key];
+                        if (!value) return null;
+                        return (
+                          <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'product_link' || key === 'message' ? 'md:col-span-2' : ''}`}>
+                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                            {key === 'product_link' ? (
+                              <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all flex items-center gap-1">
+                                {value.length > 60 ? value.substring(0, 60) + '...' : value}
+                                <ExternalLink size={12} />
+                              </a>
+                            ) : (
+                              <p className="text-sm font-medium text-gray-900 break-all">{value}</p>
+                            )}
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Show any extra fields not in our label map */}
+                      {['specifications', 'details'].map(extraField => {
+                        const value = (selectedRequest as any)[extraField];
+                        if (!value) return null;
+                        let parsedValue;
+                        try { parsedValue = typeof value === 'string' ? JSON.parse(value) : value; } catch { parsedValue = value; }
+                        
+                        if (typeof parsedValue === 'object') {
+                          return (
+                            <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
+                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Details</p>
+                              <div className="grid grid-cols-2 gap-2 mt-1">
+                                {Object.entries(parsedValue).map(([k, v]) => (
+                                  <div key={k} className="bg-gray-50 rounded p-2">
+                                    <span className="text-xs text-gray-500">{DETAIL_LABELS[k] || k.replace(/_/g, ' ')}</span>
+                                    <p className="text-sm font-medium text-gray-900">{v}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
+                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Info</p>
+                            <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{parsedValue}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
                 {selectedRequest.image && (
                   <div className="col-span-2">
                     <p className="text-sm text-gray-600 mb-2">Product Image</p>
