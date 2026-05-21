@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ServiceRequest } from '@/types';
