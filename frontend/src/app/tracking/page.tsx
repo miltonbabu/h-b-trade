@@ -147,6 +147,7 @@ export default function UnifiedTrackingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState<TrackingData | null>(null);
+  const [activeTab, setActiveTab] = useState<'order' | 'service'>('order');
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,35 +163,30 @@ export default function UnifiedTrackingPage() {
     const isOrder = ['TRK', 'HB'].includes(prefix);
 
     try {
-      if (isServicePrefix) {
+      if (activeTab === 'service' || isServicePrefix) {
         const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
         setData({ type: 'service', ...response.data.data });
       } else if (isProductRequest) {
-        // Product requests use the same tracking as orders
         const response = await api.get(`/track/${trackingNumber.trim()}`);
         if (response.data.data) {
           setData({ type: 'product_request', ...response.data.data });
         }
-      } else if (isOrder) {
+      } else if (isOrder || activeTab === 'order') {
         const response = await api.get(`/track/${trackingNumber.trim()}`);
         setData({ type: 'order', ...response.data.data });
       } else {
-        // Unknown prefix - try order tracking first, then service
-        try {
+        // Unknown prefix - try based on active tab
+        if (activeTab === 'order') {
           const response = await api.get(`/track/${trackingNumber.trim()}`);
           setData({ type: 'order', ...response.data.data });
-        } catch {
-          try {
-            const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
-            setData({ type: 'service', ...response.data.data });
-          } catch {
-            setError('No tracking information found for this number.');
-          }
+        } else {
+          const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
+          setData({ type: 'service', ...response.data.data });
         }
       }
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { error?: string } } };
-      setError(apiError?.response?.data?.error || 'No tracking information found for this number.');
+      setError(apiError?.response?.data?.error || `No ${activeTab === 'order' ? 'order' : 'service request'} tracking information found for this number.`);
     } finally {
       setIsLoading(false);
     }
@@ -218,12 +214,41 @@ export default function UnifiedTrackingPage() {
             </p>
 
             <form onSubmit={handleSearch} className="max-w-xl mx-auto relative z-10">
+              {/* Tracking Type Tabs */}
+              <div className="flex gap-2 mb-4 bg-white/10 backdrop-blur-sm rounded-lg p-1">
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('order'); setData(null); setError(''); }}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                    activeTab === 'order'
+                      ? 'bg-white text-primary shadow-lg'
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  📦 Order Tracking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('service'); setData(null); setError(''); }}
+                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                    activeTab === 'service'
+                      ? 'bg-white text-primary shadow-lg'
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  🔧 Service Request
+                </button>
+              </div>
+
               <div className="flex gap-2">
                 <Input
                   type="text"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  placeholder="Enter tracking number (e.g., AC1234567890, TRK1234567890, PR1234567890)"
+                  placeholder={activeTab === 'order' 
+                    ? "Enter tracking number (e.g., TRK1234567890, HB1234567890)" 
+                    : "Enter tracking number (e.g., SR1234567890, AC1234567890)"
+                  }
                   className="bg-white text-gray-900 z-10"
                   autoFocus
                 />
@@ -233,13 +258,25 @@ export default function UnifiedTrackingPage() {
               </div>
             </form>
 
-            {/* Prefix Legend */}
+            {/* Prefix Legend - Show based on active tab */}
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {Object.entries(TRACKING_PREFIX_INFO).slice(0, 8).map(([pfx, info]) => (
-                <span key={pfx} className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
-                  <b>{pfx}</b> = {info.label}
-                </span>
-              ))}
+              {activeTab === 'order' ? (
+                <>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>TRK</b> = Order</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>HB</b> = Order</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>PR</b> = Product Request</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>SR</b> = Service Request</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>PS</b> = Product Sourcing</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>WS</b> = Wholesale Supply</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>AC</b> = Air Cargo</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>SS</b> = Sea Shipping</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>HC</b> = Hand Carry</span>
+                  <span className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20"><b>CF</b> = Canton Fair</span>
+                </>
+              )}
             </div>
 
             {error && <p className="text-red-300 mt-4">{error}</p>}
@@ -494,19 +531,63 @@ export default function UnifiedTrackingPage() {
             <div className="max-w-2xl mx-auto text-center">
               <Card>
                 <CardContent className="p-6 sm:p-8 md:p-12">
-                  <Package className="mx-auto text-gray-400 mb-4" size={64} />
-                  <h3 className="text-xl font-semibold mb-2">Track Your Shipment & Requests</h3>
-                  <p className="text-gray-600 mb-4">
-                    Enter your tracking number above to see status updates.
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                    {Object.entries(TRACKING_PREFIX_INFO).slice(0, 8).map(([pfx, info]) => (
-                      <div key={pfx} className="bg-gray-50 rounded-lg p-2 text-center">
-                        <p className="font-bold text-primary">{pfx}</p>
-                        <p className="text-gray-500">{info.label}</p>
+                  {activeTab === 'order' ? (
+                    <>
+                      <Package className="mx-auto text-gray-400 mb-4" size={64} />
+                      <h3 className="text-xl font-semibold mb-2">Track Your Order</h3>
+                      <p className="text-gray-600 mb-4">
+                        Enter your order tracking number above to see status updates.
+                      </p>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-4">
+                        <div className="bg-gray-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-primary">TRK</p>
+                          <p className="text-gray-500">Order</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-primary">HB</p>
+                          <p className="text-gray-500">Order</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-primary">PR</p>
+                          <p className="text-gray-500">Product Request</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <Wrench className="mx-auto text-gray-400 mb-4" size={64} />
+                      <h3 className="text-xl font-semibold mb-2">Track Your Service Request</h3>
+                      <p className="text-gray-600 mb-4">
+                        Enter your service request tracking number above to check status.
+                      </p>
+                      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs mb-4">
+                        <div className="bg-teal-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-teal-600">SR</p>
+                          <p className="text-gray-500">Service</p>
+                        </div>
+                        <div className="bg-blue-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-blue-600">PS</p>
+                          <p className="text-gray-500">Sourcing</p>
+                        </div>
+                        <div className="bg-purple-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-purple-600">WS</p>
+                          <p className="text-gray-500">Wholesale</p>
+                        </div>
+                        <div className="bg-orange-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-orange-600">AC</p>
+                          <p className="text-gray-500">Air Cargo</p>
+                        </div>
+                        <div className="bg-pink-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-pink-600">HC</p>
+                          <p className="text-gray-500">Hand Carry</p>
+                        </div>
+                        <div className="bg-amber-50 rounded-lg p-2 text-center">
+                          <p className="font-bold text-amber-600">CF</p>
+                          <p className="text-gray-500">Canton Fair</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
