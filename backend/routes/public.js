@@ -435,8 +435,8 @@ router.get('/videos', async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     
-    const videos = await db.getMany(
-      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+    const videos = await db.safeGetMany(
+      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT ? OFFSET ?',
       ['active', parseInt(limit), offset]
     );
     
@@ -461,8 +461,8 @@ router.get('/videos', async (req, res) => {
 // Featured videos endpoint (for homepage)
 router.get('/videos/featured', async (req, res) => {
   try {
-    const videos = await db.getMany(
-      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? ORDER BY created_at DESC LIMIT 6',
+    const videos = await db.safeGetMany(
+      'SELECT id, title, youtube_url, description, created_at FROM videos WHERE status = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 6',
       ['active']
     );
     
