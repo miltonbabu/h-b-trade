@@ -98,6 +98,16 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const handleQuickStatusUpdate = async (orderId: string, newStatus: string) => {
+    try {
+      await api.put(`/admin/orders/${orderId}`, { status: newStatus });
+      fetchOrders();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
+    }
+  };
+
   const openCreateModal = () => {
     resetForm();
     setSelectedOrder(null);
@@ -411,9 +421,21 @@ export default function AdminOrdersPage() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusLabel(order.status)}
-                        </span>
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleQuickStatusUpdate(order.id, e.target.value)}
+                          className={`px-2 py-1 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${getStatusColor(order.status)}`}
+                          title="Click to change status"
+                        >
+                          <option value="pending" className="bg-yellow-50">⏳ Pending</option>
+                          <option value="processing" className="bg-blue-50">🔄 Processing</option>
+                          <option value="guangzhou_warehouse" className="bg-purple-50">📦 Guangzhou Warehouse</option>
+                          <option value="in_transit" className="bg-cyan-50">✈️ In Transit</option>
+                          <option value="dhaka_customs" className="bg-orange-50">🛃 Dhaka Customs</option>
+                          <option value="dhaka_office" className="bg-teal-50">🏢 Dhaka Office</option>
+                          <option value="delivered" className="bg-green-50">✅ Delivered</option>
+                          <option value="cancelled" className="bg-red-50">❌ Cancelled</option>
+                        </select>
                       </td>
                       <td className="px-6 py-4 text-sm">{order.tracking_number || '-'}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.created_at)}</td>
