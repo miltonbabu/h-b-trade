@@ -90,22 +90,22 @@ router.get("/notifications", async (req, res) => {
   try {
     // Count unread messages
     const unreadMessages = await db.getOne(
-      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0"
+      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL"
     );
 
     // Count pending product requests (not converted to order yet)
     const pendingRequests = await db.getOne(
-      "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending'"
+      "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND deleted_at IS NULL"
     );
 
     // Count received service requests
     const pendingServiceRequests = await db.getOne(
-      "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received'"
+      "SELECT COUNT(*) as count FROM service_requests WHERE status = 'received' AND deleted_at IS NULL"
     );
 
     // Count pending orders
     const pendingOrders = await db.getOne(
-      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
+      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL"
     );
 
     res.json({
@@ -276,27 +276,28 @@ router.get("/analytics", async (req, res) => {
 
 router.get("/dashboard", async (req, res) => {
   try {
-    const ordersCount = await db.getOne("SELECT COUNT(*) as count FROM orders");
+    const ordersCount = await db.getOne("SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL");
     const requestsCount = await db.getOne(
-      "SELECT COUNT(*) as count FROM product_requests",
+      "SELECT COUNT(*) as count FROM product_requests WHERE deleted_at IS NULL",
     );
     const serviceRequestsCount = await db.getOne(
-      "SELECT COUNT(*) as count FROM service_requests",
+      "SELECT COUNT(*) as count FROM service_requests WHERE deleted_at IS NULL",
     );
     const messagesCount = await db.getOne(
-      "SELECT COUNT(*) as count FROM messages",
+      "SELECT COUNT(*) as count FROM messages WHERE deleted_at IS NULL",
     );
     const unreadMessages = await db.getOne(
-      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0",
+      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL",
     );
 
     const pendingOrders = await db.getOne(
-      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'",
+      "SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL",
     );
 
     const recentOrders = await db.getMany(
       `SELECT id, order_number, customer_name, product_name, status, created_at
        FROM orders
+       WHERE deleted_at IS NULL
        ORDER BY created_at DESC
        LIMIT 5`,
     );
@@ -304,6 +305,7 @@ router.get("/dashboard", async (req, res) => {
     const recentRequests = await db.getMany(
       `SELECT id, name, product_name, status, created_at
        FROM product_requests
+       WHERE deleted_at IS NULL
        ORDER BY created_at DESC
        LIMIT 5`,
     );
@@ -311,6 +313,7 @@ router.get("/dashboard", async (req, res) => {
     const recentServiceRequests = await db.getMany(
       `SELECT id, service_type, name, status, tracking_number, created_at
        FROM service_requests
+       WHERE deleted_at IS NULL
        ORDER BY created_at DESC
        LIMIT 5`,
     );
@@ -318,12 +321,14 @@ router.get("/dashboard", async (req, res) => {
     const ordersByStatus = await db.getMany(
       `SELECT status, COUNT(*) as count
        FROM orders
+       WHERE deleted_at IS NULL
        GROUP BY status`,
     );
 
     const ordersByShipping = await db.getMany(
       `SELECT shipping_method, COUNT(*) as count
        FROM orders
+       WHERE deleted_at IS NULL
        GROUP BY shipping_method`,
     );
 
@@ -356,7 +361,7 @@ router.get("/orders", async (req, res) => {
     const { status, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let queryStr = "SELECT * FROM orders WHERE 1=1";
+    let queryStr = "SELECT * FROM orders WHERE deleted_at IS NULL";
     const params = [];
 
     if (status && status !== "all") {
@@ -375,7 +380,7 @@ router.get("/orders", async (req, res) => {
 
     const orders = await db.getMany(queryStr, params);
 
-    let countQuery = "SELECT COUNT(*) as count FROM orders WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL";
     const countParams = [];
 
     if (status && status !== "all") {
@@ -588,7 +593,7 @@ router.put("/orders/:id", [
 
 router.delete("/orders/:id", canDelete, async (req, res) => {
   try {
-    const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [
+    const order = await db.getOne("SELECT * FROM orders WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -596,13 +601,14 @@ router.delete("/orders/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    await db.run("DELETE FROM orders WHERE id = ?", [req.params.id]);
+    await db.softDelete('orders', req.params.id);
 
-    logger.info(`Order deleted: ${order.order_number}`);
+    logger.info(`Order soft-deleted: ${order.order_number}`);
 
     res.json({
       success: true,
-      message: "Order deleted successfully",
+      message: "Order moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete order error:", error);
@@ -720,7 +726,7 @@ router.get("/tracking/:tracking_number", async (req, res) => {
 
 router.delete("/tracking/:id", canDelete, async (req, res) => {
   try {
-    const tracking = await db.getOne("SELECT * FROM tracking WHERE id = ?", [
+    const tracking = await db.getOne("SELECT * FROM tracking WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -728,11 +734,12 @@ router.delete("/tracking/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Tracking entry not found" });
     }
 
-    await db.run("DELETE FROM tracking WHERE id = ?", [req.params.id]);
+    await db.softDelete('tracking', req.params.id);
 
     res.json({
       success: true,
-      message: "Tracking entry deleted",
+      message: "Tracking entry moved to trash",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete tracking error:", error);
@@ -745,7 +752,7 @@ router.get("/requests", async (req, res) => {
     const { status, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let queryStr = "SELECT * FROM product_requests WHERE 1=1";
+    let queryStr = "SELECT * FROM product_requests WHERE deleted_at IS NULL";
     const params = [];
 
     if (status && status !== "all") {
@@ -758,7 +765,7 @@ router.get("/requests", async (req, res) => {
 
     const requests = await db.getMany(queryStr, params);
 
-    let countQuery = "SELECT COUNT(*) as count FROM product_requests WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as count FROM product_requests WHERE deleted_at IS NULL";
     const countParams = [];
 
     if (status && status !== "all") {
@@ -871,7 +878,7 @@ router.put("/requests/:id", [
 router.delete("/requests/:id", canDelete, async (req, res) => {
   try {
     const request = await db.getOne(
-      "SELECT * FROM product_requests WHERE id = ?",
+      "SELECT * FROM product_requests WHERE id = ? AND deleted_at IS NULL",
       [req.params.id],
     );
 
@@ -879,13 +886,14 @@ router.delete("/requests/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    await db.run("DELETE FROM product_requests WHERE id = ?", [req.params.id]);
+    await db.softDelete('product_requests', req.params.id);
 
-    logger.info(`Request deleted: ${request.id}`);
+    logger.info(`Request soft-deleted: ${request.id}`);
 
     res.json({
       success: true,
-      message: "Request deleted successfully",
+      message: "Request moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete request error:", error);
@@ -1032,7 +1040,7 @@ router.put("/messages/:id/read", async (req, res) => {
 
 router.delete("/messages/:id", canDelete, async (req, res) => {
   try {
-    const message = await db.getOne("SELECT * FROM messages WHERE id = ?", [
+    const message = await db.getOne("SELECT * FROM messages WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -1040,13 +1048,14 @@ router.delete("/messages/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    await db.run("DELETE FROM messages WHERE id = ?", [req.params.id]);
+    await db.softDelete('messages', req.params.id);
 
-    logger.info(`Message deleted: ${message.id}`);
+    logger.info(`Message soft-deleted: ${message.id}`);
 
     res.json({
       success: true,
-      message: "Message deleted successfully",
+      message: "Message moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete message error:", error);
@@ -1236,7 +1245,7 @@ router.get("/products", async (req, res) => {
     const { status, category, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let queryStr = "SELECT * FROM products WHERE 1=1";
+    let queryStr = "SELECT * FROM products WHERE deleted_at IS NULL";
     const params = [];
 
     if (status && status !== "all") {
@@ -1259,7 +1268,7 @@ router.get("/products", async (req, res) => {
 
     const products = await db.getMany(queryStr, params);
 
-    let countQuery = "SELECT COUNT(*) as count FROM products WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as count FROM products WHERE deleted_at IS NULL";
     const countParams = [];
 
     if (status && status !== "all") {
@@ -1440,7 +1449,7 @@ router.put("/products/:id", [
 
 router.delete("/products/:id", canDelete, async (req, res) => {
   try {
-    const product = await db.getOne("SELECT * FROM products WHERE id = ?", [
+    const product = await db.getOne("SELECT * FROM products WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -1448,13 +1457,14 @@ router.delete("/products/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-    await db.run("DELETE FROM products WHERE id = ?", [req.params.id]);
+    await db.softDelete('products', req.params.id);
 
-    logger.info(`Product deleted: ${product.name}`);
+    logger.info(`Product soft-deleted: ${product.name}`);
 
     res.json({
       success: true,
-      message: "Product deleted successfully",
+      message: "Product moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete product error:", error);
@@ -1639,7 +1649,7 @@ router.get("/service-requests", async (req, res) => {
     const { status, service_type, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let queryStr = "SELECT * FROM service_requests WHERE 1=1";
+    let queryStr = "SELECT * FROM service_requests WHERE deleted_at IS NULL";
     const params = [];
 
     if (status && status !== "all") {
@@ -1662,7 +1672,7 @@ router.get("/service-requests", async (req, res) => {
 
     const requests = await db.getMany(queryStr, params);
 
-    let countQuery = "SELECT COUNT(*) as count FROM service_requests WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as count FROM service_requests WHERE deleted_at IS NULL";
     const countParams = [];
 
     if (status && status !== "all") {
@@ -1796,19 +1806,20 @@ router.put("/service-requests/:id", [
 // Delete service request
 router.delete("/service-requests/:id", canDelete, async (req, res) => {
   try {
-    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+    const request = await db.getOne("SELECT * FROM service_requests WHERE id = ? AND deleted_at IS NULL", [req.params.id]);
 
     if (!request) {
       return res.status(404).json({ error: "Service request not found" });
     }
 
-    await db.run("DELETE FROM service_requests WHERE id = ?", [req.params.id]);
+    await db.softDelete('service_requests', req.params.id);
 
-    logger.info(`Service request deleted: ${request.tracking_number}`);
+    logger.info(`Service request soft-deleted: ${request.tracking_number}`);
 
     res.json({
       success: true,
-      message: "Service request deleted successfully",
+      message: "Service request moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete service request error:", error);
@@ -1900,7 +1911,7 @@ router.get("/videos", async (req, res) => {
     const { status, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    let queryStr = "SELECT * FROM videos WHERE 1=1";
+    let queryStr = "SELECT * FROM videos WHERE deleted_at IS NULL";
     const params = [];
 
     if (status && status !== "all") {
@@ -1918,7 +1929,7 @@ router.get("/videos", async (req, res) => {
 
     const videos = await db.getMany(queryStr, params);
 
-    let countQuery = "SELECT COUNT(*) as count FROM videos WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as count FROM videos WHERE deleted_at IS NULL";
     const countParams = [];
 
     if (status && status !== "all") {
@@ -2067,7 +2078,7 @@ router.put("/videos/:id", [
 
 router.delete("/videos/:id", canDelete, async (req, res) => {
   try {
-    const video = await db.getOne("SELECT * FROM videos WHERE id = ?", [
+    const video = await db.getOne("SELECT * FROM videos WHERE id = ? AND deleted_at IS NULL", [
       req.params.id,
     ]);
 
@@ -2075,13 +2086,14 @@ router.delete("/videos/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Video not found" });
     }
 
-    await db.run("DELETE FROM videos WHERE id = ?", [req.params.id]);
+    await db.softDelete('videos', req.params.id);
 
-    logger.info(`Video deleted: ${video.title}`);
+    logger.info(`Video soft-deleted: ${video.title}`);
 
     res.json({
       success: true,
-      message: "Video deleted successfully",
+      message: "Video moved to trash successfully",
+      softDeleted: true,
     });
   } catch (error) {
     logger.error("Delete video error:", error);

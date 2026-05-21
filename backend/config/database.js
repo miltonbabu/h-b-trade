@@ -724,6 +724,11 @@ const run = async (sql, params = []) => {
   }
 };
 
+const softDelete = async (table, id) => {
+  const timestamp = isProduction ? 'NOW()' : "datetime('now')";
+  await run(`UPDATE ${table} SET deleted_at = ${timestamp} WHERE id = ?`, [id]);
+};
+
 module.exports = {
   initDatabase,
   query,
@@ -731,4 +736,5 @@ module.exports = {
   getMany,
   run,
   getDateSQL,
+  softDelete,
 };
