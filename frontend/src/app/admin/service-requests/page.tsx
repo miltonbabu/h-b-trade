@@ -465,28 +465,31 @@ export default function AdminServiceRequestsPage() {
                     </h4>
                     <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 sm:p-5 border border-gray-200">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {detailEntries.map(([key, value]) => (
+                        {detailEntries.map(([key, value]) => {
+                          const strValue = String(value ?? '');
+                          return (
                           <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'specifications' || key === 'cargo_description' || key === 'item_description' ? 'md:col-span-2' : ''}`}>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                               {DETAIL_LABELS[key] || key.replace(/_/g, ' ')}
                             </p>
                             {(key === 'product_link') ? (
                               <a
-                                href={value}
+                                href={strValue}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary hover:underline break-all flex items-center gap-1"
                               >
-                                {value.length > 50 ? value.substring(0, 50) + '...' : value}
+                                {strValue.length > 50 ? strValue.substring(0, 50) + '...' : strValue}
                                 <ExternalLink size={12} />
                               </a>
                             ) : (key === 'specifications' || key === 'cargo_description' || key === 'item_description' || key === 'message') ? (
-                              <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{value}</p>
+                              <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{strValue}</p>
                             ) : (
-                              <p className="text-sm font-medium text-gray-900 break-all">{value || '-'}</p>
+                              <p className="text-sm font-medium text-gray-900 break-all">{strValue || '-'}</p>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

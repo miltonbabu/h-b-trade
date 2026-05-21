@@ -361,18 +361,19 @@ export default function AdminRequestsPage() {
                   <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 sm:p-5 border border-gray-200">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {Object.entries(DETAIL_LABELS).map(([key, label]) => {
-                        const value = (selectedRequest as any)[key];
-                        if (!value) return null;
+                        const rawValue = (selectedRequest as any)[key];
+                        if (!rawValue) return null;
+                        const strValue = String(rawValue);
                         return (
                           <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'product_link' || key === 'message' ? 'md:col-span-2' : ''}`}>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
                             {key === 'product_link' ? (
-                              <a href={value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all flex items-center gap-1">
-                                {value.length > 60 ? value.substring(0, 60) + '...' : value}
+                              <a href={strValue} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all flex items-center gap-1">
+                                {strValue.length > 60 ? strValue.substring(0, 60) + '...' : strValue}
                                 <ExternalLink size={12} />
                               </a>
                             ) : (
-                              <p className="text-sm font-medium text-gray-900 break-all">{value}</p>
+                              <p className="text-sm font-medium text-gray-900 break-all">{strValue}</p>
                             )}
                           </div>
                         );
