@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body } = require('express-validator');
 const db = require('../config/database');
-const { handleValidationErrors } = require('../middleware/validation');
+const { handleValidationErrors, xssProtection } = require('../middleware/validation');
 const logger = require('../config/logger');
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -14,6 +14,8 @@ if (!JWT_SECRET) {
   logger.error('FATAL ERROR: JWT_SECRET is not defined in environment variables');
   process.exit(1);
 }
+
+router.use(xssProtection);
 
 const loginValidation = [
   body('email').isEmail().withMessage('Please provide a valid email'),

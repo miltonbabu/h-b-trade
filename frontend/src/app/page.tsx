@@ -18,6 +18,7 @@ import {
   Sparkles,
   Zap,
   Play,
+  Search,
 } from "lucide-react";
 import api from "@/lib/api";
 import { Video } from "@/types";
@@ -55,6 +56,57 @@ export default function HomePage() {
     
     return youtubeUrl;
   };
+
+  const heroServices = [
+    {
+      icon: ShoppingCart,
+      title: "Product Sourcing",
+      slug: "product-sourcing",
+      description: "Source from China's factories",
+      color: "from-blue-500 to-blue-600",
+      iconBg: "bg-blue-500",
+    },
+    {
+      icon: Package,
+      title: "Wholesale Supply",
+      slug: "wholesale-supply",
+      description: "Bulk products at best prices",
+      color: "from-purple-500 to-purple-600",
+      iconBg: "bg-purple-500",
+    },
+    {
+      icon: Plane,
+      title: "Air Cargo",
+      slug: "air-cargo",
+      description: "3-7 days fast delivery",
+      color: "from-teal-500 to-teal-600",
+      iconBg: "bg-teal-500",
+    },
+    {
+      icon: Ship,
+      title: "Sea Shipping",
+      slug: "sea-shipping",
+      description: "15-30 days cost-effective",
+      color: "from-orange-500 to-orange-600",
+      iconBg: "bg-orange-500",
+    },
+    {
+      icon: Users,
+      title: "Hand Carry",
+      slug: "hand-carry",
+      description: "1-3 days urgent delivery",
+      color: "from-pink-500 to-pink-600",
+      iconBg: "bg-pink-500",
+    },
+    {
+      icon: Globe,
+      title: "Canton Fair",
+      slug: "canton-fair",
+      description: "Full fair assistance",
+      color: "from-amber-500 to-amber-600",
+      iconBg: "bg-amber-500",
+    },
+  ];
 
   const services = [
     {
@@ -143,117 +195,109 @@ export default function HomePage() {
             <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl"></div>
           </div>
-          
-          <div className="absolute top-1/4 left-10 w-3 h-3 bg-red-400 rounded-full animate-float opacity-60"></div>
-          <div className="absolute top-1/3 right-20 w-4 h-4 bg-green-400 rounded-full animate-float opacity-60" style={{ animationDelay: "0.5s" }}></div>
-          <div className="absolute bottom-1/4 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-float opacity-60" style={{ animationDelay: "1s" }}></div>
-          <div className="absolute top-1/2 right-1/3 w-3 h-3 bg-teal-300 rounded-full animate-float opacity-60" style={{ animationDelay: "1.5s" }}></div>
         </div>
 
-        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-1 md:pt-0">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-6 border border-white/20 animate-bounce-in">
-              <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="text-white" size={14} />
+        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-4 md:pt-0">
+          <div className="max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-4 md:mb-8">
+              <div className="inline-flex items-center gap-2 bg-green-500/20 backdrop-blur-sm rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-4 border border-green-400/30">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                </span>
+                <span className="text-xs md:text-sm font-semibold text-green-300">
+                  International Sourcing & Shipping Live Now
+                </span>
               </div>
-              <span className="text-xs md:text-sm font-semibold text-white/90">
-                Trusted by 500+ Businesses Worldwide
-              </span>
+
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3 leading-tight">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
+                  HELP & BENEFIT TRADE
+                </span>
+                <span className="block mt-1 md:mt-2 text-base md:text-xl lg:text-2xl font-medium text-yellow-200/90">
+                  Your Complete China-Bangladesh Trade Solution
+                </span>
+              </h1>
+
+              <p className="text-xs md:text-sm lg:text-base text-white/80 mb-3 md:mb-6 max-w-2xl mx-auto leading-relaxed">
+                From sourcing to shipping, we handle everything. Choose a service below to get started.
+              </p>
+
+              {/* China-BD Bridge */}
+              <div className="flex justify-center items-center gap-3 md:gap-4 mb-4 md:mb-6">
+                <div className="flex flex-col items-center group">
+                  <div className="w-10 h-10 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
+                    🇨🇳
+                  </div>
+                  <span className="text-[10px] sm:text-xs text-white/70">China</span>
+                </div>
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
+                  <ArrowRight className="text-yellow-400 rotate-180" size={14} />
+                  <ArrowRight className="text-yellow-400" size={14} />
+                  <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
+                </div>
+                <div className="flex flex-col items-center group">
+                  <div className="w-10 h-10 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
+                    🇧🇩
+                  </div>
+                  <span className="text-[10px] sm:text-xs text-white/70">Bangladesh</span>
+                </div>
+              </div>
             </div>
 
-            <div className="inline-flex items-center gap-2 bg-green-500/20 backdrop-blur-sm rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-6 border border-green-400/30">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-              </span>
-              <span className="text-xs md:text-sm font-semibold text-green-300">
-                International Sourcing & Shipping Live Now
-              </span>
+            {/* Service Cards Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 mb-4 md:mb-6">
+              {heroServices.map((service, index) => (
+                <Link key={index} href={`/services/${service.slug}`}>
+                  <div className="group bg-white/10 backdrop-blur-md rounded-lg md:rounded-xl p-2 md:p-3 lg:p-3 border border-white/10 hover:border-white/30 hover:bg-white/20 transition-all duration-300 cursor-pointer text-center hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20 flex flex-col items-center justify-center h-[80px] md:h-[100px] lg:h-[100px] overflow-hidden">
+                    <div className={`w-8 h-8 md:w-10 md:h-10 lg:w-10 lg:h-10 ${service.iconBg} rounded-md md:rounded-lg flex items-center justify-center mx-auto mb-1 md:mb-1.5 group-hover:scale-110 transition-transform duration-300`}>
+                      <service.icon className="text-white" size={16} />
+                    </div>
+                    <h3 className="text-white font-semibold text-[10px] md:text-xs lg:text-xs mb-0 md:mb-0.5 group-hover:text-yellow-300 transition-colors leading-tight whitespace-nowrap">
+                      {service.title}
+                    </h3>
+                    <p className="text-white/60 text-[8px] md:text-[10px] lg:text-[10px] leading-tight hidden md:block">
+                      {service.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
             </div>
 
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-4 leading-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
-                HELP & BENEFIT TRADE
-              </span>
-              <span className="block mt-1 md:mt-2 text-base md:text-xl lg:text-2xl font-medium text-yellow-200/90">
-                China-Bangladesh Trade Bridge
-              </span>
-            </h1>
-
-            <p className="text-xs md:text-sm lg:text-base text-white/80 mb-3 md:mb-6 max-w-lg md:max-w-3xl mx-auto leading-relaxed hidden sm:block">
-              Your trusted partner for <span className="text-white font-semibold">Product Sourcing</span>,{' '}
-              <span className="text-white font-semibold">Wholesale Supply</span>, and{' '}
-              <span className="text-white font-semibold">Fast Shipping</span> from China to Bangladesh
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-4 md:mb-6">
-              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Plane className="text-teal-400" size={14} />
-                <span className="text-xs font-medium">Air: 7-10 Days</span>
-              </div>
-              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Ship className="text-orange-400" size={14} />
-                <span className="text-xs font-medium">Sea: 35-40 Days</span>
-              </div>
-              <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 border border-white/10">
-                <Zap className="text-yellow-400" size={14} />
-                <span className="text-xs font-medium">Hand Carry: 72 Hours</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 md:gap-3 justify-center">
-              <Link href="/product-request">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center">
+              <Link href="/services/product-sourcing">
                 <Button
                   size="sm"
-                  className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300"
+                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300"
                 >
                   <Zap className="mr-1 md:mr-2" size={18} />
-                  <span className="text-xs md:text-sm">Request Product</span>
+                  <span className="text-xs md:text-sm">Request a Service</span>
                   <ArrowRight className="ml-1 md:ml-2" size={18} />
                 </Button>
               </Link>
-              <div className="flex gap-2 md:gap-3 justify-center">
-                <Link href="/tracking">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
-                  >
-                    <Ship className="mr-1 md:mr-2" size={18} />
-                    <span className="text-xs md:text-sm">Track Shipment</span>
-                  </Button>
-                </Link>
-                <Link href="/wholesale-products">
-                  <Button
-                    size="sm"
-                    className="w-full md:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-yellow-500/30 border border-yellow-400/50 transition-all duration-300"
-                  >
-                    <ShoppingCart className="mr-1 md:mr-2" size={18} />
-                    <span className="text-xs md:text-sm">Wholesale</span>
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-4 md:mt-6 flex justify-center items-center gap-3 md:gap-4 sm:gap-6 sm:gap-8">
-              <div className="flex flex-col items-center group">
-                <div className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-1.5 group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
-                  🇨🇳
-                </div>
-                <span className="text-[10px] sm:text-xs text-white/70">China</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-1.5">
-                <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
-                <ArrowRight className="text-yellow-400 rotate-180" size={16} />
-                <ArrowRight className="text-yellow-400" size={16} />
-                <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
-              </div>
-              <div className="flex flex-col items-center group">
-                <div className="w-10 h-10 sm:w-12 md:w-16 sm:h-12 md:h-16 rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-1.5 group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
-                  🇧🇩
-                </div>
-                <span className="text-[10px] sm:text-xs text-white/70">Bangladesh</span>
-              </div>
+              <Link href="/tracking">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
+                >
+                  <Ship className="mr-1 md:mr-2" size={18} />
+                  <span className="text-xs md:text-sm">Track Shipment</span>
+                </Button>
+              </Link>
+              <Link href="/services/track">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-blue-400/60 hover:bg-blue-500/20 hover:border-blue-400 font-semibold transition-all duration-300"
+                >
+                  <Search className="mr-1 md:mr-2" size={18} />
+                  <span className="text-xs md:text-sm">Track Service Request</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

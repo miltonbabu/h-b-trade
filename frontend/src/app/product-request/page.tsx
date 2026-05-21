@@ -14,9 +14,17 @@ interface ProductRequestForm {
   phone: string;
   whatsapp: string;
   email: string;
+  company: string;
   product_name: string;
   product_link: string;
+  target_price: string;
   quantity: string;
+  packaging_type: string;
+  pack_quantity: string;
+  master_pack_quantity: string;
+  pack_dimensions: string;
+  weight_per_pack: string;
+  sample_needed: string;
   shipping_method: string;
   message: string;
 }
@@ -215,10 +223,21 @@ export default function ProductRequestPage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Company Name
+                  </label>
+                  <Input
+                    {...register('company')}
+                    placeholder="Your company name (optional)"
+                    className="rounded-xl"
+                  />
+                </div>
+
                 {/* Product Information */}
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-semibold mb-4 gradient-text">Product Details</h3>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -236,11 +255,11 @@ export default function ProductRequestPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product Link
+                        Product Link / Reference
                       </label>
                       <Input
                         {...register('product_link')}
-                        placeholder="Link to the product (e.g., Alibaba, 1688, etc.)"
+                        placeholder="Link to the product (e.g., Alibaba, 1688, Amazon)"
                         className="rounded-xl"
                       />
                     </div>
@@ -248,13 +267,115 @@ export default function ProductRequestPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Quantity
+                          Target Price per Unit (USD)
                         </label>
                         <Input
-                          {...register('quantity')}
-                          placeholder="e.g., 100 pieces, 50 cartons"
+                          {...register('target_price')}
+                          placeholder="e.g., $2.50 per piece"
                           className="rounded-xl"
                         />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Order Quantity <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          {...register('quantity', { required: 'Quantity is required' })}
+                          placeholder="e.g., 100 pieces, 50 cartons"
+                          className={`rounded-xl ${errors.quantity ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                        />
+                        {errors.quantity && (
+                          <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Packaging Type <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          {...register('packaging_type', { required: 'Packaging type is required' })}
+                          className={`w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary ${errors.packaging_type ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                        >
+                          <option value="">Select packaging type</option>
+                          <option value="carton">Carton / Box</option>
+                          <option value="bag">Bag / Sack</option>
+                          <option value="pallet">Pallet</option>
+                          <option value="roll">Roll</option>
+                          <option value="bundle">Bundle</option>
+                          <option value="crate">Wooden Crate</option>
+                          <option value="drum">Drum / Barrel</option>
+                          <option value="case">Case</option>
+                          <option value="other">Other (specify in message)</option>
+                        </select>
+                        {errors.packaging_type && (
+                          <p className="text-red-500 text-sm mt-1">{errors.packaging_type.message}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantity per Pack / Inner Unit
+                        </label>
+                        <Input
+                          {...register('pack_quantity')}
+                          placeholder="e.g., 20 pieces per inner pack"
+                          className="rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantity per Master Pack / Outer Unit
+                        </label>
+                        <Input
+                          {...register('master_pack_quantity')}
+                          placeholder="e.g., 10 inner packs per master pack"
+                          className="rounded-xl"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Master Pack Dimensions (L x W x H cm)
+                        </label>
+                        <Input
+                          {...register('pack_dimensions')}
+                          placeholder="e.g., 60 x 40 x 35 cm"
+                          className="rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Weight per Master Pack (kg)
+                      </label>
+                      <Input
+                        {...register('weight_per_pack')}
+                        placeholder="e.g., 12 kg"
+                        className="rounded-xl"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sample Needed?
+                        </label>
+                        <select
+                          {...register('sample_needed')}
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        >
+                          <option value="">Select</option>
+                          <option value="yes">Yes - Send sample first</option>
+                          <option value="no">No - Direct production</option>
+                        </select>
                       </div>
 
                       <div>
@@ -275,11 +396,11 @@ export default function ProductRequestPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Message
+                        Product Specifications & Requirements
                       </label>
                       <Textarea
                         {...register('message')}
-                        placeholder="Tell us more about your requirements (size, color, material, specifications, etc.)"
+                        placeholder="Tell us more about your requirements (size, color, material, packaging, logo/labeling, certifications needed like CE, FDA, etc.)"
                         rows={4}
                         className="rounded-xl"
                       />

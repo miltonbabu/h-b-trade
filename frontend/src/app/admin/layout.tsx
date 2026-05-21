@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  LayoutDashboard, 
-  Package, 
-  Truck, 
-  FileText, 
-  MessageSquare, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  Truck,
+  FileText,
+  MessageSquare,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -17,13 +17,15 @@ import {
   Box,
   BarChart3,
   Users,
-  Video
+  Video,
+  Wrench
 } from 'lucide-react';
 import api from '@/lib/api';
 
 interface NotificationCounts {
   messages: number;
   requests: number;
+  serviceRequests: number;
   orders: number;
   total: number;
 }
@@ -41,6 +43,7 @@ export default function AdminLayout({
   const [notifications, setNotifications] = useState<NotificationCounts>({
     messages: 0,
     requests: 0,
+    serviceRequests: 0,
     orders: 0,
     total: 0
   });
@@ -97,6 +100,7 @@ export default function AdminLayout({
     { href: '/admin/orders', label: 'Orders', icon: Package, badge: notifications.orders, superAdminOnly: false },
     { href: '/admin/tracking', label: 'Tracking', icon: Truck, badge: null, superAdminOnly: false },
     { href: '/admin/requests', label: 'Product Requests', icon: FileText, badge: notifications.requests, superAdminOnly: false },
+    { href: '/admin/service-requests', label: 'Service Requests', icon: Wrench, badge: notifications.serviceRequests, superAdminOnly: false },
     { href: '/admin/messages', label: 'Messages', icon: MessageSquare, badge: notifications.messages, superAdminOnly: false },
     { href: '/admin/admins', label: 'Admins', icon: Users, badge: null, superAdminOnly: true },
     { href: '/admin/settings', label: 'Settings', icon: Settings, badge: null, superAdminOnly: false },

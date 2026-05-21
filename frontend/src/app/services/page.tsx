@@ -1,15 +1,17 @@
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { 
-  ShoppingCart, 
-  Package, 
-  Plane, 
-  Ship, 
-  Users, 
+import Image from 'next/image';
+import {
+  ShoppingCart,
+  Package,
+  Plane,
+  Ship,
+  Users,
   Globe,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Search
 } from 'lucide-react';
 
 export const metadata = {
@@ -22,6 +24,7 @@ export default function ServicesPage() {
     {
       icon: ShoppingCart,
       title: 'Product Sourcing',
+      slug: 'product-sourcing',
       description: 'Find the perfect products from China\'s vast manufacturing network. We handle everything from supplier identification to quality verification.',
       features: [
         'Supplier verification and vetting',
@@ -32,10 +35,12 @@ export default function ServicesPage() {
         'Product customization support',
       ],
       color: 'primary',
+      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=500&fit=crop',
     },
     {
       icon: Package,
       title: 'Wholesale Supply',
+      slug: 'wholesale-supply',
       description: 'Access a wide range of products at wholesale prices. Perfect for retailers, distributors, and businesses looking to stock quality products.',
       features: [
         'Bulk purchasing discounts',
@@ -46,10 +51,12 @@ export default function ServicesPage() {
         'Competitive pricing',
       ],
       color: 'secondary',
+      image: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&h=500&fit=crop',
     },
     {
       icon: Plane,
       title: 'Air Cargo',
+      slug: 'air-cargo',
       description: 'Fast and reliable air freight services for time-sensitive shipments. Get your products from China to Bangladesh in days, not weeks.',
       features: [
         '3-7 days delivery time',
@@ -60,10 +67,12 @@ export default function ServicesPage() {
         'Temperature-controlled options',
       ],
       color: 'primary',
+      image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=500&fit=crop',
     },
     {
       icon: Ship,
       title: 'Sea Shipping',
+      slug: 'sea-shipping',
       description: 'Cost-effective sea freight solutions for large shipments. Ideal for bulk orders and heavy cargo with flexible delivery schedules.',
       features: [
         '15-30 days delivery time',
@@ -74,10 +83,12 @@ export default function ServicesPage() {
         'Cargo insurance',
       ],
       color: 'secondary',
+      image: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=800&h=500&fit=crop',
     },
     {
       icon: Users,
       title: 'Hand Carry Service',
+      slug: 'hand-carry',
       description: 'Fastest delivery option for urgent and high-value items. Your products are personally escorted from China to Bangladesh.',
       features: [
         '1-3 days delivery',
@@ -88,10 +99,12 @@ export default function ServicesPage() {
         'Urgent deliveries',
       ],
       color: 'primary',
+      image: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800&h=500&fit=crop',
     },
     {
       icon: Globe,
       title: 'Canton Fair Support',
+      slug: 'canton-fair',
       description: 'Complete assistance for Canton Fair visits. We help you navigate the fair, negotiate with suppliers, and manage logistics.',
       features: [
         'Fair registration assistance',
@@ -102,6 +115,7 @@ export default function ServicesPage() {
         'Post-fair follow-up',
       ],
       color: 'secondary',
+      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=500&fit=crop',
     },
   ];
 
@@ -173,15 +187,37 @@ export default function ServicesPage() {
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-8">
+                    <Link href={`/services/${service.slug}`}>
+                      <Button
+                        size="lg"
+                        className={`group relative overflow-hidden rounded-xl px-8 py-6 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${
+                          service.color === 'primary'
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
+                            : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
+                        }`}
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          Request This Service
+                          <ArrowRight
+                            className="transition-transform duration-300 group-hover:translate-x-1"
+                            size={18}
+                          />
+                        </span>
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
                 <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
                   <Card className="overflow-hidden">
-                    <div className={`h-64 bg-gradient-to-br ${
-                      service.color === 'primary' 
-                        ? 'from-blue-500 to-blue-700' 
-                        : 'from-red-500 to-red-700'
-                    } flex items-center justify-center`}>
-                      <service.icon className="text-white opacity-20" size={150} />
+                    <div className="relative h-64 w-full">
+                      <Image
+                        src={service.image}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
                     </div>
                   </Card>
                 </div>
@@ -225,17 +261,23 @@ export default function ServicesPage() {
               Ready to Get Started?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Submit your product request today and let us handle the rest. Our team is ready to help you source the best products from China.
+              Submit your service request today and let us handle the rest. Our team is ready to help you with all your China-Bangladesh trade needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/product-request">
+              <Link href="/services/product-sourcing">
                 <Button size="lg" className="bg-secondary hover:bg-secondary-700 text-white px-8">
-                  Submit Product Request
+                  Submit Service Request
                   <ArrowRight className="ml-2" size={20} />
                 </Button>
               </Link>
-              <Link href="/contact">
+              <Link href="/services/track">
                 <Button size="lg" variant="outline" className="bg-white text-primary border-white hover:bg-gray-100 px-8">
+                  <Search className="mr-2" size={20} />
+                  Track Service Request
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white/10 px-8">
                   Contact Us
                 </Button>
               </Link>

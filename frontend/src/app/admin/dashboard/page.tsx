@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Package, FileText, MessageSquare, Clock, TrendingUp, Users } from 'lucide-react';
+import { Package, FileText, MessageSquare, Clock, TrendingUp, Users, Wrench } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 
@@ -10,6 +10,7 @@ interface DashboardData {
   stats: {
     totalOrders: number;
     totalRequests: number;
+    totalServiceRequests: number;
     totalMessages: number;
     unreadMessages: number;
     pendingOrders: number;
@@ -27,6 +28,14 @@ interface DashboardData {
     name: string;
     product_name: string;
     status: string;
+    created_at: string;
+  }>;
+  recentServiceRequests: Array<{
+    id: string;
+    service_type: string;
+    name: string;
+    status: string;
+    tracking_number: string;
     created_at: string;
   }>;
   ordersByStatus: Array<{
@@ -80,6 +89,12 @@ export default function AdminDashboard() {
       color: 'bg-green-500',
     },
     {
+      title: 'Service Requests',
+      value: data?.stats.totalServiceRequests || 0,
+      icon: Wrench,
+      color: 'bg-teal-500',
+    },
+    {
       title: 'Messages',
       value: data?.stats.totalMessages || 0,
       icon: MessageSquare,
@@ -102,7 +117,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {statCards.map((stat, index) => (
           <Card key={index}>
             <CardContent className="p-6">
@@ -125,7 +140,7 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Orders */}
         <Card>
           <CardHeader>
@@ -158,7 +173,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Requests */}
+        {/* Recent Product Requests */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -190,6 +205,43 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <p className="text-gray-500 text-center py-4">No recent requests</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Service Requests */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wrench size={20} />
+              Recent Service Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data?.recentServiceRequests?.length ? (
+              <div className="space-y-4">
+                {data.recentServiceRequests.map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{request.name}</p>
+                      <p className="text-sm text-gray-600 capitalize">{request.service_type.replace(/_/g, ' ')}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        request.status === 'received' ? 'bg-blue-100 text-blue-800' :
+                        request.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                        request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {request.status.replace(/_/g, ' ')}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">{formatDate(request.created_at)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No recent service requests</p>
             )}
           </CardContent>
         </Card>

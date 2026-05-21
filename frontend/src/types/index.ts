@@ -163,3 +163,35 @@ export interface Video {
   created_at: string;
   updated_at?: string;
 }
+
+// Service Request types
+export interface ServiceRequest {
+  id: string;
+  service_type: string;
+  name: string;
+  phone?: string;
+  whatsapp?: string;
+  email: string;
+  company?: string;
+  details?: string;
+  parsedDetails?: Record<string, string>;
+  message?: string;
+  status: string;
+  tracking_number?: string;
+  admin_notes?: string;
+  price?: number;
+  converted_order_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceRequestFormData {
+  service_type: string;
+  name: string;
+  phone?: string;
+  whatsapp?: string;
+  email: string;
+  company?: string;
+  details?: Record<string, string>;
+  message?: string;
+}

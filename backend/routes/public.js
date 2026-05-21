@@ -23,7 +23,7 @@ const productRequestValidation = [
   handleValidationErrors
 ];
 
-router.post('/product-request', (req, res, next) => {
+router.post('/product-request', productRequestValidation, (req, res, next) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       return res.status(400).json({
@@ -47,17 +47,9 @@ router.post('/product-request', (req, res, next) => {
       message
     } = req.body;
 
-    // Validate required fields
-    if (!name || !email || !product_name) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-        required: ['name', 'email', 'product_name']
-      });
-    }
-
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
     const id = uuidv4();
-    const trackingNumber = `PR${Date.now().toString().slice(-10)}`;
+    const trackingNumber = `PR${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
 
     const values = [
       id,
@@ -94,14 +86,9 @@ router.post('/product-request', (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('=== PRODUCT REQUEST ERROR ===');
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
     logger.error('Product request error:', error);
     res.status(500).json({
-      error: 'Failed to submit request',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Failed to submit request'
     });
   }
 });
@@ -219,7 +206,11 @@ router.get('/settings', async (req, res) => {
        LIMIT 1`
     );
 
-    logger.info('Settings fetched - bankAccount:', settings?.bankAccount);
+    if (settings) {
+      settings.bankAccount = settings.bankAccount
+        ? settings.bankAccount.replace(/\n/g, ' ').trim()
+        : null;
+    }
 
     res.json({
       success: true,
@@ -272,6 +263,21 @@ router.get('/products', async (req, res) => {
     queryStr += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), offset);
 
+    let countStr = "SELECT COUNT(*) as total FROM products WHERE status = 'active'";
+    const countParams = [];
+
+    if (category && category !== 'all') {
+      countStr += ' AND category = ?';
+      countParams.push(category);
+    }
+
+    if (search) {
+      countStr += ' AND (name LIKE ? OR description LIKE ?)';
+      countParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    const countResult = await db.getOne(countStr, countParams);
+    const total = countResult ? countResult.total : 0;
     const products = await db.getMany(queryStr, params);
     
     res.set('Cache-Control', 'public, max-age=60');
@@ -281,7 +287,7 @@ router.get('/products', async (req, res) => {
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total: products.length
+        total: total
       }
     });
   } catch (error) {
@@ -362,8 +368,8 @@ router.post('/orders', [
     }
     
     const id = uuidv4();
-    const orderNumber = `HB${Date.now().toString().slice(-8)}`;
-    const trackingNumber = `TRK${Date.now().toString().slice(-10)}`;
+    const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
+    const trackingNumber = `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
     
     const productNames = validatedItems.map(item => item.productName).join(', ');
     const productCodesStr = validatedItems.map(item => item.productCode).filter(Boolean).join(', ');
@@ -470,6 +476,123 @@ router.get('/videos/featured', async (req, res) => {
     res.status(500).json({ 
       error: 'Failed to get featured videos'
     });
+  }
+});
+
+// Service Request submission (public)
+router.post('/service-request', [
+  body('service_type').trim().notEmpty().withMessage('Service type is required'),
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  handleValidationErrors
+], async (req, res) => {
+  try {
+    const {
+      service_type,
+      name,
+      phone,
+      whatsapp,
+      email,
+      company,
+      details,
+      message
+    } = req.body;
+
+    const id = uuidv4();
+    const TRACKING_PREFIXES = {
+      'product_sourcing': 'PS',
+      'wholesale_supply': 'WS',
+      'air_cargo': 'AC',
+      'sea_shipping': 'SS',
+      'hand_carry': 'HC',
+      'canton_fair': 'CF',
+    };
+    const prefix = TRACKING_PREFIXES[service_type] || 'SR';
+    const trackingNumber = `${prefix}${Date.now().toString().slice(-10)}`;
+    const detailsJson = details ? JSON.stringify(details) : null;
+
+    await db.run(
+      `INSERT INTO service_requests
+       (id, service_type, name, phone, whatsapp, email, company, details, message, tracking_number)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, service_type, name, phone || null, whatsapp || null, email, company || null, detailsJson, message || null, trackingNumber]
+    );
+
+    logger.info(`New service request: ${service_type} from ${email} - Tracking: ${trackingNumber}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Service request submitted successfully',
+      data: { id, service_type, name, trackingNumber }
+    });
+  } catch (error) {
+    logger.error('Service request error:', error);
+    res.status(500).json({ error: 'Failed to submit service request' });
+  }
+});
+
+// Track a service request (public)
+router.get('/service-request/track/:tracking_number', async (req, res) => {
+  try {
+    const { tracking_number } = req.params;
+
+    const serviceRequest = await db.getOne(
+      `SELECT id, service_type, name, email, phone, whatsapp, company, details, message,
+              status, tracking_number, admin_notes, price, created_at, updated_at
+       FROM service_requests
+       WHERE tracking_number = ?`,
+      [tracking_number]
+    );
+
+    if (!serviceRequest) {
+      return res.status(404).json({ error: 'No service request found with this tracking number' });
+    }
+
+    const trackingHistory = await db.getMany(
+      `SELECT status, location, note, created_at
+       FROM tracking
+       WHERE tracking_number = ?
+       ORDER BY created_at DESC`,
+      [tracking_number]
+    );
+
+    const SERVICE_STATUS_INFO = {
+      'received': { label: 'Received', description: 'Your service request has been received. Our team will review it shortly.', icon: 'inbox', color: 'blue' },
+      'in_progress': { label: 'In Progress', description: 'Our team is working on your service request.', icon: 'cog', color: 'yellow' },
+      'completed': { label: 'Completed', description: 'Your service request has been completed successfully.', icon: 'check-circle', color: 'green' },
+      'cancelled': { label: 'Cancelled', description: 'This service request has been cancelled.', icon: 'x-circle', color: 'red' },
+    };
+
+    const statusInfo = SERVICE_STATUS_INFO[serviceRequest.status] || { label: serviceRequest.status, description: '', icon: 'package', color: 'gray' };
+
+    // Parse details JSON
+    let parsedDetails = null;
+    if (serviceRequest.details) {
+      try {
+        parsedDetails = JSON.parse(serviceRequest.details);
+      } catch (e) {
+        parsedDetails = serviceRequest.details;
+      }
+    }
+
+    logger.http(`Service tracking lookup: ${tracking_number}`);
+
+    res.json({
+      success: true,
+      data: {
+        serviceRequest: { ...serviceRequest, parsedDetails },
+        tracking: trackingHistory,
+        statusInfo,
+        allStatuses: Object.entries(SERVICE_STATUS_INFO).map(([value, info]) => ({
+          value,
+          ...info,
+          isCurrent: value === serviceRequest.status,
+        })),
+      }
+    });
+  } catch (error) {
+    logger.error('Service tracking error:', error);
+    res.status(500).json({ error: 'Failed to track service request' });
   }
 });
 

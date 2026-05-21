@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 // Run this after setting up the database
 
 const createAdminUser = async () => {
-  const password = 'admin123'; // Change this in production
+  const password = process.env.ADMIN_DEFAULT_PASSWORD || 'CHANGE_ME_IMMEDIATELY';
   const hashedPassword = await bcrypt.hash(password, 10);
   
   console.log('===========================================');
@@ -24,9 +24,8 @@ VALUES (
   'admin'
 );`);
   console.log('\n===========================================');
-  console.log('Default Credentials:');
-  console.log('Email: admin@hbtrade.com');
-  console.log('Password: admin123');
+  console.log('IMPORTANT: Set ADMIN_DEFAULT_PASSWORD env var');
+  console.log('or change the password after first login.');
   console.log('===========================================');
 };
 

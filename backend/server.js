@@ -89,7 +89,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ 

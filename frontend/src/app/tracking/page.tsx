@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Search, Package, CheckCircle, Truck, Plane, Home, Loader2, Warehouse, Building, ClipboardCheck, XCircle } from 'lucide-react';
+import { Search, Package, CheckCircle, Truck, Plane, Home, Loader2, Warehouse, Building, ClipboardCheck, XCircle, ShoppingCart, Ship, Users, Globe, Clock, Wrench } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
-interface TrackingData {
+interface OrderTrackingData {
+  type: 'order';
   order: {
     order_number: string;
     customer_name: string;
@@ -27,99 +28,193 @@ interface TrackingData {
     note: string;
     created_at: string;
   }>;
-  statusInfo?: {
-    value: string;
+}
+
+interface ServiceTrackingData {
+  type: 'service';
+  serviceRequest: {
+    id: string;
+    service_type: string;
+    name: string;
+    email: string;
+    phone?: string;
+    whatsapp?: string;
+    company?: string;
+    parsedDetails?: Record<string, string>;
+    message?: string;
+    status: string;
+    tracking_number: string;
+    admin_notes?: string;
+    price?: number;
+    created_at: string;
+    updated_at: string;
+  };
+  tracking: Array<{
+    status: string;
+    location?: string;
+    note?: string;
+    created_at: string;
+  }>;
+  statusInfo: {
     label: string;
     description: string;
     icon: string;
     color: string;
-    isCurrent: boolean;
-  }[];
-  allStatuses?: {
+  };
+  allStatuses: Array<{
     value: string;
     label: string;
     description: string;
-  }[];
+    isCurrent: boolean;
+  }>;
 }
 
-const STATUS_CONFIG = {
-  'pending': { icon: Package, color: 'yellow', bgColor: 'bg-yellow-500', label: 'Pending' },
-  'processing': { icon: CheckCircle, color: 'blue', bgColor: 'bg-blue-500', label: 'Processing' },
-  'guangzhou_warehouse': { icon: Warehouse, color: 'purple', bgColor: 'bg-purple-500', label: 'Guangzhou Warehouse' },
-  'in_transit': { icon: Truck, color: 'indigo', bgColor: 'bg-indigo-500', label: 'In Transit' },
-  'dhaka_customs': { icon: ClipboardCheck, color: 'orange', bgColor: 'bg-orange-500', label: 'Dhaka Customs' },
-  'dhaka_office': { icon: Building, color: 'teal', bgColor: 'bg-teal-500', label: 'Dhaka Office' },
-  'delivered': { icon: CheckCircle, color: 'green', bgColor: 'bg-green-500', label: 'Delivered' },
-  'cancelled': { icon: XCircle, color: 'red', bgColor: 'bg-red-500', label: 'Cancelled' },
+interface ProductRequestTrackingData {
+  type: 'product_request';
+  request: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    whatsapp?: string;
+    product_name: string;
+    product_link?: string;
+    quantity?: string;
+    shipping_method?: string;
+    message?: string;
+    status: string;
+    tracking_number: string;
+    image?: string;
+    created_at: string;
+  };
+  tracking: Array<{
+    status: string;
+    location?: string;
+    note?: string;
+    created_at: string;
+  }>;
+}
+
+type TrackingData = OrderTrackingData | ServiceTrackingData | ProductRequestTrackingData;
+
+const TRACKING_PREFIX_INFO: Record<string, { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string }> = {
+  'TRK': { label: 'Order', icon: Package, color: 'bg-blue-500' },
+  'HB': { label: 'Order', icon: Package, color: 'bg-blue-500' },
+  'PR': { label: 'Product Request', icon: ShoppingCart, color: 'bg-green-500' },
+  'PS': { label: 'Product Sourcing', icon: ShoppingCart, color: 'bg-blue-500' },
+  'WS': { label: 'Wholesale Supply', icon: Package, color: 'bg-purple-500' },
+  'AC': { label: 'Air Cargo', icon: Plane, color: 'bg-teal-500' },
+  'SS': { label: 'Sea Shipping', icon: Ship, color: 'bg-orange-500' },
+  'HC': { label: 'Hand Carry', icon: Users, color: 'bg-pink-500' },
+  'CF': { label: 'Canton Fair', icon: Globe, color: 'bg-amber-500' },
+  'SR': { label: 'Service Request', icon: Wrench, color: 'bg-teal-500' },
 };
 
-const STATUS_SEQUENCE = [
-  { value: 'pending', label: 'Pending', description: 'Order received, awaiting processing' },
-  { value: 'processing', label: 'Processing', description: 'Order is being prepared' },
-  { value: 'guangzhou_warehouse', label: 'Guangzhou Warehouse', description: 'Package received at Guangzhou warehouse' },
-  { value: 'in_transit', label: 'In Transit', description: 'Package is in transit to Bangladesh' },
-  { value: 'dhaka_customs', label: 'Dhaka Customs', description: 'Package is at Dhaka customs' },
-  { value: 'dhaka_office', label: 'Dhaka Office', description: 'Package arrived at Dhaka office' },
-  { value: 'delivered', label: 'Delivered', description: 'Package delivered to customer' },
-];
+const ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: number; className?: string }>; bgColor: string; label: string }> = {
+  'pending': { icon: Package, bgColor: 'bg-yellow-500', label: 'Pending' },
+  'processing': { icon: CheckCircle, bgColor: 'bg-blue-500', label: 'Processing' },
+  'guangzhou_warehouse': { icon: Warehouse, bgColor: 'bg-purple-500', label: 'Guangzhou Warehouse' },
+  'in_transit': { icon: Truck, bgColor: 'bg-indigo-500', label: 'In Transit' },
+  'dhaka_customs': { icon: ClipboardCheck, bgColor: 'bg-orange-500', label: 'Dhaka Customs' },
+  'dhaka_office': { icon: Building, bgColor: 'bg-teal-500', label: 'Dhaka Office' },
+  'delivered': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Delivered' },
+  'cancelled': { icon: XCircle, bgColor: 'bg-red-500', label: 'Cancelled' },
+};
 
-export default function TrackingPage() {
+const SERVICE_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: number; className?: string }>; bgColor: string; label: string }> = {
+  'received': { icon: Clock, bgColor: 'bg-blue-500', label: 'Received' },
+  'in_progress': { icon: Wrench, bgColor: 'bg-yellow-500', label: 'In Progress' },
+  'completed': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Completed' },
+  'cancelled': { icon: XCircle, bgColor: 'bg-red-500', label: 'Cancelled' },
+};
+
+const SERVICE_TYPE_LABELS: Record<string, string> = {
+  'product_sourcing': 'Product Sourcing',
+  'wholesale_supply': 'Wholesale Supply',
+  'air_cargo': 'Air Cargo',
+  'sea_shipping': 'Sea Shipping',
+  'hand_carry': 'Hand Carry',
+  'canton_fair': 'Canton Fair Support',
+};
+
+function getPrefix(trackingNumber: string): string {
+  const match = trackingNumber.match(/^[A-Z]+/);
+  return match ? match[0] : '';
+}
+
+export default function UnifiedTrackingPage() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
+  const [data, setData] = useState<TrackingData | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!trackingNumber.trim()) {
-      setError('Please enter a tracking number');
-      return;
-    }
+    if (!trackingNumber.trim()) return;
 
     setIsLoading(true);
     setError('');
-    setTrackingData(null);
+    setData(null);
+
+    const prefix = getPrefix(trackingNumber.trim());
+    const isServicePrefix = ['PS', 'WS', 'AC', 'SS', 'HC', 'CF', 'SR'].includes(prefix);
+    const isProductRequest = prefix === 'PR';
+    const isOrder = ['TRK', 'HB'].includes(prefix);
 
     try {
-      const response = await api.get(`/track/${trackingNumber}`);
-      setTrackingData(response.data.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Tracking information not found');
+      if (isServicePrefix) {
+        const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
+        setData({ type: 'service', ...response.data.data });
+      } else if (isProductRequest) {
+        // Product requests use the same tracking as orders
+        const response = await api.get(`/track/${trackingNumber.trim()}`);
+        if (response.data.data) {
+          setData({ type: 'product_request', ...response.data.data });
+        }
+      } else if (isOrder) {
+        const response = await api.get(`/track/${trackingNumber.trim()}`);
+        setData({ type: 'order', ...response.data.data });
+      } else {
+        // Unknown prefix - try order tracking first, then service
+        try {
+          const response = await api.get(`/track/${trackingNumber.trim()}`);
+          setData({ type: 'order', ...response.data.data });
+        } catch {
+          try {
+            const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
+            setData({ type: 'service', ...response.data.data });
+          } catch {
+            setError('No tracking information found for this number.');
+          }
+        }
+      }
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { error?: string } } };
+      setError(apiError?.response?.data?.error || 'No tracking information found for this number.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
-    return config?.icon || Package;
-  };
-
-  const getStatusColor = (status: string) => {
-    const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
-    return config?.bgColor || 'bg-gray-500';
-  };
-
-  const getStatusLabel = (status: string) => {
-    const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
-    return config?.label || status;
-  };
-
-  const getCurrentStatusIndex = (status: string) => {
-    return STATUS_SEQUENCE.findIndex(s => s.value === status);
-  };
+  const prefix = data ? getPrefix(
+    data.type === 'order' ? data.order.tracking_number :
+    data.type === 'service' ? data.serviceRequest.tracking_number :
+    data.request.tracking_number
+  ) : '';
+  const prefixInfo = TRACKING_PREFIX_INFO[prefix] || TRACKING_PREFIX_INFO['SR'];
+  const PrefixIcon = prefixInfo.icon;
 
   return (
     <div>
+      {/* Hero */}
       <section className="relative hero-gradient text-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Track Your Shipment
+              Track Your <span className="text-yellow-300">Shipment & Requests</span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-4 sm:mb-6 md:mb-8">
-              Enter your tracking number to get real-time updates on your shipment status.
+              Enter your tracking number to get real-time updates. Works for orders, service requests, and product requests.
             </p>
 
             <form onSubmit={handleSearch} className="max-w-xl mx-auto relative z-10">
@@ -128,202 +223,271 @@ export default function TrackingPage() {
                   type="text"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  placeholder="Enter tracking number (e.g., TRK1234567890)"
+                  placeholder="Enter tracking number (e.g., AC1234567890, TRK1234567890, PR1234567890)"
                   className="bg-white text-gray-900 z-10"
                   autoFocus
                 />
                 <Button type="submit" disabled={isLoading} className="z-10">
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <Search size={20} />
-                  )}
+                  {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
                 </Button>
               </div>
             </form>
 
-            {error && (
-              <p className="text-red-300 mt-4">{error}</p>
-            )}
+            {/* Prefix Legend */}
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {Object.entries(TRACKING_PREFIX_INFO).slice(0, 8).map(([pfx, info]) => (
+                <span key={pfx} className="text-xs bg-white/10 backdrop-blur-sm rounded-full px-3 py-1 border border-white/20">
+                  <b>{pfx}</b> = {info.label}
+                </span>
+              ))}
+            </div>
+
+            {error && <p className="text-red-300 mt-4">{error}</p>}
           </div>
         </div>
       </section>
 
+      {/* Results */}
       <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
-          {trackingData ? (
-            <div className="max-w-4xl mx-auto">
-              <Card className="mb-4 sm:mb-6 md:mb-8">
-                <CardContent className="p-4 sm:p-6">
-                  <h2 className="text-2xl font-bold mb-4">Order Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <p className="text-gray-600">Order Number</p>
-                      <p className="font-semibold">{trackingData.order.order_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Tracking Number</p>
-                      <p className="font-semibold text-blue-600">{trackingData.order.tracking_number}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Customer Name</p>
-                      <p className="font-semibold">{trackingData.order.customer_name}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Product</p>
-                      <p className="font-semibold">{trackingData.order.product_name}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Quantity</p>
-                      <p className="font-semibold">{trackingData.order.quantity || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Shipping Method</p>
-                      <p className="font-semibold">{trackingData.order.shipping_method || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Current Status</p>
-                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium text-white ${getStatusColor(trackingData.order.status)}`}>
-                        {getStatusLabel(trackingData.order.status)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Order Date</p>
-                      <p className="font-semibold">{formatDate(trackingData.order.created_at)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {data ? (
+            <div className="max-w-4xl mx-auto space-y-6">
 
-              <Card className="mb-4 sm:mb-6 md:mb-8">
-                <CardContent className="p-4 sm:p-6">
-                  <h2 className="text-2xl font-bold mb-4 sm:mb-6">Shipment Progress</h2>
-                  
-                  <div className="relative">
-                    {STATUS_SEQUENCE.map((status, index) => {
-                      const currentIndex = getCurrentStatusIndex(trackingData.order.status);
-                      const isCompleted = index <= currentIndex && currentIndex !== -1;
-                      const isCurrent = index === currentIndex;
-                      const StatusIcon = status.value === 'cancelled' ? XCircle : getStatusIcon(status.value);
-                      
-                      return (
-                        <div key={status.value} className="flex gap-4 pb-8 last:pb-0">
-                          {index !== STATUS_SEQUENCE.length - 1 && (
-                            <div 
-                              className={`absolute left-5 top-12 w-0.5 h-full ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}`} 
-                              style={{ transform: 'translateX(-50%)' }} 
-                            />
-                          )}
-                          
-                          <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isCompleted 
-                              ? (status.value === 'cancelled' ? 'bg-red-500' : 'bg-green-500') 
-                              : 'bg-gray-300'
-                          }`}>
-                            <StatusIcon className="text-white" size={20} />
-                          </div>
-                          
-                          <div className="flex-1">
-                            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-1">
-                              <h3 className={`font-semibold text-lg ${isCurrent ? 'text-green-600' : isCompleted ? 'text-gray-800' : 'text-gray-400'}`}>
-                                {status.label}
-                                {isCurrent && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Current</span>}
-                              </h3>
-                            {trackingData.tracking.find(t => t.status === status.value)?.created_at && (
-                                <p className="text-gray-500 text-sm">
-                                  {formatDate(trackingData.tracking.find(t => t.status === status.value)?.created_at || '')}
-                                </p>
-                              )}
-                            </div>
-                            <p className={`text-sm ${isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>
-                              {status.description}
-                            </p>
-                            {trackingData.tracking.find(t => t.status === status.value)?.location && (
-                              <p className="text-gray-500 text-sm mt-1">
-                                📍 {trackingData.tracking.find(t => t.status === status.value)?.location}
-                              </p>
-                            )}
-                            {trackingData.tracking.find(t => t.status === status.value)?.note && (
-                              <p className="text-gray-500 text-sm mt-1 italic">
-                                {trackingData.tracking.find(t => t.status === status.value)?.note}
-                              </p>
-                            )}
-                          </div>
+              {/* Type Badge */}
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 ${prefixInfo.color} rounded-lg flex items-center justify-center`}>
+                  <PrefixIcon className="text-white" size={20} />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Tracking Type</p>
+                  <p className="font-semibold">{prefixInfo.label}</p>
+                </div>
+              </div>
+
+              {/* ORDER TYPE */}
+              {data.type === 'order' && (
+                <>
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h2 className="text-xl font-bold mb-4">Order Details</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div><p className="text-gray-500 text-sm">Order Number</p><p className="font-semibold">{data.order.order_number}</p></div>
+                        <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.order.tracking_number}</p></div>
+                        <div><p className="text-gray-500 text-sm">Customer</p><p className="font-semibold">{data.order.customer_name}</p></div>
+                        <div><p className="text-gray-500 text-sm">Product</p><p className="font-semibold">{data.order.product_name}</p></div>
+                        <div><p className="text-gray-500 text-sm">Quantity</p><p className="font-semibold">{data.order.quantity || 'N/A'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Shipping</p><p className="font-semibold">{data.order.shipping_method || 'N/A'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Status</p>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${ORDER_STATUS_CONFIG[data.order.status]?.bgColor || 'bg-gray-500'}`}>
+                            {ORDER_STATUS_CONFIG[data.order.status]?.label || data.order.status}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {trackingData.order.status === 'cancelled' && (
-                <Card className="mb-4 sm:mb-6 md:mb-8 border-red-200 bg-red-50">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <XCircle className="text-red-500" size={24} />
-                      <div>
-                        <h3 className="font-semibold text-red-800">Order Cancelled</h3>
-                        <p className="text-red-600 text-sm">
-                          This order has been cancelled. Please contact our support team for more information.
-                        </p>
+                        <div><p className="text-gray-500 text-sm">Order Date</p><p className="font-semibold">{formatDate(data.order.created_at)}</p></div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    </CardContent>
+                  </Card>
 
-              {trackingData.order.status === 'delivered' && (
-                <Card className="mb-4 sm:mb-6 md:mb-8 border-green-200 bg-green-50">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="text-green-500" size={24} />
-                      <div>
-                        <h3 className="font-semibold text-green-800">Successfully Delivered!</h3>
-                        <p className="text-green-600 text-sm">
-                          Your package has been delivered. Thank you for choosing H&B Trade!
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {trackingData.tracking.length > 0 && (
-                <Card>
-                  <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-2xl font-bold mb-4 sm:mb-6">Detailed Tracking History</h2>
-                    
-                    <div className="relative">
-                      {trackingData.tracking.map((track, index) => {
-                        const StatusIcon = getStatusIcon(track.status);
-                        return (
-                          <div key={track.id} className="flex gap-4 pb-6 last:pb-0">
-                            {index !== trackingData.tracking.length - 1 && (
-                              <div className="absolute left-5 top-12 w-0.5 h-full bg-gray-200" style={{ transform: 'translateX(-50%)' }} />
-                            )}
-                            
-                            <div className={`relative z-10 w-10 h-10 rounded-full ${getStatusColor(track.status)} flex items-center justify-center flex-shrink-0`}>
-                              <StatusIcon className="text-white" size={20} />
-                            </div>
-                            
-                            <div className="flex-1">
-                              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-1">
-                                <h3 className="font-semibold text-lg">{getStatusLabel(track.status)}</h3>
-                                <p className="text-gray-500 text-sm">{formatDate(track.created_at)}</p>
+                  {/* Order Progress */}
+                  {data.tracking.length > 0 && (
+                    <Card>
+                      <CardContent className="p-4 sm:p-6">
+                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <div className="space-y-4">
+                          {data.tracking.map((track, index) => {
+                            const cfg = ORDER_STATUS_CONFIG[track.status] || { icon: Package, bgColor: 'bg-gray-500', label: track.status };
+                            const Icon = cfg.icon;
+                            return (
+                              <div key={index} className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full ${cfg.bgColor} flex items-center justify-center flex-shrink-0`}>
+                                  <Icon className="text-white" size={18} />
+                                </div>
+                                <div>
+                                  <p className="font-semibold">{cfg.label}</p>
+                                  {track.location && <p className="text-sm text-gray-600">📍 {track.location}</p>}
+                                  {track.note && <p className="text-sm text-gray-500">{track.note}</p>}
+                                  <p className="text-xs text-gray-400">{formatDate(track.created_at)}</p>
+                                </div>
                               </div>
-                              {track.location && (
-                                <p className="text-gray-600">📍 Location: {track.location}</p>
-                              )}
-                              {track.note && (
-                                <p className="text-gray-500 text-sm mt-1">{track.note}</p>
-                              )}
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
+
+              {/* SERVICE REQUEST TYPE */}
+              {data.type === 'service' && (
+                <>
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h2 className="text-xl font-bold mb-4">Service Request Details</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.serviceRequest.tracking_number}</p></div>
+                        <div><p className="text-gray-500 text-sm">Service Type</p><p className="font-semibold">{SERVICE_TYPE_LABELS[data.serviceRequest.service_type] || data.serviceRequest.service_type}</p></div>
+                        <div><p className="text-gray-500 text-sm">Name</p><p className="font-semibold">{data.serviceRequest.name}</p></div>
+                        <div><p className="text-gray-500 text-sm">Email</p><p className="font-semibold">{data.serviceRequest.email}</p></div>
+                        <div><p className="text-gray-500 text-sm">Phone</p><p className="font-semibold">{data.serviceRequest.phone || '-'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Company</p><p className="font-semibold">{data.serviceRequest.company || '-'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Status</p>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${SERVICE_STATUS_CONFIG[data.serviceRequest.status]?.bgColor || 'bg-gray-500'}`}>
+                            {SERVICE_STATUS_CONFIG[data.serviceRequest.status]?.label || data.serviceRequest.status}
+                          </span>
+                        </div>
+                        <div><p className="text-gray-500 text-sm">Submitted</p><p className="font-semibold">{formatDate(data.serviceRequest.created_at)}</p></div>
+                      </div>
+
+                      {data.serviceRequest.admin_notes && (
+                        <div className="mt-4 bg-blue-50 rounded-lg p-3">
+                          <p className="text-sm font-medium text-blue-800">Admin Notes</p>
+                          <p className="text-sm text-blue-700">{data.serviceRequest.admin_notes}</p>
+                        </div>
+                      )}
+
+                      {data.serviceRequest.price !== null && data.serviceRequest.price !== undefined && data.serviceRequest.price > 0 && (
+                        <div className="mt-4 bg-green-50 rounded-lg p-3">
+                          <p className="text-sm font-medium text-green-800">Quoted Price</p>
+                          <p className="text-xl font-bold text-green-700">${data.serviceRequest.price}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Service Details */}
+                  {data.serviceRequest.parsedDetails && Object.keys(data.serviceRequest.parsedDetails).length > 0 && (
+                    <Card>
+                      <CardContent className="p-4 sm:p-6">
+                        <h2 className="text-xl font-bold mb-4">Request Details</h2>
+                        <div className="space-y-2">
+                          {Object.entries(data.serviceRequest.parsedDetails).map(([key, value]) => (
+                            <div key={key} className="flex justify-between text-sm border-b border-gray-100 pb-2">
+                              <span className="text-gray-500 capitalize">{key.replace(/_/g, ' ')}</span>
+                              <span className="text-gray-900 font-medium">{value}</span>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Service Progress */}
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h2 className="text-xl font-bold mb-4">Request Progress</h2>
+                      <div className="flex items-center justify-between relative mb-4">
+                        <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
+                          <div
+                            className="h-full bg-primary rounded transition-all duration-500"
+                            style={{ width: `${Math.max(0, (data.allStatuses.findIndex(s => s.isCurrent) / (data.allStatuses.length - 1)) * 100)}%` }}
+                          />
+                        </div>
+                        {data.allStatuses.map((status) => {
+                          const cfg = SERVICE_STATUS_CONFIG[status.value] || { icon: Clock, bgColor: 'bg-gray-500' };
+                          const Icon = cfg.icon;
+                          return (
+                            <div key={status.value} className="relative flex flex-col items-center z-10">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                                status.isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
+                                data.allStatuses.findIndex(s => s.isCurrent) > data.allStatuses.findIndex(s => s.value === status.value) ? `${cfg.bgColor} border-transparent text-white` :
+                                'bg-white border-gray-300 text-gray-400'
+                              }`}>
+                                <Icon size={18} />
+                              </div>
+                              <p className={`text-xs mt-2 text-center max-w-[80px] ${status.isCurrent ? 'font-bold text-primary' : 'text-gray-400'}`}>{status.label}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="text-sm text-gray-600 text-center">{data.statusInfo.description}</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Tracking History */}
+                  {data.tracking.length > 0 && (
+                    <Card>
+                      <CardContent className="p-4 sm:p-6">
+                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <div className="space-y-4">
+                          {data.tracking.map((entry, index) => {
+                            const cfg = SERVICE_STATUS_CONFIG[entry.status] || { icon: Clock, bgColor: 'bg-gray-500', label: entry.status };
+                            const Icon = cfg.icon;
+                            return (
+                              <div key={index} className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full ${cfg.bgColor} flex items-center justify-center flex-shrink-0`}>
+                                  <Icon className="text-white" size={18} />
+                                </div>
+                                <div>
+                                  <p className="font-semibold">{cfg.label}</p>
+                                  {entry.location && <p className="text-sm text-gray-600">📍 {entry.location}</p>}
+                                  {entry.note && <p className="text-sm text-gray-500">{entry.note}</p>}
+                                  <p className="text-xs text-gray-400">{formatDate(entry.created_at)}</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
+              )}
+
+              {/* PRODUCT REQUEST TYPE */}
+              {data.type === 'product_request' && (
+                <>
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h2 className="text-xl font-bold mb-4">Product Request Details</h2>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.request.tracking_number}</p></div>
+                        <div><p className="text-gray-500 text-sm">Name</p><p className="font-semibold">{data.request.name}</p></div>
+                        <div><p className="text-gray-500 text-sm">Email</p><p className="font-semibold">{data.request.email}</p></div>
+                        <div><p className="text-gray-500 text-sm">Product</p><p className="font-semibold">{data.request.product_name}</p></div>
+                        <div><p className="text-gray-500 text-sm">Quantity</p><p className="font-semibold">{data.request.quantity || '-'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Shipping</p><p className="font-semibold">{data.request.shipping_method || '-'}</p></div>
+                        <div><p className="text-gray-500 text-sm">Status</p>
+                          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${
+                            data.request.status === 'pending' ? 'bg-yellow-500' :
+                            data.request.status === 'processing' ? 'bg-blue-500' :
+                            data.request.status === 'completed' ? 'bg-green-500' :
+                            'bg-red-500'
+                          }`}>{data.request.status}</span>
+                        </div>
+                        <div><p className="text-gray-500 text-sm">Submitted</p><p className="font-semibold">{formatDate(data.request.created_at)}</p></div>
+                      </div>
+                      {data.request.message && (
+                        <div className="mt-4 bg-gray-50 rounded-lg p-3">
+                          <p className="text-sm font-medium text-gray-700">Message</p>
+                          <p className="text-sm text-gray-600">{data.request.message}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {data.tracking.length > 0 && (
+                    <Card>
+                      <CardContent className="p-4 sm:p-6">
+                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <div className="space-y-4">
+                          {data.tracking.map((entry, index) => (
+                            <div key={index} className="flex gap-4">
+                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                <Package className="text-white" size={18} />
+                              </div>
+                              <div>
+                                <p className="font-semibold capitalize">{entry.status.replace(/_/g, ' ')}</p>
+                                {entry.location && <p className="text-sm text-gray-600">📍 {entry.location}</p>}
+                                {entry.note && <p className="text-sm text-gray-500">{entry.note}</p>}
+                                <p className="text-xs text-gray-400">{formatDate(entry.created_at)}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
               )}
             </div>
           ) : (
@@ -331,10 +495,18 @@ export default function TrackingPage() {
               <Card>
                 <CardContent className="p-6 sm:p-8 md:p-12">
                   <Package className="mx-auto text-gray-400 mb-4" size={64} />
-                  <h3 className="text-xl font-semibold mb-2">Track Your Shipment</h3>
-                  <p className="text-gray-600">
-                    Enter your tracking number above to see your shipment status and delivery updates.
+                  <h3 className="text-xl font-semibold mb-2">Track Your Shipment & Requests</h3>
+                  <p className="text-gray-600 mb-4">
+                    Enter your tracking number above to see status updates.
                   </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                    {Object.entries(TRACKING_PREFIX_INFO).slice(0, 8).map(([pfx, info]) => (
+                      <div key={pfx} className="bg-gray-50 rounded-lg p-2 text-center">
+                        <p className="font-bold text-primary">{pfx}</p>
+                        <p className="text-gray-500">{info.label}</p>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -342,6 +514,7 @@ export default function TrackingPage() {
         </div>
       </section>
 
+      {/* Help Section */}
       <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">

@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
+const logger = require('../config/logger');
 
-// Validation error handler
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   
@@ -55,11 +55,7 @@ const sanitizeObject = (obj) => {
   return sanitized;
 };
 
-// XSS protection middleware
 const xssProtection = (req, res, next) => {
-  console.log('=== XSS PROTECTION ===');
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
   try {
     if (req.body) {
       req.body = sanitizeObject(req.body);
@@ -72,7 +68,7 @@ const xssProtection = (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error('XSS Protection Error:', error);
+    logger.error('XSS Protection Error:', error);
     next(error);
   }
 };
