@@ -391,10 +391,10 @@ export default function AdminRequestsPage() {
                             <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
                               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Details</p>
                               <div className="grid grid-cols-2 gap-2 mt-1">
-                                {Object.entries(parsedValue).map(([k, v]) => (
+                                {Object.entries(parsedValue as Record<string, unknown>).map(([k, v]) => (
                                   <div key={k} className="bg-gray-50 rounded p-2">
                                     <span className="text-xs text-gray-500">{DETAIL_LABELS[k] || k.replace(/_/g, ' ')}</span>
-                                    <p className="text-sm font-medium text-gray-900">{v}</p>
+                                    <p className="text-sm font-medium text-gray-900">{String(v ?? '')}</p>
                                   </div>
                                 ))}
                               </div>
@@ -404,7 +404,7 @@ export default function AdminRequestsPage() {
                         return (
                           <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Info</p>
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{parsedValue}</p>
+                            <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{String(parsedValue)}</p>
                           </div>
                         );
                       })}
