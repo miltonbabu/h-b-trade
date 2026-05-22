@@ -46,7 +46,7 @@ export default function Footer() {
                 />
               </div>
               <div>
-                <span className="text-xl font-bold text-white"><span className="text-red-500">H</span>&<span className="text-green-500">B</span></span>
+                <span className="text-xl font-bold text-white"><span className="text-red-500">H</span><span className="text-red-500">&</span><span className="text-green-500">B</span></span>
                 <span className="text-xl font-bold text-secondary"> Trade</span>
               </div>
             </div>

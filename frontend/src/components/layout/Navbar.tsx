@@ -75,7 +75,7 @@ export default function Navbar() {
               />
             </div>
             <div>
-              <span className="text-xl font-bold"><span className="text-red-600">H</span>&<span className="text-green-600">B</span></span>
+              <span className="text-xl font-bold"><span className="text-red-600">H</span><span className="text-red-600">&</span><span className="text-green-600">B</span></span>
               <span className="text-xl font-bold text-secondary"> Trade</span>
             </div>
           </Link>
