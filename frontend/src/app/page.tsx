@@ -201,16 +201,6 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-4 md:mb-8">
-              <div className="inline-flex items-center gap-2 bg-green-500/20 backdrop-blur-sm rounded-full px-3 md:px-5 py-2 md:py-2.5 mb-3 md:mb-4 border border-green-400/30">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                </span>
-                <span className="text-xs md:text-sm font-semibold text-green-300">
-                  International Sourcing & Shipping Live Now
-                </span>
-              </div>
-
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3 leading-tight">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
                   HELP & BENEFIT TRADE
