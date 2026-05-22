@@ -75,8 +75,8 @@ export default function Navbar() {
               />
             </div>
             <div>
-              <span className="text-xl font-bold"><span className="text-red-600">H</span><span className="text-red-600">&</span><span className="text-green-600">B</span></span>
-              <span className="text-xl font-bold text-secondary"> Trade</span>
+              <span className="text-2xl md:text-3xl font-serif tracking-wide"><span className="text-red-600">H</span><span className="text-red-600">&</span><span className="text-green-700">B</span></span>
+              <span className="text-sm md:text-base font-serif text-secondary tracking-widest ml-1">TRADE</span>
             </div>
           </Link>
 
