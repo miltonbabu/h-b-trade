@@ -197,7 +197,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-4 md:pt-0 pb-20 md:pb-24">
+        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-8 md:pt-0 pb-20 md:pb-24">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-4 md:mb-8">
@@ -236,7 +236,7 @@ export default function HomePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center mt-4 md:mt-6">
               <Link href="/services/product-sourcing">
                 <Button
                   size="sm"
