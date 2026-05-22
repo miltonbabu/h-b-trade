@@ -267,49 +267,8 @@ DROP TRIGGER IF EXISTS update_service_requests_updated_at ON service_requests;
 CREATE TRIGGER update_service_requests_updated_at BEFORE UPDATE ON service_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- DEFAULT DATA
--- ============================================
-
--- Default Settings
-INSERT INTO settings (
-    phone, email, whatsapp_link, facebook_page, facebook_group,
-    office_address, company_name, about_text, services_text,
-    bkash, nagad, bank_account, wechat, alipay
-)
-VALUES (
-    '+880 1234-567890',
-    'info@hbtrade.com',
-    'https://wa.me/8801234567890',
-    'https://www.facebook.com/hbtrade',
-    'https://www.facebook.com/groups/hbtrade',
-    '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh',
-    'H&B Trade',
-    'H&B Trade is a leading logistics and sourcing company specializing in China to Bangladesh trade.',
-    'Product Sourcing, Wholesale Supply, Sea Shipping, Air Cargo, Hand Carry Services',
-    '0183522072',
-    '0183522072',
-    'Bank: The City Bank
-Name: MD ARIFUL ISLAM RONY
-Account Number: 2183964509001
-Branch: Gulshan-02 Avenue
-Routing Number: 225261732
-Dhaka, Bangladesh',
-    'wechat_hbtrade',
-    'alipay_hbtrade'
-) ON CONFLICT DO NOTHING;
-
--- Default Admin User (Password: HbTrade@2024!)
--- Only insert if admin doesn't already exist
-INSERT INTO users (name, email, password, role)
-SELECT 'Admin', 'admin@hbtrade.com', '$2a$10$SVQlCWDVvsOlC1nDbbah6OpEW2IM/psafOz4871GqSrH8I5Y91w02', 'super_admin'
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@hbtrade.com');
-
--- Ensure admin is super_admin
-UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.com' AND role = 'admin';
-
--- ============================================
 -- MIGRATION: Add missing columns to existing tables
--- Run these safely - they won't error if columns already exist
+-- MUST run BEFORE default data inserts since INSERT references new columns
 -- ============================================
 
 -- Orders: add new columns
@@ -365,6 +324,47 @@ ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat VARCHAR(100);
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay VARCHAR(100);
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS wechat_qr TEXT;
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS alipay_qr TEXT;
+
+-- ============================================
+-- DEFAULT DATA
+-- ============================================
+
+-- Default Settings
+INSERT INTO settings (
+    phone, email, whatsapp_link, facebook_page, facebook_group,
+    office_address, company_name, about_text, services_text,
+    bkash, nagad, bank_account, wechat, alipay
+)
+VALUES (
+    '+880 1234-567890',
+    'info@hbtrade.com',
+    'https://wa.me/8801234567890',
+    'https://www.facebook.com/hbtrade',
+    'https://www.facebook.com/groups/hbtrade',
+    '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh',
+    'H&B Trade',
+    'H&B Trade is a leading logistics and sourcing company specializing in China to Bangladesh trade.',
+    'Product Sourcing, Wholesale Supply, Sea Shipping, Air Cargo, Hand Carry Services',
+    '0183522072',
+    '0183522072',
+    'Bank: The City Bank
+Name: MD ARIFUL ISLAM RONY
+Account Number: 2183964509001
+Branch: Gulshan-02 Avenue
+Routing Number: 225261732
+Dhaka, Bangladesh',
+    'wechat_hbtrade',
+    'alipay_hbtrade'
+) ON CONFLICT DO NOTHING;
+
+-- Default Admin User (Password: HbTrade@2024!)
+-- Only insert if admin doesn't already exist
+INSERT INTO users (name, email, password, role)
+SELECT 'Admin', 'admin@hbtrade.com', '$2a$10$SVQlCWDVvsOlC1nDbbah6OpEW2IM/psafOz4871GqSrH8I5Y91w02', 'super_admin'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@hbtrade.com');
+
+-- Ensure admin is super_admin
+UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.com' AND role = 'admin';
 
 -- ============================================
 -- SCHEMA COMPLETE!
