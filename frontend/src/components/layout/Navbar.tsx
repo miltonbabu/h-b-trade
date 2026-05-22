@@ -76,21 +76,20 @@ export default function Navbar() {
               />
             </div>
             <div>
-              <span className="text-2xl md:text-3xl font-serif tracking-wide"><span className="text-red-600">H</span><span className="text-red-600">&</span><span className="text-green-700">B</span></span>
-              <span className="text-sm md:text-base font-serif text-secondary tracking-widest ml-1">TRADE</span>
+              <span className="text-2xl md:text-3xl font-serif tracking-[-0.02em]"><span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">H</span><span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">&</span><span className="bg-gradient-to-b from-green-600 to-green-800 bg-clip-text text-transparent">B</span></span>
+              <span className="text-sm md:text-base font-serif text-secondary/70 tracking-[0.15em] ml-1.5 font-medium">TRADE</span>
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative text-gray-700 hover:text-primary font-medium transition-colors group"
+                className="nav-link-linear text-gray-600 hover:text-primary font-medium"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary group-hover:w-full transition-all duration-300"></span>
               </Link>
             ))}
           </div>

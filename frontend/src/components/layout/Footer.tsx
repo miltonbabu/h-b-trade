@@ -46,40 +46,40 @@ export default function Footer() {
                 />
               </div>
               <div>
-                <span className="text-2xl md:text-3xl font-serif tracking-wide"><span className="text-red-500">H</span><span className="text-red-500">&</span><span className="text-green-700">B</span></span>
-                <span className="text-sm md:text-base font-serif text-secondary tracking-widest ml-1">TRADE</span>
+                <span className="text-2xl md:text-3xl font-serif tracking-[-0.02em]"><span className="bg-gradient-to-b from-red-400 to-red-600 bg-clip-text text-transparent">H</span><span className="bg-gradient-to-b from-red-400 to-red-600 bg-clip-text text-transparent">&</span><span className="bg-gradient-to-b from-green-500 to-green-700 bg-clip-text text-transparent">B</span></span>
+                <span className="text-sm md:text-base font-serif text-secondary/50 tracking-[0.15em] ml-1.5 font-medium">TRADE</span>
               </div>
             </div>
             <p className="text-gray-400 mb-4">
               Your trusted partner for China to Bangladesh product sourcing,
               wholesale supply, and logistics services.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <a
                 href="https://facebook.com/hbtradebd"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center hover:bg-gradient-to-br hover:from-primary hover:to-primary-700 transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 text-gray-400 hover:text-white"
               >
-                <Facebook size={20} />
+                <Facebook size={16} strokeWidth={1.5} />
               </a>
               <a
                 href="https://wa.me/8801835220729"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center hover:bg-gradient-to-br hover:from-green-500 hover:to-green-600 transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-green-500/20 hover:border-green-500/30 text-gray-400 hover:text-white"
               >
-                <MessageCircle size={20} />
+                <MessageCircle size={16} strokeWidth={1.5} />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">
+            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {[
                 { href: "/", label: "Home" },
                 { href: "/about", label: "About Us" },
@@ -91,9 +91,8 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-gray-400 hover:text-secondary transition-colors flex items-center gap-2 group"
+                    className="footer-link-linear text-gray-500 hover:text-secondary text-sm"
                   >
-                    <span className="w-0 group-hover:w-2 h-0.5 bg-secondary transition-all duration-300"></span>
                     {link.label}
                   </Link>
                 </li>
@@ -103,10 +102,10 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">
+            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
               Our Services
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {[
                 "Product Sourcing",
                 "Wholesale Supply",
@@ -117,9 +116,9 @@ export default function Footer() {
               ].map((service) => (
                 <li
                   key={service}
-                  className="text-gray-400 flex items-center gap-2"
+                  className="text-gray-500 flex items-center gap-2.5 text-sm"
                 >
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
+                  <span className="w-1 h-1 bg-primary/60 rounded-full"></span>
                   {service}
                 </li>
               ))}
@@ -128,44 +127,47 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-white">
+            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
               Contact Us
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5">
               <li className="flex items-start gap-3 group">
-                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Phone
-                    size={16}
-                    className="text-primary group-hover:text-white transition-colors"
+                    size={14}
+                    strokeWidth={1.5}
+                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
                 </div>
-                <div className="text-gray-400">
+                <div className="text-gray-500 text-sm">
                   <p>+880 1835220729</p>
                   <p>+86 13071095097</p>
                 </div>
               </li>
               <li className="flex items-start gap-3 group">
-                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Mail
-                    size={16}
-                    className="text-primary group-hover:text-white transition-colors"
+                    size={14}
+                    strokeWidth={1.5}
+                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-500 text-sm">
                   helpandbenefit30@gmail.com
                 </p>
               </li>
               <li className="flex items-start gap-3 group">
-                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary transition-colors">
+                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <MapPin
-                    size={16}
-                    className="text-primary group-hover:text-white transition-colors"
+                    size={14}
+                    strokeWidth={1.5}
+                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
                 </div>
-                <div className="text-gray-400 text-xs leading-relaxed">
-                  <p className="font-semibold text-gray-300 mb-1">🇨🇳 China</p>
+                <div className="text-gray-500 text-xs leading-relaxed">
+                  <p className="font-medium text-gray-400 mb-0.5">🇨🇳 China</p>
                   <p>Tahei Town, Baiyun District, Guangzhou</p>
-                  <p className="font-semibold text-gray-300 mt-2 mb-1">
+                  <p className="font-medium text-gray-400 mt-1.5 mb-0.5">
                     🇧🇩 Bangladesh
                   </p>
                   <p>Dhaka, Uttara, Sector 5, Road 3, House # 25</p>
@@ -176,14 +178,14 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <div className="border-t border-white/[0.06] mt-8 pt-8 text-center text-gray-600 text-sm">
           <p>
             &copy; {currentYear} H&B Trade. All rights reserved. Developed by{" "}
             <a
               href="https://www.linkedin.com/in/milton-babu/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-secondary hover:text-yellow-300 transition-colors font-medium"
+              className="text-secondary/80 hover:text-secondary transition-colors duration-300"
             >
               Milton Babu
             </a>

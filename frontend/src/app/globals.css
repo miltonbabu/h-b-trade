@@ -166,6 +166,246 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Linear Aesthetic: Glass button shimmer sweep */
+.btn-glass-linear {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glass-linear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(168, 85, 247, 0.06) 45%,
+    rgba(168, 85, 247, 0.12) 50%,
+    rgba(168, 85, 247, 0.06) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn-glass-linear:hover::before {
+  background-position: -100% 0;
+}
+
+.btn-glass-linear > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Linear Aesthetic: Green-tinted glass shimmer for tracking button */
+.btn-glass-linear-green::before {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(74, 222, 128, 0.06) 45%,
+    rgba(74, 222, 128, 0.12) 50%,
+    rgba(74, 222, 128, 0.06) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Linear Aesthetic: Nav link micro-interactions */
+.nav-link-linear {
+  position: relative;
+  letter-spacing: -0.01em;
+  transition: color 0.25s ease-out;
+}
+
+.nav-link-linear::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(var(--secondary))
+  );
+  transform: translateX(-50%);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link-linear:hover::after {
+  width: 100%;
+}
+
+.nav-link-linear::before {
+  content: "";
+  position: absolute;
+  inset: -4px -2px;
+  border-radius: 6px;
+  background: transparent;
+  transition: background 0.3s ease-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.nav-link-linear:hover::before {
+  background: hsl(var(--primary) / 0.04);
+}
+
+/* Linear Aesthetic: Footer social icon */
+.footer-social-linear {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s ease-out;
+}
+
+.footer-social-linear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+  pointer-events: none;
+}
+
+.footer-social-linear:hover::before {
+  opacity: 1;
+}
+
+.footer-social-linear::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.5s ease-out;
+  pointer-events: none;
+}
+
+.footer-social-linear:hover::after {
+  background-position: -100% 0;
+}
+
+/* Linear Aesthetic: Footer link */
+.footer-link-linear {
+  position: relative;
+  transition: color 0.25s ease-out;
+}
+
+.footer-link-linear::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 0;
+  height: 0.5px;
+  background: hsl(var(--secondary));
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-link-linear:hover::after {
+  width: 100%;
+}
+
+/* Linear Aesthetic: Footer contact icon container */
+.footer-icon-linear {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s ease-out;
+}
+
+.footer-icon-linear::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.4s ease-out;
+  pointer-events: none;
+}
+
+.footer-icon-linear:hover::after {
+  background-position: -100% 0;
+}
+
+/* Linear Aesthetic: Red CTA shimmer + pulse bloom */
+.btn-cta-linear {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-cta-linear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.08) 42%,
+    rgba(255, 255, 255, 0.14) 50%,
+    rgba(255, 255, 255, 0.08) 58%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  transition: background-position 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn-cta-linear:hover::before {
+  background-position: -150% 0;
+}
+
+.btn-cta-linear::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(239, 68, 68, 0) 0%,
+    rgba(239, 68, 68, 0) 100%
+  );
+  transition: background 0.5s ease-out;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.btn-cta-linear:hover::after {
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(239, 68, 68, 0.2) 0%,
+    rgba(239, 68, 68, 0) 70%
+  );
+}
+
+.btn-cta-linear > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #0d9488, #f97316);

@@ -39,6 +39,8 @@ lerna-debug.log*
 docker/.env
 !.env.example
 !.env.production.example
+!.env.supabase.example
+.env.supabase
 
 # Database files - Never commit database files!
 *.db

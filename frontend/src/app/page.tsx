@@ -65,6 +65,8 @@ export default function HomePage() {
       description: "Source from China's factories",
       color: "from-blue-500 to-blue-600",
       iconBg: "bg-blue-500",
+      iconColor: "text-blue-200",
+      titleColor: "text-blue-100",
     },
     {
       icon: Package,
@@ -73,6 +75,8 @@ export default function HomePage() {
       description: "Bulk products at best prices",
       color: "from-purple-500 to-purple-600",
       iconBg: "bg-purple-500",
+      iconColor: "text-purple-200",
+      titleColor: "text-purple-100",
     },
     {
       icon: Plane,
@@ -81,6 +85,8 @@ export default function HomePage() {
       description: "3-7 days fast delivery",
       color: "from-teal-500 to-teal-600",
       iconBg: "bg-teal-500",
+      iconColor: "text-teal-200",
+      titleColor: "text-teal-100",
     },
     {
       icon: Ship,
@@ -89,6 +95,8 @@ export default function HomePage() {
       description: "15-30 days cost-effective",
       color: "from-orange-500 to-orange-600",
       iconBg: "bg-orange-500",
+      iconColor: "text-orange-200",
+      titleColor: "text-orange-100",
     },
     {
       icon: Users,
@@ -97,6 +105,8 @@ export default function HomePage() {
       description: "1-3 days urgent delivery",
       color: "from-pink-500 to-pink-600",
       iconBg: "bg-pink-500",
+      iconColor: "text-pink-200",
+      titleColor: "text-pink-100",
     },
     {
       icon: Globe,
@@ -105,6 +115,8 @@ export default function HomePage() {
       description: "Full fair assistance",
       color: "from-amber-500 to-amber-600",
       iconBg: "bg-amber-500",
+      iconColor: "text-amber-200",
+      titleColor: "text-amber-100",
     },
   ];
 
@@ -220,14 +232,14 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 mb-4 md:mb-6">
               {heroServices.map((service, index) => (
                 <Link key={index} href={`/services/${service.slug}`}>
-                  <div className="group bg-white/10 backdrop-blur-md rounded-lg md:rounded-xl p-2 md:p-3 lg:p-3 border border-white/10 hover:border-white/30 hover:bg-white/20 transition-all duration-300 cursor-pointer text-center hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20 flex flex-col items-center justify-center h-[80px] md:h-[100px] lg:h-[100px] overflow-hidden">
-                    <div className={`w-8 h-8 md:w-10 md:h-10 lg:w-10 lg:h-10 ${service.iconBg} rounded-md md:rounded-lg flex items-center justify-center mx-auto mb-1 md:mb-1.5 group-hover:scale-110 transition-transform duration-300`}>
-                      <service.icon className="text-white" size={16} />
+                  <div className="group bg-slate-800/60 backdrop-blur-sm rounded-lg md:rounded-xl p-2 md:p-3 lg:p-3 border border-slate-700/40 hover:border-slate-600/60 hover:bg-slate-800/80 transition-all duration-300 cursor-pointer text-center hover:-translate-y-[3px] hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center h-[80px] md:h-[100px] lg:h-[100px] overflow-hidden">
+                    <div className={`w-9 h-9 md:w-11 md:h-11 lg:w-11 lg:h-11 ${service.iconBg} rounded-md md:rounded-lg flex items-center justify-center mx-auto mb-1 md:mb-1.5 group-hover:scale-110 transition-transform duration-300`}>
+                      <service.icon className="text-white" size={18} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-white font-semibold text-[10px] md:text-xs lg:text-xs mb-0 md:mb-0.5 group-hover:text-yellow-300 transition-colors leading-tight whitespace-nowrap">
+                    <h3 className={`${service.titleColor} font-semibold text-[11px] md:text-sm lg:text-sm mb-0 md:mb-0.5 group-hover:brightness-125 transition-all leading-tight whitespace-nowrap`}>
                       {service.title}
                     </h3>
-                    <p className="text-white/60 text-[8px] md:text-[10px] lg:text-[10px] leading-tight hidden md:block">
+                    <p className="text-slate-400/80 text-[9px] md:text-[11px] lg:text-[11px] leading-tight hidden md:block">
                       {service.description}
                     </p>
                   </div>
@@ -236,24 +248,24 @@ export default function HomePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center mt-4 md:mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center mt-4 md:mt-12">
               <Link href="/services/product-sourcing">
                 <Button
                   size="sm"
-                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold shadow-lg shadow-red-500/30 border border-red-500/50 transition-all duration-300"
+                  className="btn-cta-linear w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-red-600/80 backdrop-blur-xl hover:bg-red-500/90 text-white font-semibold tracking-[-0.01em] shadow-[0_0_24px_rgba(239,68,68,0.25),0_8px_32px_-8px_rgba(0,0,0,0.4)] hover:shadow-[0_0_32px_rgba(239,68,68,0.4),0_12px_40px_-8px_rgba(0,0,0,0.5)] border border-red-400/20 hover:border-red-400/40 transition-all duration-500 ease-out hover:-translate-y-[3px]"
                 >
-                  <Zap className="mr-1 md:mr-2" size={18} />
-                  <span className="text-xs md:text-sm">Request a Service</span>
-                  <ArrowRight className="ml-1 md:ml-2" size={18} />
+                  <Zap className="mr-1.5 md:mr-2" size={17} strokeWidth={2} />
+                  <span className="text-xs md:text-sm">Request a Product</span>
+                  <ArrowRight className="ml-1 md:ml-2 opacity-70" size={15} strokeWidth={1.5} />
                 </Button>
               </Link>
               <Link href="/tracking">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
+                  className="btn-glass-linear btn-glass-linear-green w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-green-600/30 backdrop-blur-xl hover:bg-green-500/40 text-white/90 border border-green-500/20 hover:border-green-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] font-medium tracking-[-0.01em] transition-all duration-500 ease-out hover:-translate-y-[3px]"
                 >
-                  <Search className="mr-1 md:mr-2" size={18} />
+                  <Search className="mr-1.5 md:mr-2 opacity-70" size={17} strokeWidth={1.5} />
                   <span className="text-xs md:text-sm">Track Shipment / Request</span>
                 </Button>
               </Link>
@@ -261,9 +273,9 @@ export default function HomePage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-purple-400/60 hover:bg-purple-500/20 hover:border-purple-400 font-semibold transition-all duration-300"
+                  className="btn-glass-linear w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-purple-600/30 backdrop-blur-xl hover:bg-purple-500/40 text-white/90 border border-purple-500/20 hover:border-purple-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_0_20px_rgba(168,85,247,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] font-medium tracking-[-0.01em] transition-all duration-500 ease-out hover:-translate-y-[3px]"
                 >
-                  <Package className="mr-1 md:mr-2" size={18} />
+                  <Package className="mr-1.5 md:mr-2 opacity-70 group-hover:opacity-100" size={17} strokeWidth={1.5} />
                   <span className="text-xs md:text-sm">Wholesale Products</span>
                 </Button>
               </Link>
