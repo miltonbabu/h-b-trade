@@ -35,13 +35,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/hbtrade_logo.png", sizes: "16x16", type: "image/png" },
+      { url: "/hbtrade_logo.png", sizes: "32x32", type: "image/png" },
       { url: "/hbtrade_logo.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/favicon-32x32.png",
+    shortcut: "/hbtrade_logo.png",
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/hbtrade_logo.png", sizes: "180x180", type: "image/png" },
     ],
   },
 };
@@ -56,20 +56,20 @@ export default function RootLayout({
       <head>
         <link
           rel="icon"
-          href="/favicon-32x32.png"
+          href="/hbtrade_logo.png"
           sizes="32x32"
           type="image/png"
         />
         <link
           rel="icon"
-          href="/favicon-16x16.png"
+          href="/hbtrade_logo.png"
           sizes="16x16"
           type="image/png"
         />
-        <link rel="shortcut icon" href="/favicon-32x32.png" />
+        <link rel="shortcut icon" href="/hbtrade_logo.png" />
         <link
           rel="apple-touch-icon"
-          href="/apple-touch-icon.png"
+          href="/hbtrade_logo.png"
           sizes="180x180"
         />
         <link rel="manifest" href="/manifest.json" />
