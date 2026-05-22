@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Package, FileText, MessageSquare, Clock, TrendingUp, Users, Wrench } from 'lucide-react';
-import api from '@/lib/api';
+import { Package, FileText, MessageSquare, Clock, TrendingUp, Users, Wrench, AlertCircle } from 'lucide-react';
+import api, { API_URL, isApiMisconfigured } from '@/lib/api';
 import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 
 interface DashboardData {
@@ -48,20 +48,48 @@ interface DashboardData {
   }>;
 }
 
+interface ApiErrorState {
+  message: string;
+  status?: number;
+  hint?: string;
+}
+
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiErrorState | null>(null);
+  const misconfigured = isApiMisconfigured();
 
   useEffect(() => {
     fetchDashboard();
   }, []);
 
   const fetchDashboard = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await api.get('/admin/dashboard');
       setData(response.data.data);
-    } catch (error) {
-      console.error('Failed to fetch dashboard:', error);
+    } catch (err) {
+      const e = err as { response?: { status?: number; data?: { error?: string } }; message?: string; code?: string };
+      const status = e?.response?.status;
+      let hint: string | undefined;
+      if (misconfigured) {
+        hint = `Frontend is calling ${API_URL} from a non-local domain. Set NEXT_PUBLIC_API_URL in your Vercel project to the deployed backend URL and redeploy.`;
+      } else if (e?.code === 'ERR_NETWORK' || !status) {
+        hint = `Could not reach ${API_URL}. Check the backend is awake (Render free tier sleeps after 15 min) and CORS allows this domain.`;
+      } else if (status === 401) {
+        hint = 'Your session expired. You should be redirected to login.';
+      } else if (status === 403) {
+        hint = 'You do not have permission to view the dashboard.';
+      } else if (status && status >= 500) {
+        hint = 'Backend error. Check server logs.';
+      }
+      setError({
+        message: e?.response?.data?.error || e?.message || 'Unknown error',
+        status,
+        hint,
+      });
     } finally {
       setLoading(false);
     }
@@ -115,6 +143,40 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
       </div>
+
+      {misconfigured && !error && (
+        <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 flex gap-3">
+          <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
+          <div className="text-sm">
+            <p className="font-semibold text-amber-900">API URL is pointing at localhost on a deployed site.</p>
+            <p className="text-amber-800 mt-1">
+              Currently calling <code className="bg-amber-100 px-1 py-0.5 rounded">{API_URL}</code>.
+              Set <code className="bg-amber-100 px-1 py-0.5 rounded">NEXT_PUBLIC_API_URL</code> in your Vercel project to the deployed backend URL (e.g. <code className="bg-amber-100 px-1 py-0.5 rounded">https://api.hbtrade.ltd/api</code>) and redeploy.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-300 rounded-lg p-4 flex gap-3">
+          <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div className="text-sm flex-1">
+            <p className="font-semibold text-red-900">
+              Failed to load dashboard{error.status ? ` (HTTP ${error.status})` : ''}: {error.message}
+            </p>
+            <p className="text-red-800 mt-1">
+              API URL: <code className="bg-red-100 px-1 py-0.5 rounded">{API_URL}</code>
+            </p>
+            {error.hint && <p className="text-red-800 mt-1">{error.hint}</p>}
+            <button
+              onClick={fetchDashboard}
+              className="mt-2 text-red-900 underline hover:text-red-700 font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">

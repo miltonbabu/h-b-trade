@@ -91,6 +91,29 @@ Vercel automatically sets up continuous deployment from your Git repository. Any
 
 ## Common Issues
 
+### Dashboard shows 0 for orders / messages / requests after deploy
+
+This means the frontend can't reach the backend. **The most common cause is a missing `NEXT_PUBLIC_API_URL` env var on Vercel** — without it, the build falls back to `http://localhost:5000/api` which a browser on your live domain can't reach.
+
+The admin dashboard will now display a yellow banner identifying this exact misconfiguration, or a red banner with the real error message + the API URL being called.
+
+To fix:
+
+1. In Vercel → your project → **Settings** → **Environment Variables**
+2. Add `NEXT_PUBLIC_API_URL` = `https://api.hbtrade.ltd/api` (must include `/api` at the end and the `https://` protocol)
+3. Apply to **all** environments (Production, Preview, Development)
+4. Trigger a **redeploy** (env-var changes are only picked up by new builds — `NEXT_PUBLIC_*` is baked into the JS bundle at build time)
+
+After redeploy, hard-refresh the admin dashboard. The counts should populate.
+
+### Render backend cold start (free tier)
+
+Render's free tier puts the service to sleep after 15 minutes of inactivity. The first request after sleep can take 30–60 seconds. If the dashboard's red banner says "Network Error" briefly after a quiet period, click **Retry** — the second attempt should succeed.
+
+### CORS errors
+
+If you see `Access-Control-Allow-Origin` errors in the browser console, your backend's `FRONTEND_URL` env var doesn't match the Vercel domain. Set it on Render to the exact origin (e.g. `https://your-app.vercel.app`, no trailing slash) and restart the backend.
+
 ### 1. API Connection Issues
 - **Solution**: Ensure your backend API is accessible and CORS is properly configured
 

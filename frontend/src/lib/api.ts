@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+// Detect the #1 production misconfiguration: NEXT_PUBLIC_API_URL was never set on
+// the host (e.g. Vercel), so the build falls back to localhost and a browser on the
+// live domain can't reach the API.
+export const isApiMisconfigured = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+  const apiPointsToLocalhost = /localhost|127\.0\.0\.1/.test(API_URL);
+  return !isLocalHost && apiPointsToLocalhost;
+};
 
 export const api = axios.create({
   baseURL: API_URL,

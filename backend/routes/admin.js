@@ -89,7 +89,7 @@ router.get("/order-statuses", (req, res) => {
 router.get("/notifications", async (req, res) => {
   try {
     const unreadMessages = await safeGetOne(
-      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL"
+      "SELECT COUNT(*) as count FROM messages WHERE is_read = FALSE AND deleted_at IS NULL"
     );
     const pendingRequests = await safeGetOne(
       "SELECT COUNT(*) as count FROM product_requests WHERE status = 'pending' AND deleted_at IS NULL"
@@ -120,7 +120,7 @@ router.get("/notifications", async (req, res) => {
 // Mark messages as read
 router.put("/messages/mark-read", async (req, res) => {
   try {
-    await db.run("UPDATE messages SET is_read = 1 WHERE is_read = 0");
+    await db.run("UPDATE messages SET is_read = TRUE WHERE is_read = FALSE");
     res.json({ success: true, message: "All messages marked as read" });
   } catch (error) {
     logger.error("Mark messages read error:", error);
@@ -280,7 +280,7 @@ router.get("/dashboard", async (req, res) => {
       "SELECT COUNT(*) as count FROM messages WHERE deleted_at IS NULL",
     );
     const unreadMessages = await safeGetOne(
-      "SELECT COUNT(*) as count FROM messages WHERE is_read = 0 AND deleted_at IS NULL",
+      "SELECT COUNT(*) as count FROM messages WHERE is_read = FALSE AND deleted_at IS NULL",
     );
 
     const pendingOrders = await safeGetOne(
@@ -1025,7 +1025,7 @@ router.put("/messages/:id/read", async (req, res) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    await db.run("UPDATE messages SET is_read = 1 WHERE id = ?", [
+    await db.run("UPDATE messages SET is_read = TRUE WHERE id = ?", [
       req.params.id,
     ]);
 
