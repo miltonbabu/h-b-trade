@@ -441,7 +441,6 @@
 
 .mobile-tab-active {
   @apply relative;
-  color: hsl(var(--primary));
   background: linear-gradient(
     135deg,
     rgba(13, 148, 136, 0.1),

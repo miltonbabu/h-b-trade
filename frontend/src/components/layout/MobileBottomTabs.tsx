@@ -56,13 +56,13 @@ export default function MobileBottomTabs() {
               }`}
             >
               <tab.icon
-                className={`mobile-tab-icon ${isActive ? "text-primary" : ""}`}
+                className={`mobile-tab-icon ${isActive ? "text-primary" : "text-gray-400"}`}
                 size={22}
                 strokeWidth={isActive ? 2.5 : 2}
               />
               <span
                 className={`text-[10px] font-medium leading-none ${
-                  isActive ? "text-primary" : ""
+                  isActive ? "text-orange-500" : "text-gray-400"
                 }`}
               >
                 {tab.label}
