@@ -270,10 +270,10 @@ export default function ServicesPage() {
                   <ArrowRight className="ml-2" size={20} />
                 </Button>
               </Link>
-              <Link href="/services/track">
+              <Link href="/tracking">
                 <Button size="lg" variant="outline" className="bg-white text-primary border-white hover:bg-gray-100 px-8">
                   <Search className="mr-2" size={20} />
-                  Track Service Request
+                  Track Request
                 </Button>
               </Link>
               <Link href="/contact">

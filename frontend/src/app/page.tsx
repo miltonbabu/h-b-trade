@@ -284,18 +284,8 @@ export default function HomePage() {
                   variant="outline"
                   className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-green-400/60 hover:bg-green-500/20 hover:border-green-400 font-semibold transition-all duration-300"
                 >
-                  <Ship className="mr-1 md:mr-2" size={18} />
-                  <span className="text-xs md:text-sm">Track Shipment</span>
-                </Button>
-              </Link>
-              <Link href="/services/track">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-blue-400/60 hover:bg-blue-500/20 hover:border-blue-400 font-semibold transition-all duration-300"
-                >
                   <Search className="mr-1 md:mr-2" size={18} />
-                  <span className="text-xs md:text-sm">Track Service Request</span>
+                  <span className="text-xs md:text-sm">Track Shipment / Request</span>
                 </Button>
               </Link>
             </div>
