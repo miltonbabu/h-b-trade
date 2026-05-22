@@ -64,12 +64,12 @@ export default function Navbar() {
       <nav className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+            <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
               <Image
                 src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"
-                width={48}
-                height={48}
+                width={64}
+                height={64}
                 className="w-full h-full object-contain"
                 priority
               />

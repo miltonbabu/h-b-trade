@@ -36,12 +36,12 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
+              <div className="w-14 h-14 flex items-center justify-center overflow-hidden">
                 <Image
                   src="/hbtrade_logo.png"
                   alt="H&B Trade Logo"
-                  width={40}
-                  height={40}
+                  width={56}
+                  height={56}
                   className="w-full h-full object-contain"
                 />
               </div>
