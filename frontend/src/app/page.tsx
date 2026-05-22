@@ -267,6 +267,16 @@ export default function HomePage() {
                   <span className="text-xs md:text-sm">Track Shipment / Request</span>
                 </Button>
               </Link>
+              <Link href="/wholesale-products">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-transparent backdrop-blur-sm text-white border border-purple-400/60 hover:bg-purple-500/20 hover:border-purple-400 font-semibold transition-all duration-300"
+                >
+                  <Package className="mr-1 md:mr-2" size={18} />
+                  <span className="text-xs md:text-sm">Wholesale Products</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
