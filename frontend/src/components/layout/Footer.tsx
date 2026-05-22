@@ -107,19 +107,21 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5">
               {[
-                "Product Sourcing",
-                "Wholesale Supply",
-                "Air Cargo",
-                "Sea Shipping",
-                "Hand Carry Service",
-                "Canton Fair Support",
+                { href: "/services/product-sourcing", label: "Product Sourcing" },
+                { href: "/services/wholesale-supply", label: "Wholesale Supply" },
+                { href: "/services/air-cargo", label: "Air Cargo" },
+                { href: "/services/sea-shipping", label: "Sea Shipping" },
+                { href: "/services/hand-carry", label: "Hand Carry Service" },
+                { href: "/services/canton-fair", label: "Canton Fair Support" },
               ].map((service) => (
-                <li
-                  key={service}
-                  className="text-gray-500 flex items-center gap-2.5 text-sm"
-                >
-                  <span className="w-1 h-1 bg-primary/60 rounded-full"></span>
-                  {service}
+                <li key={service.href}>
+                  <Link
+                    href={service.href}
+                    className="footer-link-linear text-gray-500 hover:text-secondary text-sm flex items-center gap-2.5"
+                  >
+                    <span className="w-1 h-1 bg-primary/60 rounded-full"></span>
+                    {service.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -132,45 +134,51 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3.5">
               <li className="flex items-start gap-3 group">
-                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href="tel:+8801835220729" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Phone
                     size={14}
                     strokeWidth={1.5}
                     className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
-                </div>
+                </a>
                 <div className="text-gray-500 text-sm">
-                  <p>+880 1835220729</p>
-                  <p>+86 13071095097</p>
+                  <a href="tel:+8801835220729" className="hover:text-secondary transition-colors">+880 1835220729</a><br />
+                  <a href="tel:+8613071095097" className="hover:text-secondary transition-colors">+86 13071095097</a>
                 </div>
               </li>
               <li className="flex items-start gap-3 group">
-                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href="mailto:helpandbenefit30@gmail.com" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Mail
                     size={14}
                     strokeWidth={1.5}
                     className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
-                </div>
-                <p className="text-gray-500 text-sm">
+                </a>
+                <a href="mailto:helpandbenefit30@gmail.com" className="text-gray-500 text-sm hover:text-secondary transition-colors">
                   helpandbenefit30@gmail.com
-                </p>
+                </a>
               </li>
               <li className="flex items-start gap-3 group">
-                <div className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <MapPin
                     size={14}
                     strokeWidth={1.5}
                     className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
-                </div>
+                </a>
                 <div className="text-gray-500 text-xs leading-relaxed">
-                  <p className="font-medium text-gray-400 mb-0.5">🇨🇳 China</p>
-                  <p>Tahei Town, Baiyun District, Guangzhou</p>
-                  <p className="font-medium text-gray-400 mt-1.5 mb-0.5">
-                    🇧🇩 Bangladesh
+                  <p className="font-medium text-gray-400 mb-0.5">
+                    <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">🇨🇳 China</a>
                   </p>
-                  <p>Dhaka, Uttara, Sector 5, Road 3, House # 25</p>
+                  <p>
+                    <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">Tahei Town, Baiyun District, Guangzhou</a>
+                  </p>
+                  <p className="font-medium text-gray-400 mt-1.5 mb-0.5">
+                    <a href="https://maps.google.com/?q=Dhaka+Uttora+Sector+5+Road+3+House+25" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">🇧🇩 Bangladesh</a>
+                  </p>
+                  <p>
+                    <a href="https://maps.google.com/?q=Dhaka+Uttora+Sector+5+Road+3+House+25" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">Dhaka, Uttara, Sector 5, Road 3, House # 25</a>
+                  </p>
                 </div>
               </li>
             </ul>
