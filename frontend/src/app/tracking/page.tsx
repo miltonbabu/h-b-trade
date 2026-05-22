@@ -385,7 +385,7 @@ export default function UnifiedTrackingPage() {
                       {data.serviceRequest.price !== null && data.serviceRequest.price !== undefined && data.serviceRequest.price > 0 && (
                         <div className="mt-4 bg-green-50 rounded-lg p-3">
                           <p className="text-sm font-medium text-green-800">Quoted Price</p>
-                          <p className="text-xl font-bold text-green-700">${data.serviceRequest.price}</p>
+                          <p className="text-xl font-bold text-green-700">৳{data.serviceRequest.price}</p>
                         </div>
                       )}
                     </CardContent>

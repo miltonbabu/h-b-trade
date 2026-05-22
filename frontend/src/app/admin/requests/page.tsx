@@ -12,7 +12,7 @@ import { ProductRequest } from '@/types';
 const DETAIL_LABELS: Record<string, string> = {
   product_name: 'Product Name',
   product_link: 'Product Link / Reference',
-  target_price: 'Target Price (USD)',
+  target_price: 'Target Price (৳ BDT)',
   quantity: 'Quantity',
   packaging_type: 'Packaging Type',
   pack_quantity: 'Qty per Pack / Inner Unit',

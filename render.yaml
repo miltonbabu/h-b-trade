@@ -1,115 +1,81 @@
 # Render Blueprint for H&B Trade Platform
-# This file defines the infrastructure for deploying on Render
+# Backend on Render + Frontend on Vercel + Database on Supabase
 # Documentation: https://render.com/docs/blueprint-spec
 
 services:
   # ============================================
-  # PostgreSQL Database (Private Service)
-  # ============================================
-  - type: pserv
-    name: hbtrade-db
-    env: docker
-    plan: starter # Free tier (1GB storage, 97 connections)
-    region: oregon # Change to your preferred region: oregon, frankfurt, singapore, etc.
-    envVars:
-      - key: POSTGRES_DB
-        value: hbtrade
-      - key: POSTGRES_USER
-        value: postgres
-      - key: POSTGRES_PASSWORD
-        generateValue: true # Render generates a secure password automatically
-
-  # ============================================
-  # Backend API Service
+  # Backend API Service (connected to Supabase)
   # ============================================
   - type: web
     name: hbtrade-backend
     env: docker
-    plan: starter # Free tier (spins down after 15 min inactivity)
-    region: oregon # Same region as database
+    plan: starter
+    region: oregon
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     healthCheckPath: /api/health
     envVars:
+      # Server
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
-      # Database Connection
+      # Supabase Database Connection
+      - key: DATABASE_URL
+        sync: false # Set manually: postgresql://postgres.REF:PASSWORD@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
       - key: DB_HOST
-        fromService:
-          name: hbtrade-db
-          type: pserv
-          property: host
+        sync: false # e.g. aws-1-ap-southeast-1.pooler.supabase.com
       - key: DB_PORT
-        value: 5432
+        value: "5432"
       - key: DB_NAME
-        value: hbtrade
-      - key: DB_USER
         value: postgres
+      - key: DB_USER
+        sync: false # e.g. postgres.YOUR_PROJECT_REF
       - key: DB_PASSWORD
-        fromService:
-          name: hbtrade-db
-          type: pserv
-          envVarKey: POSTGRES_PASSWORD
+        sync: false # Your Supabase DB password
+      - key: DB_SSL
+        value: "true"
+      # Supabase (optional direct access)
+      - key: SUPABASE_URL
+        sync: false # https://YOUR_PROJECT_REF.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       # Authentication
       - key: JWT_SECRET
-        generateValue: true # Render generates a 64-char secure secret
+        generateValue: true
       - key: JWT_EXPIRE
         value: 7d
-      # CORS & Frontend
+      # CORS & Frontend (Vercel)
       - key: FRONTEND_URL
-        value: https://hbtrade-frontend.onrender.com
+        value: https://h-b-trade.vercel.app
       # File Upload
       - key: UPLOAD_DIR
         value: uploads
       - key: MAX_FILE_SIZE
-        value: 5242880
+        value: "5242880"
       # Logging
       - key: LOG_LEVEL
         value: info
 
-  # ============================================
-  # Frontend Web Service (Next.js)
-  # ============================================
-  - type: web
-    name: hbtrade-frontend
-    env: docker
-    plan: starter # Free tier (spins down after 15 min inactivity)
-    region: oregon # Same region as backend
-    dockerContext: ./frontend
-    dockerfilePath: ./frontend/Dockerfile
-    healthCheckPath: /
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: HOSTNAME
-        value: 0.0.0.0
-    # NOTE: NEXT_PUBLIC_API_URL must be set as a build environment variable
-    # in Render dashboard for it to be embedded at build time.
-    # Go to: Frontend Service > Environment > Add Environment Variable
-    # Key: NEXT_PUBLIC_API_URL
-    # Value: https://hbtrade-backend.onrender.com/api
-    # Then trigger a new deploy.
-
 # ============================================
-# NOTES:
+# SETUP NOTES:
 # ============================================
-# 1. Free Tier Limitations:
-#    - Services spin down after 15 minutes of inactivity
+# 1. After creating the service, set these secrets in Render Dashboard:
+#    - DATABASE_URL: Your Supabase PostgreSQL connection string
+#    - DB_HOST, DB_USER, DB_PASSWORD: Individual Supabase DB params
+#    - SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (optional)
+#
+# 2. Frontend is deployed on Vercel (see vercel.json)
+#    - Set NEXT_PUBLIC_API_URL in Vercel: https://hbtrade-backend.onrender.com/api
+#
+# 3. Supabase Database:
+#    - Run database/supabase-schema.sql in Supabase SQL Editor
+#    - Default admin: admin@hbtrade.com / HbTrade@2024!
+#
+# 4. Free Tier Limitations:
+#    - Render free tier spins down after 15 min inactivity
 #    - Cold start takes 30-60 seconds
 #    - 750 hours/month free per service
-#
-# 2. Production Upgrade:
-#    - Change plan from 'starter' to 'standard' ($7/month per service)
-#    - Services stay always on
-#    - More RAM and CPU
-#
-# 3. Custom Domain:
-#    - Add custom domain in Render dashboard
-#    - Update FRONTEND_URL and NEXT_PUBLIC_API_URL accordingly
-#
-# 4. Database Initialization:
-#    - After deployment, run: database/schema.sql
-#    - Create admin user using backend/scripts/createAdmin.js
 # ============================================

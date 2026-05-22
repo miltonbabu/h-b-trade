@@ -108,6 +108,15 @@ const initPostgresTables = async () => {
       await client.query(
         "ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100)"
       );
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS company VARCHAR(255)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS target_price VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS packaging_type VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS pack_quantity VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS master_pack_quantity VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS pack_dimensions VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS weight_per_pack VARCHAR(100)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS sample_needed VARCHAR(50)");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS specifications TEXT");
     } catch (e) {
       // Column already exists, ignore error
     }
@@ -391,12 +400,19 @@ const initSQLite = async () => {
     )
   `);
 
-  // Add tracking_number column to product_requests if it doesn't exist
+  // Add columns to product_requests if they don't exist
   const productRequestsInfo = db.exec("PRAGMA table_info(product_requests)");
   if (productRequestsInfo.length > 0) {
     const prColumns = productRequestsInfo[0].values.map((col) => col[1]);
-    if (!prColumns.includes("tracking_number")) {
-      db.run("ALTER TABLE product_requests ADD COLUMN tracking_number TEXT");
+    const productRequestsExtra = [
+      'tracking_number', 'company', 'target_price', 'packaging_type',
+      'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
+      'weight_per_pack', 'sample_needed', 'specifications'
+    ];
+    for (const col of productRequestsExtra) {
+      if (!prColumns.includes(col)) {
+        db.run(`ALTER TABLE product_requests ADD COLUMN ${col} TEXT`);
+      }
     }
   }
 
@@ -646,6 +662,13 @@ const convertPlaceholders = (sql, params) => {
   return { sql, params };
 };
 
+// sql.js (and pg) reject `undefined` bindings — coerce to null so any handler that
+// destructures missing fields from req.body doesn't crash.
+const sanitizeParams = (params) => {
+  if (!Array.isArray(params)) return params;
+  return params.map(p => p === undefined ? null : p);
+};
+
 const getDateSQL = {
   now: isProduction ? 'NOW()' : "datetime('now')",
   today: isProduction ? 'CURRENT_DATE' : "DATE('now')",
@@ -655,6 +678,7 @@ const getDateSQL = {
 };
 
 const query = async (sql, params = []) => {
+  params = sanitizeParams(params);
   if (isProduction && pgPool) {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
     const result = await pgPool.query(convertedSql, convertedParams);
@@ -682,6 +706,7 @@ const query = async (sql, params = []) => {
 };
 
 const getOne = async (sql, params = []) => {
+  params = sanitizeParams(params);
   if (isProduction && pgPool) {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
     const result = await pgPool.query(convertedSql, convertedParams);
@@ -708,6 +733,7 @@ const getOne = async (sql, params = []) => {
 };
 
 const getMany = async (sql, params = []) => {
+  params = sanitizeParams(params);
   if (isProduction && pgPool) {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
     const result = await pgPool.query(convertedSql, convertedParams);
@@ -734,6 +760,7 @@ const getMany = async (sql, params = []) => {
 };
 
 const run = async (sql, params = []) => {
+  params = sanitizeParams(params);
   if (isProduction && pgPool) {
     const { sql: convertedSql, params: convertedParams } = convertPlaceholders(sql, params);
     const result = await pgPool.query(convertedSql, convertedParams);

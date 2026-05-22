@@ -45,7 +45,7 @@ const STATUS_LABELS: Record<string, string> = {
 const DETAIL_LABELS: Record<string, string> = {
   product_name: 'Product Name',
   product_link: 'Product Link / Reference',
-  target_price: 'Target Price (USD)',
+  target_price: 'Target Price (৳ BDT)',
   quantity: 'Quantity',
   packaging_type: 'Packaging Type',
   pack_quantity: 'Qty per Pack / Inner Unit',
@@ -56,12 +56,12 @@ const DETAIL_LABELS: Record<string, string> = {
   sample_needed: 'Sample Needed?',
   product_category: 'Product Category',
   product_names: 'Specific Products Needed',
-  budget_range: 'Total Budget Range (USD)',
+  budget_range: 'Total Budget Range (৳ BDT)',
   cargo_description: 'Cargo Description',
   total_packs: 'Total Number of Packs',
   total_weight: 'Total Weight (kg)',
   volume_weight: 'Volume Weight (kg)',
-  cargo_value: 'Total Cargo Value (USD)',
+  cargo_value: 'Total Cargo Value (৳ BDT)',
   hs_code: 'HS Code',
   origin_airport: 'Origin Airport',
   destination_airport: 'Destination Airport',
@@ -75,7 +75,7 @@ const DETAIL_LABELS: Record<string, string> = {
   item_description: 'Item Description',
   number_of_items: 'Number of Items',
   box_dimensions: 'Package Dimensions (L×W×H cm)',
-  declared_value: 'Declared Value (USD)',
+  declared_value: 'Declared Value (৳ BDT)',
   urgency: 'Urgency Level',
   pickup_location: 'Pickup Location',
   delivery_location: 'Delivery Location',
@@ -186,10 +186,41 @@ export default function AdminServiceRequestsPage() {
     }
   };
 
-  const openConvertModal = (request: ServiceRequest) => {
-    setSelectedRequest(request);
-    setConvertPrice('');
-    setConvertShipping('air-cargo');
+  const SHIPPING_DEFAULT_BY_SERVICE: Record<string, string> = {
+    air_cargo: 'air-cargo',
+    sea_shipping: 'sea-shipping',
+    hand_carry: 'hand-carry',
+    product_sourcing: 'air-cargo',
+    wholesale_supply: 'sea-shipping',
+    canton_fair: 'air-cargo',
+  };
+
+  const parseDetails = (req: ServiceRequest): Record<string, string> => {
+    if (!req.details) return {};
+    try {
+      return typeof req.details === 'string' ? JSON.parse(req.details) : (req.details as unknown as Record<string, string>);
+    } catch { return {}; }
+  };
+
+  const stripNonNumeric = (v?: string) => {
+    if (!v) return '';
+    const m = String(v).replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+    return m ? m[0] : '';
+  };
+
+  const openConvertModal = async (request: ServiceRequest) => {
+    let full = request;
+    try {
+      const response = await api.get(`/admin/service-requests/${request.id}`);
+      full = response.data.data;
+    } catch (e) { /* fall back to row data */ }
+    setSelectedRequest(full);
+    const details = parseDetails(full);
+    const priceSeed = stripNonNumeric(
+      details.declared_value || details.cargo_value || details.budget_range || details.target_price
+    ) || (full.price ? String(full.price) : '');
+    setConvertPrice(priceSeed);
+    setConvertShipping(SHIPPING_DEFAULT_BY_SERVICE[full.service_type] || 'air-cargo');
     setShowConvertModal(true);
   };
 
@@ -582,9 +613,19 @@ export default function AdminServiceRequestsPage() {
       )}
 
       {/* Convert to Order Modal */}
-      {showConvertModal && selectedRequest && (
+      {showConvertModal && selectedRequest && (() => {
+        const details = parseDetails(selectedRequest);
+        const itemName = details.product_name || details.product_names || details.cargo_description || details.item_description || SERVICE_TYPE_LABELS[selectedRequest.service_type] || '—';
+        const valueLabel = details.declared_value || details.cargo_value || details.budget_range || details.target_price;
+        const quantity = details.quantity || details.number_of_items || details.total_packs;
+        const weight = details.total_weight || details.weight_per_pack;
+        const dimensions = details.pack_dimensions || details.box_dimensions;
+        const urgency = details.urgency;
+        const pickup = details.pickup_location || details.origin_airport || details.origin_port || details.sender_address;
+        const delivery = details.delivery_location || details.destination_airport || details.destination_port || details.delivery_warehouse;
+        return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="text-green-500" size={20} />
@@ -595,21 +636,44 @@ export default function AdminServiceRequestsPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600">Service Request:</p>
-                <p className="font-medium">{SERVICE_TYPE_LABELS[selectedRequest.service_type]}</p>
-                <p className="text-sm text-gray-500">by {selectedRequest.name} ({selectedRequest.email})</p>
-                <p className="text-xs text-primary mt-1">Tracking: {selectedRequest.tracking_number}</p>
+              <div className="bg-gray-50 rounded-lg p-4 space-y-1">
+                <p className="text-xs uppercase text-gray-500">Service Request</p>
+                <p className="font-semibold">{SERVICE_TYPE_LABELS[selectedRequest.service_type]}</p>
+                <p className="text-sm text-gray-700">{selectedRequest.name}</p>
+                <p className="text-xs text-gray-500">{selectedRequest.email}{selectedRequest.phone ? ` · ${selectedRequest.phone}` : ''}{selectedRequest.whatsapp ? ` · WhatsApp ${selectedRequest.whatsapp}` : ''}</p>
+                <p className="text-xs text-primary font-mono">Tracking: {selectedRequest.tracking_number}</p>
               </div>
 
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 space-y-2">
+                <p className="text-xs uppercase text-blue-700 font-semibold">Item Being Converted</p>
+                <p className="text-sm font-medium text-gray-900 break-words">{itemName}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-blue-100">
+                  {valueLabel && (<div><span className="text-gray-500">Customer-declared value:</span> <span className="font-medium text-gray-900">{valueLabel}</span></div>)}
+                  {quantity && (<div><span className="text-gray-500">Quantity:</span> <span className="font-medium text-gray-900">{quantity}</span></div>)}
+                  {weight && (<div><span className="text-gray-500">Weight:</span> <span className="font-medium text-gray-900">{weight}</span></div>)}
+                  {dimensions && (<div><span className="text-gray-500">Dimensions:</span> <span className="font-medium text-gray-900">{dimensions}</span></div>)}
+                  {urgency && (<div className="col-span-2"><span className="text-gray-500">Urgency:</span> <span className="font-medium text-gray-900 capitalize">{urgency.replace(/_/g, ' ')}</span></div>)}
+                  {pickup && (<div className="col-span-2"><span className="text-gray-500">Pickup:</span> <span className="font-medium text-gray-900">{pickup}</span></div>)}
+                  {delivery && (<div className="col-span-2"><span className="text-gray-500">Delivery:</span> <span className="font-medium text-gray-900">{delivery}</span></div>)}
+                </div>
+              </div>
+
+              {selectedRequest.admin_notes && (
+                <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3">
+                  <p className="text-xs uppercase text-yellow-800 font-semibold mb-1">Admin Notes</p>
+                  <p className="text-sm text-gray-800 whitespace-pre-wrap">{selectedRequest.admin_notes}</p>
+                </div>
+              )}
+
               <div>
-                <label className="block text-sm font-medium mb-1">Price (BDT)</label>
+                <label className="block text-sm font-medium mb-1">Order Price (৳ BDT)</label>
                 <Input
                   type="number"
                   value={convertPrice}
                   onChange={(e) => setConvertPrice(e.target.value)}
-                  placeholder="Enter order price"
+                  placeholder="Enter order price in BDT"
                 />
+                {valueLabel && (<p className="text-xs text-gray-500 mt-1">Pre-filled from customer-declared value · adjust as needed</p>)}
               </div>
 
               <div>
@@ -623,6 +687,7 @@ export default function AdminServiceRequestsPage() {
                   <option value="sea-shipping">Sea Shipping</option>
                   <option value="hand-carry">Hand Carry</option>
                 </select>
+                <p className="text-xs text-gray-500 mt-1">Auto-selected based on service type · change if needed</p>
               </div>
 
               <div className="flex gap-2 pt-4">
@@ -640,7 +705,8 @@ export default function AdminServiceRequestsPage() {
             </CardContent>
           </Card>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-# Backend Dockerfile - Production Ready
+# Backend Dockerfile - Production Ready (Supabase + PostgreSQL)
 # Multi-stage build for optimized image size
 
 # ============================================
@@ -8,7 +8,7 @@ FROM node:18-alpine AS deps
 
 WORKDIR /app
 
-# Install dependencies for native modules (bcrypt, etc.)
+# Install dependencies for native modules (bcrypt, pg-native, etc.)
 RUN apk add --no-cache python3 make g++
 
 # Copy package files
@@ -39,7 +39,7 @@ COPY --from=deps --chown=hbtrade:nodejs /app/node_modules ./node_modules
 COPY --chown=hbtrade:nodejs . .
 
 # Create uploads and logs directories with proper permissions
-RUN mkdir -p uploads logs && chown -R hbtrade:nodejs uploads logs
+RUN mkdir -p uploads logs data && chown -R hbtrade:nodejs uploads logs data
 
 # Switch to non-root user
 USER hbtrade

@@ -49,6 +49,7 @@ app.use(cors({
     'https://www.hbtrade.ltd',
     'http://hbtrade.ltd',
     'http://www.hbtrade.ltd',
+    'https://hbtrade-supabase-backend.onrender.com',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,

@@ -40,10 +40,19 @@ router.post('/product-request', productRequestValidation, (req, res, next) => {
       phone,
       whatsapp,
       email,
+      company,
       product_name,
       product_link,
+      target_price,
       quantity,
+      packaging_type,
+      pack_quantity,
+      master_pack_quantity,
+      pack_dimensions,
+      weight_per_pack,
+      sample_needed,
       shipping_method,
+      specifications,
       message
     } = req.body;
 
@@ -57,10 +66,19 @@ router.post('/product-request', productRequestValidation, (req, res, next) => {
       phone || null,
       whatsapp || null,
       email || null,
+      company || null,
       product_name || null,
       product_link || null,
+      target_price || null,
       quantity || null,
+      packaging_type || null,
+      pack_quantity || null,
+      master_pack_quantity || null,
+      pack_dimensions || null,
+      weight_per_pack || null,
+      sample_needed || null,
       shipping_method || null,
+      specifications || null,
       message || null,
       imagePath,
       trackingNumber
@@ -68,8 +86,8 @@ router.post('/product-request', productRequestValidation, (req, res, next) => {
 
     await db.run(
       `INSERT INTO product_requests
-       (id, name, phone, whatsapp, email, product_name, product_link, quantity, shipping_method, message, image, tracking_number)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, name, phone, whatsapp, email, company, product_name, product_link, target_price, quantity, packaging_type, pack_quantity, master_pack_quantity, pack_dimensions, weight_per_pack, sample_needed, shipping_method, specifications, message, image, tracking_number)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values
     );
 

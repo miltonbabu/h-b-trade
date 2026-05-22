@@ -267,11 +267,11 @@ export default function ProductRequestPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Target Price per Unit (USD)
+                          Target Price per Unit (৳ BDT)
                         </label>
                         <Input
                           {...register('target_price')}
-                          placeholder="e.g., $2.50 per piece"
+                          placeholder="e.g., ৳250 per piece"
                           className="rounded-xl"
                         />
                       </div>

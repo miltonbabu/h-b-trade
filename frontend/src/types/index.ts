@@ -14,10 +14,19 @@ export interface ProductRequest {
   phone?: string;
   whatsapp?: string;
   email: string;
+  company?: string;
   product_name: string;
   product_link?: string;
+  target_price?: string;
   quantity?: string;
+  packaging_type?: string;
+  pack_quantity?: string;
+  master_pack_quantity?: string;
+  pack_dimensions?: string;
+  weight_per_pack?: string;
+  sample_needed?: string;
   shipping_method?: string;
+  specifications?: string;
   message?: string;
   image?: string;
   tracking_number?: string;
@@ -146,10 +155,19 @@ export interface ProductRequestFormData {
   phone?: string;
   whatsapp?: string;
   email: string;
+  company?: string;
   product_name: string;
   product_link?: string;
+  target_price?: string;
   quantity?: string;
+  packaging_type?: string;
+  pack_quantity?: string;
+  master_pack_quantity?: string;
+  pack_dimensions?: string;
+  weight_per_pack?: string;
+  sample_needed?: string;
   shipping_method?: string;
+  specifications?: string;
   message?: string;
 }
 

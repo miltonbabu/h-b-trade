@@ -514,24 +514,36 @@ router.put("/orders/:id", [
       return res.status(404).json({ error: "Order not found" });
     }
 
+    // Resolve effective tracking number: explicit from request > existing on order > auto-generate
+    const effectiveTrackingNumber = tracking_number || order.tracking_number ||
+      (status && status !== order.status
+        ? `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}`
+        : null);
+
     if (status && status !== order.status) {
-      // Always record history and tracking for any status change
+      const resolvedLocation = location || STATUS_LOCATION_MAP[status] || 'System';
+      const historyNote = note ?? null;
+      const trackingNote = note || STATUS_DESCRIPTIONS[status] || '';
+      const changedBy = req.user?.id ?? null;
+
       const historyId = uuidv4();
       await db.run(
         `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [historyId, order.id, order.tracking_number, order.status, status, location || STATUS_LOCATION_MAP[status], note || null, req.user?.id || null],
+        [historyId, order.id, effectiveTrackingNumber ?? null, order.status ?? null, status, resolvedLocation, historyNote, changedBy],
       );
 
-      await db.run(
-        `INSERT INTO tracking (id, tracking_number, status, location, note)
-         VALUES (?, ?, ?, ?, ?)`,
-        [uuidv4(), order.tracking_number, status, location || STATUS_LOCATION_MAP[status], note || STATUS_DESCRIPTIONS[status]],
-      );
+      if (effectiveTrackingNumber) {
+        await db.run(
+          `INSERT INTO tracking (id, tracking_number, status, location, note)
+           VALUES (?, ?, ?, ?, ?)`,
+          [uuidv4(), effectiveTrackingNumber, status, resolvedLocation, trackingNote],
+        );
+      }
     }
 
     await db.run(
-      `UPDATE orders 
+      `UPDATE orders
        SET customer_name = COALESCE(?, customer_name),
            product_name = COALESCE(?, product_name),
            quantity = COALESCE(?, quantity),
@@ -543,14 +555,14 @@ router.put("/orders/:id", [
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
-        customer_name,
-        product_name,
-        quantity,
-        shipping_method,
-        price,
-        net_weight,
-        status,
-        tracking_number,
+        customer_name ?? null,
+        product_name ?? null,
+        quantity ?? null,
+        shipping_method ?? null,
+        price ?? null,
+        net_weight ?? null,
+        status ?? null,
+        effectiveTrackingNumber ?? null,
         req.params.id,
       ],
     );
@@ -567,8 +579,9 @@ router.put("/orders/:id", [
       data: updatedOrder,
     });
   } catch (error) {
-    logger.error("Update order error:", error);
-    res.status(500).json({ error: "Failed to update order" });
+    logger.error("Update order error: " + (error && error.message ? error.message : error));
+    if (error && error.stack) logger.error(error.stack);
+    res.status(500).json({ error: "Failed to update order", detail: error && error.message });
   }
 });
 
@@ -615,13 +628,7 @@ router.post(
         [tracking_number]
       );
       
-      if (order && !isValidTransition(order.status, status)) {
-        return res.status(400).json({
-          error: `Invalid status transition from "${order.status}" to "${status}"`,
-          currentStatus: order.status,
-          allowedTransitions: STATUS_TRANSITIONS[order.status] || [],
-        });
-      }
+      // Admin can freely set any status; no transition enforcement on this endpoint
       
       const id = uuidv4();
 
@@ -928,14 +935,14 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
       'weight_per_pack', 'sample_needed', 'shipping_method', 'specifications'];
     const hasDetails = detailsFields.some(f => request[f]);
     if (hasDetails) {
-      const items: Record<string, any> = {};
+      const items = {};
       detailsFields.forEach(f => { if (request[f]) items[f] = request[f]; });
       if (Object.keys(items).length > 0) itemsInfo = JSON.stringify(items);
     }
 
     // Insert into orders table
     await db.run(
-      `INSERT INTO orders 
+      `INSERT INTO orders
        (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
@@ -944,7 +951,7 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
         trackingNumber,
         request.name,
         customerInfo,
-        request.product_name || productName,
+        request.product_name || 'Product Request',
         request.quantity || '1',
         shippingMethod,
         price || 0,

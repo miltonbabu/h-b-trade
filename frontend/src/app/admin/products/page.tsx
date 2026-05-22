@@ -277,7 +277,7 @@ export default function AdminProductsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">{product.category || '-'}</td>
-                      <td className="px-6 py-4">${Number(product.price ?? 0).toFixed(2)}</td>
+                      <td className="px-6 py-4">৳{Number(product.price ?? 0).toFixed(2)}</td>
                       <td className="px-6 py-4">{product.moq ?? '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(product.status)}`}>
