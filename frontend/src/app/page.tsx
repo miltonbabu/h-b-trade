@@ -224,27 +224,6 @@ export default function HomePage() {
                 From sourcing to shipping, we handle everything. Choose a service below to get started.
               </p>
 
-              {/* China-BD Bridge */}
-              <div className="flex justify-center items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                <div className="flex flex-col items-center group">
-                  <div className="w-10 h-10 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-red-500/30 to-red-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform duration-300 border border-red-400/20">
-                    🇨🇳
-                  </div>
-                  <span className="text-[10px] sm:text-xs text-white/70">China</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-red-500 via-yellow-400 to-green-500"></div>
-                  <ArrowRight className="text-yellow-400 rotate-180" size={14} />
-                  <ArrowRight className="text-yellow-400" size={14} />
-                  <div className="w-6 sm:w-8 md:w-12 h-0.5 bg-gradient-to-r from-green-500 via-yellow-400 to-red-500"></div>
-                </div>
-                <div className="flex flex-col items-center group">
-                  <div className="w-10 h-10 sm:w-12 md:w-14 sm:h-12 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-500/30 to-green-600/20 backdrop-blur-sm flex items-center justify-center text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform duration-300 border border-green-400/20">
-                    🇧🇩
-                  </div>
-                  <span className="text-[10px] sm:text-xs text-white/70">Bangladesh</span>
-                </div>
-              </div>
             </div>
 
             {/* Service Cards Grid */}
