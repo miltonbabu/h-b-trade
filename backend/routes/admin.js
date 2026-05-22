@@ -904,9 +904,9 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    // Generate order number and tracking number
+    // Generate order number, keep original tracking number so user can still track
     const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
-    const trackingNumber = request.tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
+    const trackingNumber = request.tracking_number || `PR${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
     const orderId = uuidv4();
 
     // Create customer info JSON
@@ -960,10 +960,10 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
       ]
     );
 
-    // Update the product request status to 'converted'
+    // Update the product request status to 'converted' and link to order
     await db.run(
-      "UPDATE product_requests SET status = 'converted' WHERE id = ?",
-      [req.params.id]
+      "UPDATE product_requests SET status = 'converted', converted_to_order = ? WHERE id = ?",
+      [orderId, req.params.id]
     );
 
     // Get the created order
@@ -1844,7 +1844,8 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
     }
 
     const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
-    const trackingNumber = `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
+    // Keep original tracking number so user can still track with the same number
+    const trackingNumber = request.tracking_number || `HB${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
     const orderId = uuidv4();
 
     const customerInfo = JSON.stringify({

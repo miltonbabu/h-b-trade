@@ -49,6 +49,11 @@ interface ServiceTrackingData {
     created_at: string;
     updated_at: string;
   };
+  linkedOrder?: {
+    order_number: string;
+    status: string;
+    tracking_number: string;
+  } | null;
   tracking: Array<{
     status: string;
     location?: string;
@@ -87,6 +92,11 @@ interface ProductRequestTrackingData {
     image?: string;
     created_at: string;
   };
+  linkedOrder?: {
+    order_number: string;
+    status: string;
+    tracking_number: string;
+  } | null;
   tracking: Array<{
     status: string;
     location?: string;
@@ -157,36 +167,18 @@ export default function UnifiedTrackingPage() {
     setError('');
     setData(null);
 
-    const prefix = getPrefix(trackingNumber.trim());
-    const isServicePrefix = ['PS', 'WS', 'AC', 'SS', 'HC', 'CF', 'SR'].includes(prefix);
-    const isProductRequest = prefix === 'PR';
-    const isOrder = ['TRK', 'HB'].includes(prefix);
-
     try {
-      if (activeTab === 'service' || isServicePrefix) {
-        const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
-        setData({ type: 'service', ...response.data.data });
-      } else if (isProductRequest) {
-        const response = await api.get(`/track/${trackingNumber.trim()}`);
-        if (response.data.data) {
-          setData({ type: 'product_request', ...response.data.data });
-        }
-      } else if (isOrder || activeTab === 'order') {
-        const response = await api.get(`/track/${trackingNumber.trim()}`);
-        setData({ type: 'order', ...response.data.data });
+      // Use unified tracking endpoint - it searches orders, product_requests, and service_requests
+      const response = await api.get(`/track/${trackingNumber.trim()}`);
+      const responseData = response.data;
+      if (responseData.data) {
+        setData({ type: responseData.type, ...responseData.data });
       } else {
-        // Unknown prefix - try based on active tab
-        if (activeTab === 'order') {
-          const response = await api.get(`/track/${trackingNumber.trim()}`);
-          setData({ type: 'order', ...response.data.data });
-        } else {
-          const response = await api.get(`/service-request/track/${trackingNumber.trim()}`);
-          setData({ type: 'service', ...response.data.data });
-        }
+        setError('No tracking information found for this number.');
       }
     } catch (err: unknown) {
       const apiError = err as { response?: { data?: { error?: string } } };
-      setError(apiError?.response?.data?.error || `No ${activeTab === 'order' ? 'order' : 'service request'} tracking information found for this number.`);
+      setError(apiError?.response?.data?.error || 'No tracking information found for this number.');
     } finally {
       setIsLoading(false);
     }
@@ -388,6 +380,19 @@ export default function UnifiedTrackingPage() {
                           <p className="text-xl font-bold text-green-700">৳{data.serviceRequest.price}</p>
                         </div>
                       )}
+
+                      {/* Show linked order if converted */}
+                      {data.linkedOrder && (
+                        <div className="mt-4 bg-purple-50 rounded-lg p-4">
+                          <p className="text-sm font-medium text-purple-800">Converted to Order</p>
+                          <p className="text-sm text-purple-700">Your service request has been converted to an order.</p>
+                          <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                            <div><span className="text-gray-500">Order:</span> <span className="font-semibold">{data.linkedOrder.order_number}</span></div>
+                            <div><span className="text-gray-500">Status:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white ${ORDER_STATUS_CONFIG[data.linkedOrder.status]?.bgColor || 'bg-gray-500'}`}>{ORDER_STATUS_CONFIG[data.linkedOrder.status]?.label || data.linkedOrder.status}</span></div>
+                          </div>
+                          <p className="text-xs text-purple-600 mt-2">Your tracking number <b>{data.serviceRequest.tracking_number}</b> now tracks this order. Check back for shipping updates!</p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -487,9 +492,10 @@ export default function UnifiedTrackingPage() {
                           <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${
                             data.request.status === 'pending' ? 'bg-yellow-500' :
                             data.request.status === 'processing' ? 'bg-blue-500' :
+                            data.request.status === 'converted' ? 'bg-purple-500' :
                             data.request.status === 'completed' ? 'bg-green-500' :
                             'bg-red-500'
-                          }`}>{data.request.status}</span>
+                          }`}>{data.request.status === 'converted' ? 'Converted to Order' : data.request.status}</span>
                         </div>
                         <div><p className="text-gray-500 text-sm">Submitted</p><p className="font-semibold">{formatDate(data.request.created_at)}</p></div>
                       </div>
@@ -497,6 +503,19 @@ export default function UnifiedTrackingPage() {
                         <div className="mt-4 bg-gray-50 rounded-lg p-3">
                           <p className="text-sm font-medium text-gray-700">Message</p>
                           <p className="text-sm text-gray-600">{data.request.message}</p>
+                        </div>
+                      )}
+
+                      {/* Show linked order if converted */}
+                      {data.request.status === 'converted' && data.linkedOrder && (
+                        <div className="mt-4 bg-purple-50 rounded-lg p-4">
+                          <p className="text-sm font-medium text-purple-800">Converted to Order</p>
+                          <p className="text-sm text-purple-700">Your request has been converted to an order.</p>
+                          <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                            <div><span className="text-gray-500">Order:</span> <span className="font-semibold">{data.linkedOrder.order_number}</span></div>
+                            <div><span className="text-gray-500">Status:</span> <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white ${ORDER_STATUS_CONFIG[data.linkedOrder.status]?.bgColor || 'bg-gray-500'}`}>{ORDER_STATUS_CONFIG[data.linkedOrder.status]?.label || data.linkedOrder.status}</span></div>
+                          </div>
+                          <p className="text-xs text-purple-600 mt-2">Your tracking number <b>{data.request.tracking_number}</b> now tracks this order. Check back for shipping updates!</p>
                         </div>
                       )}
                     </CardContent>

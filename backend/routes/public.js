@@ -139,35 +139,6 @@ router.get('/track/:tracking_number', async (req, res) => {
   try {
     const { tracking_number } = req.params;
 
-    const order = await db.getOne(
-      `SELECT 
-        order_number, 
-        customer_name, 
-        product_name, 
-        quantity, 
-        shipping_method, 
-        status, 
-        tracking_number,
-        created_at
-       FROM orders 
-       WHERE tracking_number = ?`,
-      [tracking_number]
-    );
-
-    if (!order) {
-      return res.status(404).json({ 
-        error: 'No shipment found with this tracking number' 
-      });
-    }
-
-    const trackingHistory = await db.getMany(
-      `SELECT status, location, note, created_at 
-       FROM tracking 
-       WHERE tracking_number = ? 
-       ORDER BY created_at DESC`,
-      [tracking_number]
-    );
-
     const STATUS_INFO = {
       'pending': { label: 'Pending', description: 'Your order has been received and is awaiting processing.', icon: 'package', color: 'yellow' },
       'processing': { label: 'Processing', description: 'Your order is being prepared for shipment.', icon: 'cog', color: 'blue' },
@@ -177,24 +148,169 @@ router.get('/track/:tracking_number', async (req, res) => {
       'dhaka_office': { label: 'Dhaka Office', description: 'Your package has arrived at our Dhaka office and is ready for delivery.', icon: 'building', color: 'teal' },
       'delivered': { label: 'Delivered To Customer', description: 'Your package has been successfully delivered.', icon: 'check-circle', color: 'green' },
       'cancelled': { label: 'Cancelled', description: 'This order has been cancelled.', icon: 'x-circle', color: 'red' },
+      // Product request statuses
+      'received': { label: 'Received', description: 'Your request has been received. Our team will review it shortly.', icon: 'inbox', color: 'blue' },
+      'in_progress': { label: 'In Progress', description: 'Our team is working on your request.', icon: 'cog', color: 'yellow' },
+      'completed': { label: 'Completed', description: 'Your request has been completed successfully.', icon: 'check-circle', color: 'green' },
+      'converted': { label: 'Converted to Order', description: 'Your request has been converted to an order. Use the same tracking number to track your order.', icon: 'refresh', color: 'purple' },
     };
 
-    const statusInfo = STATUS_INFO[order.status] || { label: order.status, description: '', icon: 'package', color: 'gray' };
+    // 1. Search in orders table first
+    const order = await db.getOne(
+      `SELECT 
+        order_number, customer_name, product_name, quantity, shipping_method, 
+        status, tracking_number, price, created_at
+       FROM orders 
+       WHERE tracking_number = ? AND deleted_at IS NULL`,
+      [tracking_number]
+    );
 
-    logger.http(`Tracking lookup: ${tracking_number}`);
+    if (order) {
+      const trackingHistory = await db.getMany(
+        `SELECT status, location, note, created_at 
+         FROM tracking 
+         WHERE tracking_number = ? 
+         ORDER BY created_at DESC`,
+        [tracking_number]
+      );
 
-    res.json({
-      success: true,
-      data: {
-        order,
-        tracking: trackingHistory,
-        statusInfo,
-        allStatuses: Object.entries(STATUS_INFO).map(([value, info]) => ({
-          value,
-          ...info,
-          isCurrent: value === order.status,
-        })),
+      const statusInfo = STATUS_INFO[order.status] || { label: order.status, description: '', icon: 'package', color: 'gray' };
+
+      logger.http(`Tracking lookup (order): ${tracking_number}`);
+
+      return res.json({
+        success: true,
+        type: 'order',
+        data: {
+          order,
+          tracking: trackingHistory,
+          statusInfo,
+          allStatuses: Object.entries(STATUS_INFO).map(([value, info]) => ({
+            value,
+            ...info,
+            isCurrent: value === order.status,
+          })),
+        }
+      });
+    }
+
+    // 2. Search in product_requests table
+    const productRequest = await db.getOne(
+      `SELECT id, name, email, phone, product_name, quantity, shipping_method,
+              status, tracking_number, created_at
+       FROM product_requests 
+       WHERE tracking_number = ? AND deleted_at IS NULL`,
+      [tracking_number]
+    );
+
+    if (productRequest) {
+      const trackingHistory = await db.getMany(
+        `SELECT status, location, note, created_at 
+         FROM tracking 
+         WHERE tracking_number = ? 
+         ORDER BY created_at DESC`,
+        [tracking_number]
+      );
+
+      // If converted, also fetch the linked order
+      let linkedOrder = null;
+      if (productRequest.status === 'converted') {
+        const fullRequest = await db.getOne(
+          `SELECT converted_to_order FROM product_requests WHERE id = ?`,
+          [productRequest.id]
+        );
+        if (fullRequest && fullRequest.converted_to_order) {
+          linkedOrder = await db.getOne(
+            `SELECT order_number, status, tracking_number FROM orders WHERE id = ? AND deleted_at IS NULL`,
+            [fullRequest.converted_to_order]
+          );
+        }
       }
+
+      const statusInfo = STATUS_INFO[productRequest.status] || { label: productRequest.status, description: '', icon: 'package', color: 'gray' };
+
+      logger.http(`Tracking lookup (product request): ${tracking_number}`);
+
+      return res.json({
+        success: true,
+        type: 'product_request',
+        data: {
+          request: productRequest,
+          linkedOrder,
+          tracking: trackingHistory,
+          statusInfo,
+          allStatuses: Object.entries(STATUS_INFO).map(([value, info]) => ({
+            value,
+            ...info,
+            isCurrent: value === productRequest.status,
+          })),
+        }
+      });
+    }
+
+    // 3. Search in service_requests table
+    const serviceRequest = await db.getOne(
+      `SELECT id, service_type, name, email, phone, whatsapp, company, details, message,
+              status, tracking_number, admin_notes, price, created_at, updated_at
+       FROM service_requests
+       WHERE tracking_number = ? AND deleted_at IS NULL`,
+      [tracking_number]
+    );
+
+    if (serviceRequest) {
+      const trackingHistory = await db.getMany(
+        `SELECT status, location, note, created_at
+         FROM tracking
+         WHERE tracking_number = ?
+         ORDER BY created_at DESC`,
+        [tracking_number]
+      );
+
+      // If converted, also fetch the linked order
+      let linkedOrder = null;
+      if (serviceRequest.status === 'completed') {
+        const fullRequest = await db.getOne(
+          `SELECT converted_order_id FROM service_requests WHERE id = ?`,
+          [serviceRequest.id]
+        );
+        if (fullRequest && fullRequest.converted_order_id) {
+          linkedOrder = await db.getOne(
+            `SELECT order_number, status, tracking_number FROM orders WHERE id = ? AND deleted_at IS NULL`,
+            [fullRequest.converted_order_id]
+          );
+        }
+      }
+
+      // Parse details JSON
+      let parsedDetails = null;
+      if (serviceRequest.details) {
+        try { parsedDetails = JSON.parse(serviceRequest.details); } catch (e) { parsedDetails = serviceRequest.details; }
+      }
+
+      const statusInfo = STATUS_INFO[serviceRequest.status] || { label: serviceRequest.status, description: '', icon: 'package', color: 'gray' };
+
+      logger.http(`Tracking lookup (service request): ${tracking_number}`);
+
+      return res.json({
+        success: true,
+        type: 'service_request',
+        data: {
+          serviceRequest: { ...serviceRequest, parsedDetails },
+          linkedOrder,
+          tracking: trackingHistory,
+          statusInfo,
+          allStatuses: Object.entries(STATUS_INFO).map(([value, info]) => ({
+            value,
+            ...info,
+            isCurrent: value === serviceRequest.status,
+          })),
+        }
+      });
+    }
+
+    // Not found in any table
+    return res.status(404).json({ 
+      error: 'No shipment or request found with this tracking number' 
     });
   } catch (error) {
     logger.error('Tracking error:', error);
