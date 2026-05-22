@@ -21,6 +21,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/services", label: "Services" },
+    { href: "/wholesale-products", label: "Wholesale Products" },
     { href: "/product-request", label: "Product Request" },
     { href: "/tracking", label: "Track Shipment" },
     { href: "/contact", label: "Contact" },
@@ -80,7 +81,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-5">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
