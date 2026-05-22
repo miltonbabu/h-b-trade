@@ -66,7 +66,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
               <Image
-                src="/logo-hb-small.png"
+                src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"
                 width={48}
                 height={48}
