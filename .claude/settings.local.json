@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Select-String -Pattern \"\\\\.env\")",
+      "PowerShell(Start-Process -FilePath \"powershell\" -ArgumentList \"-NoExit\", \"-Command\", \"Set-Location 'D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\backend'; npm run dev 2>&1\" -WindowStyle Normal)",
+      "PowerShell(Start-Sleep -Seconds 8; try { $b = Invoke-WebRequest -Uri \"http://localhost:5000\" -TimeoutSec 5 -UseBasicParsing; \"Backend: $\\($b.StatusCode\\)\" } catch { \"Backend: $\\($_.Exception.Message\\)\" })",
+      "PowerShell($backendJob = Start-Job -ScriptBlock { Set-Location \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\backend\"; npm run dev 2>&1 }; Start-Sleep -Seconds 12; Receive-Job $backendJob)",
+      "PowerShell(Get-Job)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Where-Object State -eq 'Listen' | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 3; $b = Start-Process -FilePath \"node\" -ArgumentList \"server.js\" -WorkingDirectory \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\backend\" -PassThru -WindowStyle Minimized; Write-Host \"Backend PID: $\\($b.Id\\)\"; Start-Sleep -Seconds 5; try { Invoke-WebRequest \"http://localhost:5000\" -TimeoutSec 4 -UseBasicParsing | Out-Null; \"Backend UP\" } catch { if \\($_.Exception.Response\\) { \"Backend UP \\($\\(\\([int]$_.Exception.Response.StatusCode\\)\\)\\)\" } else { \"Backend: \" + $_.Exception.Message } })",
+      "PowerShell(try { Invoke-WebRequest \"http://localhost:5000\" -TimeoutSec 3 -UseBasicParsing | Out-Null; \"Backend: UP\" } catch { if \\($_.Exception.Response\\) { \"Backend: UP\" } else { \"Backend: DOWN\" } }; try { Invoke-WebRequest \"http://localhost:3000\" -TimeoutSec 5 -UseBasicParsing | Out-Null; \"Frontend: UP\" } catch { \"Frontend: DOWN\" })",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "Bash(ls \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\.claude\" 2>/dev/null || mkdir \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\.claude\")",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
