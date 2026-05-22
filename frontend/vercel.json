@@ -1,21 +1,11 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
-  "outputDirectory": "out",
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    },
-    {
-      "source": "/uploads/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
       ]
     },
     {
@@ -23,12 +13,6 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/sw.js",
-      "destination": "/sw.js"
     }
   ]
 }
