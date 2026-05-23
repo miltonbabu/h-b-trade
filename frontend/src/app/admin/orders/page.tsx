@@ -9,8 +9,10 @@ import { Package, Plus, Search, Edit, Trash2, X, Eye, Download, FileText, FileDo
 import api from '@/lib/api';
 import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 import { Order } from '@/types';
+import { useToast, errorMessage } from '@/components/ui/Toast';
 
 export default function AdminOrdersPage() {
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -54,6 +56,7 @@ export default function AdminOrdersPage() {
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch orders:', error);
+      toast.error(`Failed to load orders: ${errorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -71,8 +74,10 @@ export default function AdminOrdersPage() {
       setShowModal(false);
       resetForm();
       fetchOrders();
+      toast.success('Order created');
     } catch (error) {
       console.error('Failed to create order:', error);
+      toast.error(`Failed to create order: ${errorMessage(error)}`);
     }
   };
 
@@ -83,8 +88,10 @@ export default function AdminOrdersPage() {
       setShowModal(false);
       resetForm();
       fetchOrders();
+      toast.success('Order updated');
     } catch (error) {
       console.error('Failed to update order:', error);
+      toast.error(`Failed to update order: ${errorMessage(error)}`);
     }
   };
 
@@ -93,8 +100,10 @@ export default function AdminOrdersPage() {
     try {
       await api.delete(`/admin/orders/${id}`);
       fetchOrders();
+      toast.success('Order moved to trash');
     } catch (error) {
       console.error('Failed to delete order:', error);
+      toast.error(`Failed to delete order: ${errorMessage(error)}`);
     }
   };
 
@@ -102,9 +111,10 @@ export default function AdminOrdersPage() {
     try {
       await api.put(`/admin/orders/${orderId}`, { status: newStatus });
       fetchOrders();
+      toast.success(`Status updated to ${newStatus.replace(/_/g, ' ')}`);
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      toast.error(`Status update failed: ${errorMessage(error)}`);
     }
   };
 

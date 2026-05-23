@@ -8,6 +8,7 @@ import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle }
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
+import { useToast, errorMessage } from '@/components/ui/Toast';
 
 const DETAIL_LABELS: Record<string, string> = {
   product_name: 'Product Name',
@@ -24,6 +25,7 @@ const DETAIL_LABELS: Record<string, string> = {
 };
 
 export default function AdminRequestsPage() {
+  const toast = useToast();
   const [requests, setRequests] = useState<ProductRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -60,6 +62,7 @@ export default function AdminRequestsPage() {
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch requests:', error);
+      toast.error(`Failed to load requests: ${errorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -69,8 +72,10 @@ export default function AdminRequestsPage() {
     try {
       await api.put(`/admin/requests/${id}`, { status });
       fetchRequests();
+      toast.success(`Status updated to ${status}`);
     } catch (error) {
       console.error('Failed to update request:', error);
+      toast.error(`Status update failed: ${errorMessage(error)}`);
     }
   };
 
@@ -83,8 +88,10 @@ export default function AdminRequestsPage() {
       if (selectedRequest && selectedRequest.id === id) {
         setSelectedRequest({ ...selectedRequest, tracking_number: trackingInput });
       }
+      toast.success('Tracking number saved');
     } catch (error) {
       console.error('Failed to update tracking number:', error);
+      toast.error(`Tracking update failed: ${errorMessage(error)}`);
     }
   };
 
@@ -110,8 +117,10 @@ export default function AdminRequestsPage() {
       });
       setShowConvertModal(false);
       fetchRequests();
+      toast.success('Request converted to order');
     } catch (error) {
       console.error('Failed to convert to order:', error);
+      toast.error(`Convert failed: ${errorMessage(error)}`);
     } finally {
       setConverting(false);
     }
@@ -122,8 +131,10 @@ export default function AdminRequestsPage() {
     try {
       await api.delete(`/admin/requests/${id}`);
       fetchRequests();
+      toast.success('Request moved to trash');
     } catch (error) {
       console.error('Failed to delete request:', error);
+      toast.error(`Delete failed: ${errorMessage(error)}`);
     }
   };
 

@@ -9,6 +9,7 @@ import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, 
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ServiceRequest } from '@/types';
+import { useToast, errorMessage } from '@/components/ui/Toast';
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {
   'product_sourcing': 'Product Sourcing',
@@ -97,6 +98,7 @@ const DETAIL_LABELS: Record<string, string> = {
 };
 
 export default function AdminServiceRequestsPage() {
+  const toast = useToast();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -138,6 +140,7 @@ export default function AdminServiceRequestsPage() {
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch service requests:', error);
+      toast.error(`Failed to load service requests: ${errorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -150,9 +153,10 @@ export default function AdminServiceRequestsPage() {
       if (selectedRequest && selectedRequest.id === id) {
         setSelectedRequest({ ...selectedRequest, status });
       }
+      toast.success(`Status updated to ${status.replace(/_/g, ' ')}`);
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status. Check if the transition is valid.');
+      toast.error(`Status update failed: ${errorMessage(error)}`);
     }
   };
 
@@ -166,8 +170,10 @@ export default function AdminServiceRequestsPage() {
       });
       fetchRequests();
       setShowModal(false);
+      toast.success('Notes & price saved');
     } catch (error) {
       console.error('Failed to save details:', error);
+      toast.error(`Save failed: ${errorMessage(error)}`);
     } finally {
       setSaving(false);
     }
@@ -235,9 +241,10 @@ export default function AdminServiceRequestsPage() {
       setShowConvertModal(false);
       setShowModal(false);
       fetchRequests();
+      toast.success('Service request converted to order');
     } catch (error) {
       console.error('Failed to convert to order:', error);
-      alert('Failed to convert to order.');
+      toast.error(`Convert failed: ${errorMessage(error)}`);
     } finally {
       setConverting(false);
     }
@@ -249,8 +256,10 @@ export default function AdminServiceRequestsPage() {
       await api.delete(`/admin/service-requests/${id}`);
       fetchRequests();
       if (selectedRequest?.id === id) setShowModal(false);
+      toast.success('Service request moved to trash');
     } catch (error) {
       console.error('Failed to delete request:', error);
+      toast.error(`Delete failed: ${errorMessage(error)}`);
     }
   };
 

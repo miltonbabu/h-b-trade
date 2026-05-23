@@ -22,6 +22,7 @@ import {
   Receipt
 } from 'lucide-react';
 import api from '@/lib/api';
+import { ToastProvider } from '@/components/ui/Toast';
 
 interface NotificationCounts {
   messages: number;
@@ -116,7 +117,7 @@ export default function AdminLayout({
 
   // Don't show layout for login page
   if (pathname === '/admin/login') {
-    return <>{children}</>;
+    return <ToastProvider>{children}</ToastProvider>;
   }
 
   if (loading) {
@@ -211,7 +212,7 @@ export default function AdminLayout({
 
         {/* Page content */}
         <main className="p-4 md:p-6">
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </main>
       </div>
 

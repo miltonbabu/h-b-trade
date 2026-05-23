@@ -7,8 +7,10 @@ import { MessageSquare, Eye, Trash2, X, Mail, User } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { Message } from '@/types';
+import { useToast, errorMessage } from '@/components/ui/Toast';
 
 export default function AdminMessagesPage() {
+  const toast = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
@@ -37,6 +39,7 @@ export default function AdminMessagesPage() {
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch messages:', error);
+      toast.error(`Failed to load messages: ${errorMessage(error)}`);
     } finally {
       setLoading(false);
     }
@@ -48,6 +51,7 @@ export default function AdminMessagesPage() {
       fetchMessages();
     } catch (error) {
       console.error('Failed to mark message as read:', error);
+      toast.error(`Mark-read failed: ${errorMessage(error)}`);
     }
   };
 
@@ -56,8 +60,10 @@ export default function AdminMessagesPage() {
     try {
       await api.delete(`/admin/messages/${id}`);
       fetchMessages();
+      toast.success('Message moved to trash');
     } catch (error) {
       console.error('Failed to delete message:', error);
+      toast.error(`Delete failed: ${errorMessage(error)}`);
     }
   };
 

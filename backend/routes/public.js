@@ -23,7 +23,9 @@ const productRequestValidation = [
   handleValidationErrors
 ];
 
-router.post('/product-request', productRequestValidation, (req, res, next) => {
+// IMPORTANT: multer must run BEFORE express-validator for multipart/form-data,
+// otherwise req.body is empty and every required-field validator fails with 400.
+router.post('/product-request', (req, res, next) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       return res.status(400).json({
@@ -33,7 +35,7 @@ router.post('/product-request', productRequestValidation, (req, res, next) => {
     }
     next();
   });
-}, async (req, res) => {
+}, productRequestValidation, async (req, res) => {
   try {
     const {
       name,
