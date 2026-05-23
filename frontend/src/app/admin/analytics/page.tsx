@@ -84,7 +84,7 @@ export default function AnalyticsPage() {
   };
 
   const formatCurrency = (value: number) => {
-    return `৳${value.toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return `৳${Number(value || 0).toLocaleString('en-BD', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   if (loading) {

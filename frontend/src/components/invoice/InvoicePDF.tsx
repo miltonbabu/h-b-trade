@@ -288,7 +288,7 @@ interface InvoicePDFProps {
 }
 
 export default function InvoicePDF({ data, logoUrl }: InvoicePDFProps) {
-  const fmt = (n: number) => `৳${n.toFixed(2)}`;
+  const fmt = (n: any) => `৳${Number(n || 0).toFixed(2)}`;
   const fmtDate = (d: string) => {
     try {
       return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });

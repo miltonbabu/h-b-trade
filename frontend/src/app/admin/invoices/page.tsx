@@ -176,22 +176,22 @@ export default function AdminInvoicesPage() {
       ? itemsInfo.map((item: any) => ({
           productName: item.productName || order.product_name,
           productCode: item.productCode || '',
-          quantity: item.quantity || 1,
-          unitPrice: item.unitPrice || item.price || 0,
-          perPiecePrice: item.perPiecePrice || undefined,
+          quantity: Number(item.quantity) || 1,
+          unitPrice: Number(item.unitPrice || item.price) || 0,
+          perPiecePrice: item.perPiecePrice ? Number(item.perPiecePrice) : undefined,
           weight: item.weight || '',
           volume: item.volume || '',
-          total: item.totalPrice || item.total || 0,
+          total: Number(item.totalPrice || item.total) || 0,
         }))
       : [{
           productName: order.product_name,
           productCode: order.product_codes || '',
-          quantity: parseInt(order.quantity || '1'),
-          unitPrice: order.price ? order.price / parseInt(order.quantity || '1') : 0,
+          quantity: Number(order.quantity) || 1,
+          unitPrice: Number(order.price) ? Number(order.price) / (Number(order.quantity) || 1) : 0,
           perPiecePrice: undefined,
           weight: order.net_weight || '',
           volume: '',
-          total: order.price || order.total_amount || 0,
+          total: Number(order.price || order.total_amount) || 0,
         }];
 
     const subtotal = invoiceItems.reduce((sum, i) => sum + i.total, 0);
@@ -217,7 +217,7 @@ export default function AdminInvoicesPage() {
       subtotal,
       shippingCost: 0,
       discount: 0,
-      totalAmount: order.total_amount || order.price || subtotal,
+      totalAmount: Number(order.total_amount || order.price) || subtotal,
       netWeight: order.net_weight || '',
       paymentInfo: order.payment_info || '',
       notes: '',
@@ -507,11 +507,11 @@ export default function AdminInvoicesPage() {
     const adminEmail = typeof window !== 'undefined' && localStorage.getItem('user')
       ? JSON.parse(localStorage.getItem('user')!).email
       : '';
-    const mailto = `mailto:${data.customerEmail || ''}?from=${adminEmail}&subject=${encodeURIComponent(`Invoice ${data.invoiceNumber} from H&B Trade - Order ${data.orderNumber}`)}&body=${encodeURIComponent(`Dear ${data.customerName},\n\nPlease find attached your invoice ${data.invoiceNumber} for order ${data.orderNumber}.\n\nTotal Amount: ৳${data.totalAmount.toFixed(2)}\n\nThank you for your business!\n\nBest regards,\nH&B Trade`)}`;
+    const mailto = `mailto:${data.customerEmail || ''}?from=${adminEmail}&subject=${encodeURIComponent(`Invoice ${data.invoiceNumber} from H&B Trade - Order ${data.orderNumber}`)}&body=${encodeURIComponent(`Dear ${data.customerName},\n\nPlease find attached your invoice ${data.invoiceNumber} for order ${data.orderNumber}.\n\nTotal Amount: ৳${Number(data.totalAmount || 0).toFixed(2)}\n\nThank you for your business!\n\nBest regards,\nH&B Trade`)}`;
     window.open(mailto, '_blank');
   };
 
-  const fmtCurrency = (n: number) => `৳${n.toFixed(2)}`;
+  const fmtCurrency = (n: any) => `৳${Number(n || 0).toFixed(2)}`;
 
   const sourceLabel = sourceType === 'order' ? 'Orders' : sourceType === 'request' ? 'Product Requests' : sourceType === 'service-request' ? 'Service Requests' : 'Custom Invoice';
 
@@ -1003,14 +1003,14 @@ export default function AdminInvoicesPage() {
                           <table>
                             <thead><tr><th>Item</th><th>Code</th><th>Qty</th><th>Unit Price</th><th>Per Pc</th><th>Weight</th><th>Total</th></tr></thead>
                             <tbody>
-                              ${invoiceData.items.map(item => `<tr><td><strong>${item.productName}</strong></td><td>${item.productCode || '-'}</td><td>${item.quantity}</td><td>৳${item.unitPrice.toFixed(2)}</td><td>${item.perPiecePrice ? '৳' + item.perPiecePrice.toFixed(2) : '-'}</td><td>${item.weight || '-'}</td><td><strong>৳${item.total.toFixed(2)}</strong></td></tr>`).join('')}
+                              ${invoiceData.items.map(item => `<tr><td><strong>${item.productName}</strong></td><td>${item.productCode || '-'}</td><td>${item.quantity}</td><td>৳${Number(item.unitPrice || 0).toFixed(2)}</td><td>${item.perPiecePrice ? '৳' + Number(item.perPiecePrice).toFixed(2) : '-'}</td><td>${item.weight || '-'}</td><td><strong>৳${Number(item.total || 0).toFixed(2)}</strong></td></tr>`).join('')}
                             </tbody>
                           </table>
                           <div class="total-section">
-                            <div class="total-row"><span>Subtotal:</span><span>৳${invoiceData.subtotal.toFixed(2)}</span></div>
-                            ${invoiceData.shippingCost ? `<div class="total-row"><span>Shipping:</span><span>৳${invoiceData.shippingCost.toFixed(2)}</span></div>` : ''}
-                            ${invoiceData.discount ? `<div class="total-row"><span>Discount:</span><span>-৳${invoiceData.discount.toFixed(2)}</span></div>` : ''}
-                            <div class="total-final"><span>Total: ৳${invoiceData.totalAmount.toFixed(2)}</span></div>
+                            <div class="total-row"><span>Subtotal:</span><span>৳${Number(invoiceData.subtotal || 0).toFixed(2)}</span></div>
+                            ${invoiceData.shippingCost ? `<div class="total-row"><span>Shipping:</span><span>৳${Number(invoiceData.shippingCost).toFixed(2)}</span></div>` : ''}
+                            ${invoiceData.discount ? `<div class="total-row"><span>Discount:</span><span>-৳${Number(invoiceData.discount).toFixed(2)}</span></div>` : ''}
+                            <div class="total-final"><span>Total: ৳${Number(invoiceData.totalAmount || 0).toFixed(2)}</span></div>
                           </div>
                           <div class="footer">
                             <p>H&B Trade - Your Trusted Sourcing Partner</p>
