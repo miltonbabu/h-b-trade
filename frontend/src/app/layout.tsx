@@ -84,9 +84,14 @@ export default function RootLayout({
         <CartProvider>
           <PWAServiceWorker />
           <Navbar />
-          <main className="flex-1 pb-16 md:pb-0">{children}</main>
-          <MobileBottomTabs />
+          <main className="flex-1">{children}</main>
           <Footer />
+          {/* Spacer reserves room on mobile so the Footer's bottom
+              content isn't hidden by the fixed mobile tab bar. The body
+              also gets a global padding-bottom rule (in globals.css) so
+              mid-scroll content always clears the tab bar. */}
+          <div className="md:hidden h-20" aria-hidden="true" />
+          <MobileBottomTabs />
           <FloatingCartButton />
           <WhatsAppButton />
         </CartProvider>

@@ -29,7 +29,7 @@ export default function FloatingCartButton() {
   return (
     <Link
       href="/cart"
-      className="fixed top-[800px] right-24 z-50 w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl"
+      className="fixed bottom-36 right-6 z-50 w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl"
       aria-label="View Cart"
     >
       <ShoppingBag size={24} className="text-white" />
