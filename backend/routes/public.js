@@ -437,6 +437,13 @@ router.get('/products', async (req, res) => {
 // Public single-product endpoint - powers the product detail page
 router.get('/products/:id', async (req, res) => {
   try {
+    // Reject malformed IDs up-front - Postgres `id` is UUID and would otherwise
+    // throw a type error that surfaces as a 500 instead of the intended 404.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(req.params.id)) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
     const product = await db.getOne(
       "SELECT id, product_code, name, category, price, moq, image, image2, image3, description, created_at FROM products WHERE id = ? AND status = 'active'",
       [req.params.id]
@@ -472,10 +479,14 @@ router.post('/orders', [
 ], async (req, res) => {
   try {
     const { items, status, customerInfo, payment, shippingMethod } = req.body;
-    
-    const productIds = items.map(item => item.productId).filter(Boolean);
+
+    // Filter to valid-shape UUIDs before querying — Postgres `id` is UUID type
+    // and would throw a 500 type error on malformed strings, which masks the
+    // intended "Product not found" 400 response further down.
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const productIds = items.map(item => item.productId).filter(id => id && UUID_RE.test(id));
     const productCodes = items.map(item => item.productCode).filter(Boolean);
-    
+
     let products = [];
     if (productIds.length > 0) {
       const placeholders = productIds.map(() => '?').join(',');
