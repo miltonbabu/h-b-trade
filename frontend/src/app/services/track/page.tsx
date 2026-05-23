@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Search, CheckCircle, Clock, XCircle, Loader2, ArrowLeft, Package } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { formatShortDateTime } from '@/lib/utils';
 
 interface TrackingData {
   serviceRequest: {
@@ -200,7 +201,14 @@ export default function ServiceTrackPage() {
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-4 sm:p-6">
                   <h3 className="font-semibold text-gray-900 mb-4">Request Progress</h3>
-                  <div className="flex items-center justify-between relative">
+                  {(() => {
+                    const stepTimes: Record<string, string | undefined> = {};
+                    for (const t of (data.tracking || [])) {
+                      if (!stepTimes[t.status]) stepTimes[t.status] = t.created_at;
+                    }
+                    if (!stepTimes['received']) stepTimes['received'] = data.serviceRequest.created_at;
+                    return (
+                  <div className="flex items-start justify-between relative">
                     <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                       <div
                         className="h-full bg-primary rounded transition-all duration-500"
@@ -211,8 +219,9 @@ export default function ServiceTrackPage() {
                       const StatusIcon = STATUS_ICONS[status.value] || Package;
                       const isCompleted = index < currentStatusIndex;
                       const isCurrent = index === currentStatusIndex;
+                      const ts = stepTimes[status.value];
                       return (
-                        <div key={status.value} className="relative flex flex-col items-center z-10">
+                        <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                             isCompleted ? 'bg-primary border-primary text-white' :
                             isCurrent ? 'bg-primary border-primary text-white ring-4 ring-primary/20' :
@@ -220,16 +229,23 @@ export default function ServiceTrackPage() {
                           }`}>
                             <StatusIcon size={18} />
                           </div>
-                          <p className={`text-xs mt-2 text-center max-w-[80px] ${
-                            isCurrent ? 'font-bold text-primary' : isCompleted ? 'text-gray-700' : 'text-gray-400'
+                          <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${
+                            isCurrent ? 'font-bold text-primary' : isCompleted ? 'font-medium text-gray-700' : 'text-gray-400'
                           }`}>
                             {status.label}
                           </p>
+                          {ts && (isCurrent || isCompleted) ? (
+                            <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
+                          ) : (
+                            <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                          )}
                         </div>
                       );
                     })}
                   </div>
-                  <p className="text-sm text-gray-600 mt-4 text-center">{data.statusInfo.description}</p>
+                    );
+                  })()}
+                  <p className="text-sm text-gray-600 mt-4 text-center border-t pt-3">{data.statusInfo.description}</p>
                 </CardContent>
               </Card>
 

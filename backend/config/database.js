@@ -117,6 +117,7 @@ const initPostgresTables = async () => {
       await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS weight_per_pack VARCHAR(100)");
       await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS sample_needed VARCHAR(50)");
       await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS specifications TEXT");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS converted_to_order UUID");
     } catch (e) {
       // Column already exists, ignore error
     }
@@ -407,7 +408,7 @@ const initSQLite = async () => {
     const productRequestsExtra = [
       'tracking_number', 'company', 'target_price', 'packaging_type',
       'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
-      'weight_per_pack', 'sample_needed', 'specifications'
+      'weight_per_pack', 'sample_needed', 'specifications', 'converted_to_order'
     ];
     for (const col of productRequestsExtra) {
       if (!prColumns.includes(col)) {

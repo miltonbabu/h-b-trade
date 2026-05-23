@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Search, Package, CheckCircle, Truck, Plane, Home, Loader2, Warehouse, Building, ClipboardCheck, XCircle, ShoppingCart, Ship, Users, Globe, Clock, Wrench } from 'lucide-react';
 import api from '@/lib/api';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatDateTime, formatShortDateTime } from '@/lib/utils';
 
 interface OrderTrackingData {
   type: 'order';
@@ -255,7 +255,17 @@ export default function UnifiedTrackingPage() {
               </div>
 
               {/* ORDER TYPE */}
-              {data.type === 'order' && (
+              {data.type === 'order' && (() => {
+                // Map each status to its most recent tracking timestamp (tracking is ORDER BY created_at DESC)
+                const timeForStatus: Record<string, string | undefined> = {};
+                for (const t of (data.tracking || [])) {
+                  if (!timeForStatus[t.status]) timeForStatus[t.status] = t.created_at;
+                }
+                // Order created_at is the implicit "pending" timestamp if nothing else is set
+                if (!timeForStatus['pending']) timeForStatus['pending'] = data.order.created_at;
+                const currentIdx = data.allStatuses.findIndex(s => s.isCurrent);
+
+                return (
                 <>
                   <Card>
                     <CardContent className="p-4 sm:p-6">
@@ -272,12 +282,56 @@ export default function UnifiedTrackingPage() {
                             {ORDER_STATUS_CONFIG[data.order.status]?.label || data.order.status}
                           </span>
                         </div>
-                        <div><p className="text-gray-500 text-sm">Order Date</p><p className="font-semibold">{formatDate(data.order.created_at)}</p></div>
+                        <div><p className="text-gray-500 text-sm">Order Date</p><p className="font-semibold">{formatDateTime(data.order.created_at)}</p></div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  {/* Order Progress */}
+                  {/* Visual Order Progress Timeline with per-step timestamps */}
+                  <Card>
+                    <CardContent className="p-4 sm:p-6">
+                      <h2 className="text-xl font-bold mb-6">Shipment Progress</h2>
+                      <div className="overflow-x-auto pb-2">
+                        <div className="flex items-start justify-between relative min-w-[640px]">
+                          <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
+                            <div
+                              className="h-full bg-primary rounded transition-all duration-500"
+                              style={{ width: currentIdx >= 0 && data.allStatuses.length > 1 ? `${Math.max(0, (currentIdx / (data.allStatuses.length - 1)) * 100)}%` : '0%' }}
+                            />
+                          </div>
+                          {data.allStatuses.map((status, idx) => {
+                            const cfg = ORDER_STATUS_CONFIG[status.value] || { icon: Package, bgColor: 'bg-gray-500', label: status.label };
+                            const Icon = cfg.icon;
+                            const isPast = currentIdx > idx;
+                            const isCurrent = status.isCurrent;
+                            const ts = timeForStatus[status.value];
+                            return (
+                              <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                                  isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
+                                  isPast ? `${cfg.bgColor} border-transparent text-white` :
+                                  'bg-white border-gray-300 text-gray-400'
+                                }`}>
+                                  <Icon size={18} />
+                                </div>
+                                <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-primary' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{cfg.label || status.label}</p>
+                                {ts && (isCurrent || isPast) ? (
+                                  <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
+                                ) : (
+                                  <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      {data.statusInfo?.description && (
+                        <p className="text-sm text-gray-600 text-center mt-4 border-t pt-3">{data.statusInfo.description}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Detailed Tracking History */}
                   {data.tracking.length > 0 && (
                     <Card>
                       <CardContent className="p-4 sm:p-6">
@@ -295,7 +349,7 @@ export default function UnifiedTrackingPage() {
                                   <p className="font-semibold">{cfg.label}</p>
                                   {track.location && <p className="text-sm text-gray-600">📍 {track.location}</p>}
                                   {track.note && <p className="text-sm text-gray-500">{track.note}</p>}
-                                  <p className="text-xs text-gray-400">{formatDate(track.created_at)}</p>
+                                  <p className="text-xs text-gray-400">{formatDateTime(track.created_at)}</p>
                                 </div>
                               </div>
                             );
@@ -305,7 +359,8 @@ export default function UnifiedTrackingPage() {
                     </Card>
                   )}
                 </>
-              )}
+                );
+              })()}
 
               {/* SERVICE REQUEST TYPE */}
               {data.type === 'service' && (
@@ -375,36 +430,54 @@ export default function UnifiedTrackingPage() {
                   )}
 
                   {/* Service Progress */}
+                  {(() => {
+                    const srTimes: Record<string, string | undefined> = {};
+                    for (const t of (data.tracking || [])) {
+                      if (!srTimes[t.status]) srTimes[t.status] = t.created_at;
+                    }
+                    if (!srTimes['received']) srTimes['received'] = data.serviceRequest.created_at;
+                    const currentIdx = data.allStatuses.findIndex(s => s.isCurrent);
+                    return (
                   <Card>
                     <CardContent className="p-4 sm:p-6">
                       <h2 className="text-xl font-bold mb-4">Request Progress</h2>
-                      <div className="flex items-center justify-between relative mb-4">
+                      <div className="flex items-start justify-between relative mb-4">
                         <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                           <div
                             className="h-full bg-primary rounded transition-all duration-500"
-                            style={{ width: `${Math.max(0, (data.allStatuses.findIndex(s => s.isCurrent) / (data.allStatuses.length - 1)) * 100)}%` }}
+                            style={{ width: currentIdx >= 0 && data.allStatuses.length > 1 ? `${Math.max(0, (currentIdx / (data.allStatuses.length - 1)) * 100)}%` : '0%' }}
                           />
                         </div>
-                        {data.allStatuses.map((status) => {
+                        {data.allStatuses.map((status, idx) => {
                           const cfg = SERVICE_STATUS_CONFIG[status.value] || { icon: Clock, bgColor: 'bg-gray-500' };
                           const Icon = cfg.icon;
+                          const isPast = currentIdx > idx;
+                          const isCurrent = status.isCurrent;
+                          const ts = srTimes[status.value];
                           return (
-                            <div key={status.value} className="relative flex flex-col items-center z-10">
+                            <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
                               <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                                status.isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
-                                data.allStatuses.findIndex(s => s.isCurrent) > data.allStatuses.findIndex(s => s.value === status.value) ? `${cfg.bgColor} border-transparent text-white` :
+                                isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
+                                isPast ? `${cfg.bgColor} border-transparent text-white` :
                                 'bg-white border-gray-300 text-gray-400'
                               }`}>
                                 <Icon size={18} />
                               </div>
-                              <p className={`text-xs mt-2 text-center max-w-[80px] ${status.isCurrent ? 'font-bold text-primary' : 'text-gray-400'}`}>{status.label}</p>
+                              <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-primary' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{status.label}</p>
+                              {ts && (isCurrent || isPast) ? (
+                                <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
+                              ) : (
+                                <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                              )}
                             </div>
                           );
                         })}
                       </div>
-                      <p className="text-sm text-gray-600 text-center">{data.statusInfo.description}</p>
+                      <p className="text-sm text-gray-600 text-center border-t pt-3">{data.statusInfo.description}</p>
                     </CardContent>
                   </Card>
+                    );
+                  })()}
 
                   {/* Tracking History */}
                   {data.tracking.length > 0 && (
@@ -424,7 +497,7 @@ export default function UnifiedTrackingPage() {
                                   <p className="font-semibold">{cfg.label}</p>
                                   {entry.location && <p className="text-sm text-gray-600">📍 {entry.location}</p>}
                                   {entry.note && <p className="text-sm text-gray-500">{entry.note}</p>}
-                                  <p className="text-xs text-gray-400">{formatDate(entry.created_at)}</p>
+                                  <p className="text-xs text-gray-400">{formatDateTime(entry.created_at)}</p>
                                 </div>
                               </div>
                             );
@@ -496,7 +569,7 @@ export default function UnifiedTrackingPage() {
                                 <p className="font-semibold capitalize">{entry.status.replace(/_/g, ' ')}</p>
                                 {entry.location && <p className="text-sm text-gray-600">📍 {entry.location}</p>}
                                 {entry.note && <p className="text-sm text-gray-500">{entry.note}</p>}
-                                <p className="text-xs text-gray-400">{formatDate(entry.created_at)}</p>
+                                <p className="text-xs text-gray-400">{formatDateTime(entry.created_at)}</p>
                               </div>
                             </div>
                           ))}

@@ -23,6 +23,15 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
+// Compact format for timeline step labels: "May 23 · 14:32"
+export function formatShortDateTime(date: string | Date): string {
+  const d = new Date(date);
+  const month = d.toLocaleString('en-US', { month: 'short' });
+  const day = d.getDate();
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return `${month} ${day} · ${time}`;
+}
+
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str
   return str.slice(0, length) + '...'
