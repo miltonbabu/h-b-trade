@@ -9,7 +9,11 @@
     "test": "jest",
     "generate-secret": "node -e \"console.log('Your secure JWT secret:'); console.log(require('crypto').randomBytes(64).toString('hex'))\""
   },
-  "keywords": ["logistics", "sourcing", "trade"],
+  "keywords": [
+    "logistics",
+    "sourcing",
+    "trade"
+  ],
   "author": "H&B Trade",
   "license": "MIT",
   "dependencies": {
@@ -24,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "^2.0.0",
+    "nodemailer": "^8.0.7",
     "pg": "^8.11.3",
     "sql.js": "^1.8.0",
     "uuid": "^9.0.1",

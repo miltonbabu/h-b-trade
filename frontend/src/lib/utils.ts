@@ -43,6 +43,12 @@ export function getStatusColor(status: string): string {
     active: 'bg-green-100 text-green-800',
     inactive: 'bg-gray-100 text-gray-800',
     shipped: 'bg-purple-100 text-purple-800',
+    custom: 'bg-violet-100 text-violet-800',
+    confirmed: 'bg-green-100 text-green-800',
+    approved: 'bg-green-100 text-green-800',
+    new: 'bg-blue-100 text-blue-800',
+    reviewing: 'bg-yellow-100 text-yellow-800',
+    quoted: 'bg-indigo-100 text-indigo-800',
   }
   return colors[(status || '').toLowerCase()] || 'bg-gray-100 text-gray-800'
 }
@@ -62,6 +68,12 @@ export function getStatusLabel(status: string): string {
     active: 'Active',
     inactive: 'Inactive',
     shipped: 'Shipped',
+    custom: 'Custom',
+    confirmed: 'Confirmed',
+    approved: 'Approved',
+    new: 'New',
+    reviewing: 'Reviewing',
+    quoted: 'Quoted',
   }
   return labels[(status || '').toLowerCase()] || status
 }

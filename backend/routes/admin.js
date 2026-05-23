@@ -349,6 +349,114 @@ router.get("/dashboard", async (req, res) => {
   }
 });
 
+router.get("/analytics", async (req, res) => {
+  try {
+    const { period = 'all' } = req.query;
+
+    let dateFilter = '';
+    const dateParams = [];
+
+    if (period === 'today') {
+      dateFilter = ` AND DATE(created_at) = DATE('now')`;
+    } else if (period === 'week') {
+      dateFilter = ` AND created_at >= DATE('now', '-7 days')`;
+    } else if (period === 'month') {
+      dateFilter = ` AND created_at >= DATE('now', '-30 days')`;
+    } else if (period === 'year') {
+      dateFilter = ` AND created_at >= DATE('now', '-365 days')`;
+    }
+
+    const totalSales = await safeGetOne(`SELECT COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as total FROM orders WHERE status = 'delivered' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const totalDelivered = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE status = 'delivered' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const totalOrders = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE deleted_at IS NULL${dateFilter}`, dateParams);
+    const pendingOrders = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE status = 'pending' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const pendingValue = await safeGetOne(`SELECT COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as total FROM orders WHERE status = 'pending' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const processingOrders = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE status = 'processing' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const inTransitOrders = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE status IN ('in_transit', 'guangzhou_warehouse', 'dhaka_customs', 'dhaka_office') AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const cancelledOrders = await safeGetOne(`SELECT COUNT(*) as count FROM orders WHERE status = 'cancelled' AND deleted_at IS NULL${dateFilter}`, dateParams);
+    const cancelledValue = await safeGetOne(`SELECT COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as total FROM orders WHERE status = 'cancelled' AND deleted_at IS NULL${dateFilter}`, dateParams);
+
+    const totalRequests = await safeGetOne(`SELECT COUNT(*) as count FROM product_requests WHERE deleted_at IS NULL${dateFilter}`, dateParams);
+    const totalServiceRequests = await safeGetOne(`SELECT COUNT(*) as count FROM service_requests WHERE deleted_at IS NULL${dateFilter}`, dateParams);
+    const unreadMessages = await safeGetOne(`SELECT COUNT(*) as count FROM messages WHERE is_read = FALSE AND deleted_at IS NULL`);
+
+    const totalSalesVal = Number(totalSales.total) || 0;
+    const estimatedProfit = Math.round(totalSalesVal * 0.2);
+    const estimatedCost = totalSalesVal - estimatedProfit;
+
+    const ordersByStatus = await safeGetMany(`
+      SELECT status, COUNT(*) as count, COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as total
+      FROM orders
+      WHERE deleted_at IS NULL${dateFilter}
+      GROUP BY status
+    `, dateParams);
+
+    const dailySales = await safeGetMany(`
+      SELECT DATE(created_at) as date, COUNT(*) as orders, COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as sales
+      FROM orders
+      WHERE deleted_at IS NULL${dateFilter}
+      GROUP BY DATE(created_at)
+      ORDER BY date DESC
+      LIMIT 30
+    `, dateParams);
+
+    const shippingMethods = await safeGetMany(`
+      SELECT shipping_method, COUNT(*) as count, COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as total
+      FROM orders
+      WHERE deleted_at IS NULL${dateFilter}
+      GROUP BY shipping_method
+    `, dateParams);
+
+    const topProducts = await safeGetMany(`
+      SELECT product_name, COUNT(*) as orders, COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as revenue
+      FROM orders
+      WHERE deleted_at IS NULL${dateFilter}
+      GROUP BY product_name
+      ORDER BY revenue DESC
+      LIMIT 10
+    `, dateParams);
+
+    const topCustomers = await safeGetMany(`
+      SELECT customer_name, COUNT(*) as orders, COALESCE(SUM(COALESCE(total_amount, price, 0)), 0) as revenue
+      FROM orders
+      WHERE deleted_at IS NULL${dateFilter}
+      GROUP BY customer_name
+      ORDER BY revenue DESC
+      LIMIT 10
+    `, dateParams);
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalSales: totalSalesVal,
+          totalOrders: Number(totalDelivered.count) || 0,
+          allOrders: Number(totalOrders.count) || 0,
+          pendingOrders: Number(pendingOrders.count) || 0,
+          pendingValue: Number(pendingValue.total) || 0,
+          processingOrders: Number(processingOrders.count) || 0,
+          inTransitOrders: Number(inTransitOrders.count) || 0,
+          cancelledOrders: Number(cancelledOrders.count) || 0,
+          cancelledValue: Number(cancelledValue.total) || 0,
+          estimatedProfit,
+          estimatedCost,
+          totalRequests: Number(totalRequests.count) || 0,
+          totalServiceRequests: Number(totalServiceRequests.count) || 0,
+          unreadMessages: Number(unreadMessages.count) || 0,
+        },
+        ordersByStatus,
+        dailySales,
+        shippingMethods,
+        topProducts,
+        topCustomers,
+      },
+    });
+  } catch (error) {
+    logger.error("Analytics error:", error);
+    res.status(500).json({ error: "Failed to get analytics data" });
+  }
+});
+
 router.get("/orders", async (req, res) => {
   try {
     const { status, search, page = 1, limit = 20 } = req.query;
@@ -595,6 +703,10 @@ router.delete("/orders/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
+    if (order.tracking_number) {
+      await db.run("DELETE FROM tracking WHERE tracking_number = ?", [order.tracking_number]);
+    }
+    await db.run("DELETE FROM status_history WHERE order_id = ?", [req.params.id]);
     await db.softDelete('orders', req.params.id);
 
     logger.info(`Order soft-deleted: ${order.order_number}`);
@@ -695,6 +807,94 @@ router.get("/orders/:id/history", async (req, res) => {
   }
 });
 
+router.get("/tracking-all", async (req, res) => {
+  try {
+    const { search, source, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    let queryStr = `SELECT t.* FROM tracking t WHERE t.deleted_at IS NULL`;
+    const params = [];
+
+    if (search) {
+      queryStr += ` AND (t.tracking_number LIKE ? OR t.status LIKE ? OR t.location LIKE ? OR t.note LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (source && source !== 'all') {
+      if (source === 'order') {
+        queryStr += ` AND EXISTS (SELECT 1 FROM orders o WHERE o.tracking_number = t.tracking_number AND o.deleted_at IS NULL)`;
+      } else if (source === 'request') {
+        queryStr += ` AND EXISTS (SELECT 1 FROM product_requests pr WHERE pr.tracking_number = t.tracking_number AND pr.deleted_at IS NULL)`;
+      } else if (source === 'service-request') {
+        queryStr += ` AND EXISTS (SELECT 1 FROM service_requests sr WHERE sr.tracking_number = t.tracking_number AND sr.deleted_at IS NULL)`;
+      } else if (source === 'custom') {
+        queryStr += ` AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.tracking_number = t.tracking_number)`;
+        queryStr += ` AND NOT EXISTS (SELECT 1 FROM product_requests pr WHERE pr.tracking_number = t.tracking_number)`;
+        queryStr += ` AND NOT EXISTS (SELECT 1 FROM service_requests sr WHERE sr.tracking_number = t.tracking_number)`;
+      }
+    }
+
+    queryStr += " ORDER BY t.created_at DESC LIMIT ? OFFSET ?";
+    params.push(parseInt(limit), parseInt(offset));
+
+    const trackingEntries = await safeGetMany(queryStr, params);
+
+    const enriched = await Promise.all(trackingEntries.map(async (t) => {
+      const order = await safeGetOne("SELECT id, order_number, customer_name, product_name, product_codes, status FROM orders WHERE tracking_number = ? AND deleted_at IS NULL", [t.tracking_number]);
+      if (order) {
+        return { ...t, source_type: 'order', source_number: order.order_number, customer_name: order.customer_name, product_name: order.product_name, product_codes: order.product_codes, source_status: order.status };
+      }
+      const pr = await safeGetOne("SELECT id, name, product_name, status FROM product_requests WHERE tracking_number = ? AND deleted_at IS NULL", [t.tracking_number]);
+      if (pr) {
+        return { ...t, source_type: 'request', source_number: `REQ-${pr.id.slice(0, 8)}`, customer_name: pr.name, product_name: pr.product_name, product_codes: '', source_status: pr.status };
+      }
+      const sr = await safeGetOne("SELECT id, name, service_type, status FROM service_requests WHERE tracking_number = ? AND deleted_at IS NULL", [t.tracking_number]);
+      if (sr) {
+        return { ...t, source_type: 'service-request', source_number: `SR-${sr.id.slice(0, 8)}`, customer_name: sr.name, product_name: sr.service_type, product_codes: '', source_status: sr.status };
+      }
+      return { ...t, source_type: 'custom', source_number: t.tracking_number, customer_name: '', product_name: '', product_codes: '', source_status: '' };
+    }));
+
+    let countQuery = "SELECT COUNT(*) as count FROM tracking t WHERE t.deleted_at IS NULL";
+    const countParams = [];
+
+    if (search) {
+      countQuery += ` AND (t.tracking_number LIKE ? OR t.status LIKE ? OR t.location LIKE ? OR t.note LIKE ?)`;
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (source && source !== 'all') {
+      if (source === 'order') {
+        countQuery += ` AND EXISTS (SELECT 1 FROM orders o WHERE o.tracking_number = t.tracking_number AND o.deleted_at IS NULL)`;
+      } else if (source === 'request') {
+        countQuery += ` AND EXISTS (SELECT 1 FROM product_requests pr WHERE pr.tracking_number = t.tracking_number AND pr.deleted_at IS NULL)`;
+      } else if (source === 'service-request') {
+        countQuery += ` AND EXISTS (SELECT 1 FROM service_requests sr WHERE sr.tracking_number = t.tracking_number AND sr.deleted_at IS NULL)`;
+      } else if (source === 'custom') {
+        countQuery += ` AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.tracking_number = t.tracking_number)`;
+        countQuery += ` AND NOT EXISTS (SELECT 1 FROM product_requests pr WHERE pr.tracking_number = t.tracking_number)`;
+        countQuery += ` AND NOT EXISTS (SELECT 1 FROM service_requests sr WHERE sr.tracking_number = t.tracking_number)`;
+      }
+    }
+
+    const totalResult = await safeGetOne(countQuery, countParams);
+
+    res.json({
+      success: true,
+      data: enriched,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: totalResult.count,
+        pages: Math.ceil(totalResult.count / limit),
+      },
+    });
+  } catch (error) {
+    logger.error("Get all tracking error:", error);
+    res.status(500).json({ error: "Failed to get tracking entries" });
+  }
+});
+
 router.get("/tracking/:tracking_number", async (req, res) => {
   try {
     const tracking = await db.getMany(
@@ -712,9 +912,9 @@ router.get("/tracking/:tracking_number", async (req, res) => {
   }
 });
 
-router.delete("/tracking/:id", canDelete, async (req, res) => {
+router.delete("/tracking/:id", async (req, res) => {
   try {
-    const tracking = await safeGetOne("SELECT * FROM tracking WHERE id = ? AND deleted_at IS NULL", [
+    const tracking = await safeGetOne("SELECT * FROM tracking WHERE id = ?", [
       req.params.id,
     ]);
 
@@ -722,12 +922,11 @@ router.delete("/tracking/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Tracking entry not found" });
     }
 
-    await db.softDelete('tracking', req.params.id);
+    await db.run("DELETE FROM tracking WHERE id = ?", [req.params.id]);
 
     res.json({
       success: true,
-      message: "Tracking entry moved to trash",
-      softDeleted: true,
+      message: "Tracking entry deleted permanently",
     });
   } catch (error) {
     logger.error("Delete tracking error:", error);
@@ -737,7 +936,7 @@ router.delete("/tracking/:id", canDelete, async (req, res) => {
 
 router.get("/requests", async (req, res) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, search, page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
     let queryStr = "SELECT * FROM product_requests WHERE deleted_at IS NULL";
@@ -746,6 +945,11 @@ router.get("/requests", async (req, res) => {
     if (status && status !== "all") {
       queryStr += " AND status = ?";
       params.push(status);
+    }
+
+    if (search) {
+      queryStr += " AND (name LIKE ? OR email LIKE ? OR product_name LIKE ? OR company LIKE ?)";
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     queryStr += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
@@ -759,6 +963,11 @@ router.get("/requests", async (req, res) => {
     if (status && status !== "all") {
       countQuery += " AND status = ?";
       countParams.push(status);
+    }
+
+    if (search) {
+      countQuery += " AND (name LIKE ? OR email LIKE ? OR product_name LIKE ? OR company LIKE ?)";
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     const totalResult = await safeGetOne(countQuery, countParams);
@@ -874,6 +1083,9 @@ router.delete("/requests/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Request not found" });
     }
 
+    if (request.tracking_number) {
+      await db.run("DELETE FROM tracking WHERE tracking_number = ?", [request.tracking_number]);
+    }
     await db.softDelete('product_requests', req.params.id);
 
     logger.info(`Request soft-deleted: ${request.id}`);
@@ -1813,6 +2025,9 @@ router.delete("/service-requests/:id", canDelete, async (req, res) => {
       return res.status(404).json({ error: "Service request not found" });
     }
 
+    if (request.tracking_number) {
+      await db.run("DELETE FROM tracking WHERE tracking_number = ?", [request.tracking_number]);
+    }
     await db.softDelete('service_requests', req.params.id);
 
     logger.info(`Service request soft-deleted: ${request.tracking_number}`);
@@ -2115,6 +2330,87 @@ router.delete("/videos/:id", canDelete, async (req, res) => {
   } catch (error) {
     logger.error("Delete video error:", error);
     res.status(500).json({ error: "Failed to delete video" });
+  }
+});
+
+const nodemailer = require("nodemailer");
+
+const getEmailTransporter = () => {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+};
+
+router.post("/send-invoice", async (req, res) => {
+  try {
+    const { to, subject, invoiceNumber, customerName, attachment, attachmentName } = req.body;
+
+    if (!to || !subject || !attachment) {
+      return res.status(400).json({ error: "Missing required fields: to, subject, attachment" });
+    }
+
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      logger.warn("SMTP credentials not configured, falling back to mailto");
+      return res.status(503).json({
+        error: "Email service not configured",
+        fallback: true,
+        mailto: `mailto:${to}?subject=${encodeURIComponent(subject)}`
+      });
+    }
+
+    const transporter = getEmailTransporter();
+
+    const base64Data = attachment.replace(/^data:.*;base64,/, '');
+
+    const mailOptions = {
+      from: `"H&B Trade" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #0d9488; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">H&B Trade</h1>
+            <p style="color: #ccfbf1; margin: 5px 0 0 0; font-size: 12px;">China to Bangladesh Product Sourcing & Shipping</p>
+          </div>
+          <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none;">
+            <p>Dear ${customerName || 'Customer'},</p>
+            <p>Please find attached your invoice <strong>${invoiceNumber}</strong>.</p>
+            <p>If you have any questions regarding this invoice, please don't hesitate to contact us.</p>
+            <p>Thank you for your business!</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+            <p style="color: #9ca3af; font-size: 12px;">Best regards,<br/>H&B Trade Team</p>
+          </div>
+          <div style="background: #f3f4f6; padding: 12px; border-radius: 0 0 8px 8px; text-align: center;">
+            <p style="color: #9ca3af; font-size: 11px; margin: 0;">H&B Trade - Your Trusted Sourcing Partner</p>
+          </div>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: attachmentName || 'invoice.pdf',
+          content: base64Data,
+          encoding: 'base64',
+          contentType: 'application/pdf',
+        },
+      ],
+    };
+
+    await transporter.sendMail(mailOptions);
+    logger.info(`Invoice ${invoiceNumber} sent to ${to}`);
+
+    res.json({
+      success: true,
+      message: `Invoice sent successfully to ${to}`,
+    });
+  } catch (error) {
+    logger.error("Send invoice error:", error);
+    res.status(500).json({ error: "Failed to send invoice email", details: error.message });
   }
 });
 

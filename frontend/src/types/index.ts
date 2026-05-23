@@ -213,3 +213,41 @@ export interface ServiceRequestFormData {
   details?: Record<string, string>;
   message?: string;
 }
+
+export interface InvoiceItem {
+  productName: string;
+  productCode?: string;
+  quantity: number;
+  unitPrice: number;
+  perPiecePrice?: number;
+  weight?: string;
+  volume?: string;
+  total: number;
+}
+
+export interface InvoiceData {
+  invoiceNumber: string;
+  invoiceDate: string;
+  orderDate: string;
+  dueDate: string;
+  orderNumber: string;
+  trackingNumber?: string;
+  status: string;
+  shippingMethod?: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  customerWhatsapp?: string;
+  customerAddress?: string;
+  deliveryAddress?: string;
+  items: InvoiceItem[];
+  subtotal: number;
+  shippingCost?: number;
+  discount?: number;
+  totalAmount: number;
+  netWeight?: string;
+  paymentInfo?: string;
+  notes?: string;
+  signatureUrl?: string;
+  useLogoAsSignature?: boolean;
+}

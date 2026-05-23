@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { 
   TrendingUp, 
-  TrendingDown, 
   Package, 
   Truck, 
   XCircle, 
@@ -13,7 +12,11 @@ import {
   DollarSign,
   BarChart3,
   PieChart,
-  Calendar
+  Calendar,
+  ClipboardList,
+  Wrench,
+  Mail,
+  Users
 } from 'lucide-react';
 import {
   BarChart,
@@ -31,11 +34,13 @@ import {
   Line,
 } from 'recharts';
 import api from '@/lib/api';
+import { getStatusLabel } from '@/lib/utils';
 
 interface AnalyticsData {
   summary: {
     totalSales: number;
     totalOrders: number;
+    allOrders: number;
     pendingOrders: number;
     pendingValue: number;
     processingOrders: number;
@@ -44,14 +49,18 @@ interface AnalyticsData {
     cancelledValue: number;
     estimatedProfit: number;
     estimatedCost: number;
+    totalRequests: number;
+    totalServiceRequests: number;
+    unreadMessages: number;
   };
   ordersByStatus: Array<{ status: string; count: number; total: number }>;
   dailySales: Array<{ date: string; orders: number; sales: number }>;
   shippingMethods: Array<{ shipping_method: string; count: number; total: number }>;
   topProducts: Array<{ product_name: string; orders: number; revenue: number }>;
+  topCustomers: Array<{ customer_name: string; orders: number; revenue: number }>;
 }
 
-const COLORS = ['#0d9488', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981'];
+const COLORS = ['#0d9488', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#6366f1'];
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -87,11 +96,11 @@ export default function AnalyticsPage() {
   }
 
   if (!data) {
-    return <div>No data available</div>;
+    return <div className="text-center py-12 text-gray-500">No analytics data available</div>;
   }
 
   const statusChartData = data.ordersByStatus.map(item => ({
-    name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+    name: getStatusLabel(item.status),
     value: item.count,
     total: item.total
   }));
@@ -105,14 +114,15 @@ export default function AnalyticsPage() {
     }));
 
   const salesChartData = data.dailySales.slice(0, 14).reverse().map(item => ({
-    date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    date: new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     sales: item.sales,
     orders: item.orders
   }));
 
+  const s = data.summary;
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
@@ -134,15 +144,14 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-green-600">Total Sales</p>
-                <p className="text-2xl font-bold text-green-700">{formatCurrency(data.summary.totalSales)}</p>
-                <p className="text-xs text-green-600 mt-1">{data.summary.totalOrders} delivered orders</p>
+                <p className="text-sm text-green-600">Total Sales (Delivered)</p>
+                <p className="text-2xl font-bold text-green-700">{formatCurrency(s.totalSales)}</p>
+                <p className="text-xs text-green-600 mt-1">{s.totalOrders} delivered orders</p>
               </div>
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                 <DollarSign className="text-white" size={24} />
@@ -156,8 +165,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-blue-600">Estimated Profit</p>
-                <p className="text-2xl font-bold text-blue-700">{formatCurrency(data.summary.estimatedProfit)}</p>
-                <p className="text-xs text-blue-600 mt-1">~20% margin</p>
+                <p className="text-2xl font-bold text-blue-700">{formatCurrency(s.estimatedProfit)}</p>
+                <p className="text-xs text-blue-600 mt-1">~20% margin on {formatCurrency(s.estimatedCost)} cost</p>
               </div>
               <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                 <TrendingUp className="text-white" size={24} />
@@ -171,8 +180,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-yellow-600">Pending Orders</p>
-                <p className="text-2xl font-bold text-yellow-700">{data.summary.pendingOrders}</p>
-                <p className="text-xs text-yellow-600 mt-1">{formatCurrency(data.summary.pendingValue)} value</p>
+                <p className="text-2xl font-bold text-yellow-700">{s.pendingOrders}</p>
+                <p className="text-xs text-yellow-600 mt-1">{formatCurrency(s.pendingValue)} value</p>
               </div>
               <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
                 <Clock className="text-white" size={24} />
@@ -186,8 +195,8 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-red-600">Cancelled</p>
-                <p className="text-2xl font-bold text-red-700">{data.summary.cancelledOrders}</p>
-                <p className="text-xs text-red-600 mt-1">{formatCurrency(data.summary.cancelledValue)} lost</p>
+                <p className="text-2xl font-bold text-red-700">{s.cancelledOrders}</p>
+                <p className="text-xs text-red-600 mt-1">{formatCurrency(s.cancelledValue)} lost</p>
               </div>
               <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
                 <XCircle className="text-white" size={24} />
@@ -197,48 +206,49 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-purple-600">Processing</p>
-                <p className="text-2xl font-bold text-purple-700">{data.summary.processingOrders}</p>
-              </div>
-              <Package className="text-purple-500" size={24} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 border-cyan-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-cyan-600">In Transit</p>
-                <p className="text-2xl font-bold text-cyan-700">{data.summary.inTransitOrders}</p>
-              </div>
-              <Truck className="text-cyan-500" size={24} />
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-teal-600">Delivered</p>
-                <p className="text-2xl font-bold text-teal-700">{data.summary.totalOrders}</p>
-              </div>
-              <TrendingUp className="text-teal-500" size={24} />
-            </div>
+          <CardContent className="p-3 text-center">
+            <p className="text-xs text-teal-600">All Orders</p>
+            <p className="text-xl font-bold text-teal-700">{s.allOrders}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <CardContent className="p-3 text-center">
+            <p className="text-xs text-purple-600">Processing</p>
+            <p className="text-xl font-bold text-purple-700">{s.processingOrders}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 border-cyan-200">
+          <CardContent className="p-3 text-center">
+            <p className="text-xs text-cyan-600">In Transit</p>
+            <p className="text-xl font-bold text-cyan-700">{s.inTransitOrders}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+          <CardContent className="p-3 text-center">
+            <Package className="mx-auto text-indigo-500 mb-1" size={18} />
+            <p className="text-xl font-bold text-indigo-700">{s.totalOrders}</p>
+            <p className="text-xs text-indigo-600">Delivered</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+          <CardContent className="p-3 text-center">
+            <ClipboardList className="mx-auto text-orange-500 mb-1" size={18} />
+            <p className="text-xl font-bold text-orange-700">{s.totalRequests}</p>
+            <p className="text-xs text-orange-600">Requests</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200">
+          <CardContent className="p-3 text-center">
+            <Wrench className="mx-auto text-violet-500 mb-1" size={18} />
+            <p className="text-xl font-bold text-violet-700">{s.totalServiceRequests}</p>
+            <p className="text-xs text-violet-600">Services</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -254,27 +264,36 @@ export default function AnalyticsPage() {
                   <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip 
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number, name: string) => name === 'sales' ? formatCurrency(value) : value}
                     labelFormatter={(label) => `Date: ${label}`}
                   />
+                  <Legend />
                   <Line 
                     type="monotone" 
                     dataKey="sales" 
                     stroke="#0d9488" 
                     strokeWidth={2}
-                    dot={{ fill: '#0d9488' }}
+                    dot={{ fill: '#0d9488', r: 3 }}
+                    name="Sales (৳)"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="orders" 
+                    stroke="#f97316" 
+                    strokeWidth={2}
+                    dot={{ fill: '#f97316', r: 3 }}
+                    name="Orders"
                   />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-gray-500">
-                No sales data available
+                No sales data available for this period
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Orders by Status */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -300,7 +319,7 @@ export default function AnalyticsPage() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip formatter={(value: number) => `${value} orders`} />
                 </RechartsPie>
               </ResponsiveContainer>
             ) : (
@@ -312,12 +331,10 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Shipping Methods */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Shipping Methods Distribution</CardTitle>
+            <CardTitle>Shipping Methods</CardTitle>
           </CardHeader>
           <CardContent>
             {shippingChartData.length > 0 ? (
@@ -338,32 +355,67 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Top Products */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Products</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Package size={18} />
+              Top Products
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {data.topProducts.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {data.topProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {index + 1}
                       </span>
-                      <div>
-                        <p className="font-medium text-gray-800">{product.product_name}</p>
-                        <p className="text-sm text-gray-500">{product.orders} orders</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-800 text-sm truncate">{product.product_name}</p>
+                        <p className="text-xs text-gray-500">{product.orders} orders</p>
                       </div>
                     </div>
-                    <p className="font-bold text-primary">{formatCurrency(product.revenue)}</p>
+                    <p className="font-bold text-primary text-sm flex-shrink-0 ml-2">{formatCurrency(product.revenue)}</p>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="h-[200px] flex items-center justify-center text-gray-500">
                 No product data available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users size={18} />
+              Top Customers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.topCustomers && data.topCustomers.length > 0 ? (
+              <div className="space-y-2">
+                {data.topCustomers.map((customer, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="w-7 h-7 bg-secondary text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-800 text-sm truncate">{customer.customer_name}</p>
+                        <p className="text-xs text-gray-500">{customer.orders} orders</p>
+                      </div>
+                    </div>
+                    <p className="font-bold text-secondary text-sm flex-shrink-0 ml-2">{formatCurrency(customer.revenue)}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-[200px] flex items-center justify-center text-gray-500">
+                No customer data available
               </div>
             )}
           </CardContent>

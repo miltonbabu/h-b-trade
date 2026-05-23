@@ -18,7 +18,8 @@ import {
   BarChart3,
   Users,
   Video,
-  Wrench
+  Wrench,
+  Receipt
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -98,6 +99,7 @@ export default function AdminLayout({
     { href: '/admin/products', label: 'Products', icon: Box, badge: null, superAdminOnly: false },
     { href: '/admin/videos', label: 'Videos', icon: Video, badge: null, superAdminOnly: false },
     { href: '/admin/orders', label: 'Orders', icon: Package, badge: notifications.orders, superAdminOnly: false },
+    { href: '/admin/invoices', label: 'Invoices', icon: Receipt, badge: null, superAdminOnly: false },
     { href: '/admin/tracking', label: 'Tracking', icon: Truck, badge: null, superAdminOnly: false },
     { href: '/admin/requests', label: 'Product Requests', icon: FileText, badge: notifications.requests, superAdminOnly: false },
     { href: '/admin/service-requests', label: 'Service Requests', icon: Wrench, badge: notifications.serviceRequests, superAdminOnly: false },
