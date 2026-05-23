@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS product_requests (
     shipping_method VARCHAR(100),
     specifications TEXT,
     message TEXT,
-    image VARCHAR(500),
+    image TEXT,
     status VARCHAR(50) DEFAULT 'pending',
     tracking_number VARCHAR(100),
     converted_to_order UUID REFERENCES orders(id),
@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     company VARCHAR(255),
     details TEXT,
     message TEXT,
+    image TEXT,
     status VARCHAR(50) DEFAULT 'received',
     tracking_number VARCHAR(50),
     admin_notes TEXT,
@@ -306,6 +307,9 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZON
 ALTER TABLE tracking ADD COLUMN IF NOT EXISTS carrier VARCHAR(100);
 ALTER TABLE tracking ADD COLUMN IF NOT EXISTS estimated_date DATE;
 ALTER TABLE tracking ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+
+-- Service requests: add image column
+ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS image TEXT;
 
 -- Messages: add deleted_at
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;

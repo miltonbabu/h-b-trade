@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Search, Package, CheckCircle, Truck, Plane, Home, Loader2, Warehouse, Building, ClipboardCheck, XCircle, ShoppingCart, Ship, Users, Globe, Clock, Wrench } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, formatDateTime, formatShortDateTime } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 interface OrderTrackingData {
   type: 'order';
@@ -169,6 +170,58 @@ export default function UnifiedTrackingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState<TrackingData | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const [myTrackingNumbers, setMyTrackingNumbers] = useState<Array<{ tracking_number: string; type: string; label: string; status: string; created_at: string }>>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const fetchMyTracking = async () => {
+      try {
+        const [ordersRes, prRes, srRes] = await Promise.all([
+          api.get('/customer/orders'),
+          api.get('/customer/product-requests'),
+          api.get('/customer/service-requests'),
+        ]);
+        const items: Array<{ tracking_number: string; type: string; label: string; status: string; created_at: string }> = [];
+        for (const o of ordersRes.data.data || []) {
+          if (o.tracking_number) items.push({ tracking_number: o.tracking_number, type: 'order', label: `Order #${o.order_number}`, status: o.status, created_at: o.created_at });
+        }
+        for (const r of prRes.data.data || []) {
+          if (r.tracking_number) items.push({ tracking_number: r.tracking_number, type: 'product_request', label: r.product_name, status: r.status, created_at: r.created_at });
+        }
+        for (const r of srRes.data.data || []) {
+          if (r.tracking_number) items.push({ tracking_number: r.tracking_number, type: 'service', label: r.service_type?.replace(/_/g, ' '), status: r.status, created_at: r.created_at });
+        }
+        items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setMyTrackingNumbers(items);
+      } catch {}
+    };
+    fetchMyTracking();
+  }, [isAuthenticated]);
+
+  const handleTrackFromList = (tn: string) => {
+    setTrackingNumber(tn);
+    setIsLoading(true);
+    setError('');
+    setData(null);
+    api.get(`/track/${tn}`)
+      .then((response) => {
+        if (response.data.data) {
+          setData({ type: response.data.type, ...response.data.data });
+        } else {
+          setError('No tracking information found.');
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.error || 'No tracking information found.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setTimeout(() => {
+          document.getElementById('tracking-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      });
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +232,6 @@ export default function UnifiedTrackingPage() {
     setData(null);
 
     try {
-      // Use unified tracking endpoint - it searches orders, product_requests, and service_requests
       const response = await api.get(`/track/${trackingNumber.trim()}`);
       const responseData = response.data;
       if (responseData.data) {
@@ -192,13 +244,16 @@ export default function UnifiedTrackingPage() {
       setError(apiError?.response?.data?.error || 'No tracking information found for this number.');
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        document.getElementById('tracking-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   };
 
   const prefix = data ? getPrefix(
-    data.type === 'order' ? data.order.tracking_number :
-    data.type === 'service' ? data.serviceRequest.tracking_number :
-    data.request.tracking_number
+    data.type === 'order' ? data.order?.tracking_number :
+    data.type === 'service' ? data.serviceRequest?.tracking_number :
+    data.request?.tracking_number || ''
   ) : '';
   const prefixInfo = TRACKING_PREFIX_INFO[prefix] || TRACKING_PREFIX_INFO['SR'];
   const PrefixIcon = prefixInfo.icon;
@@ -249,8 +304,43 @@ export default function UnifiedTrackingPage() {
         </div>
       </section>
 
+      {/* My Tracking Numbers - for logged in customers */}
+      {isAuthenticated && myTrackingNumbers.length > 0 && (
+        <section className="py-6 bg-gray-50 border-b">
+          <div className="container mx-auto px-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-3">My Tracking Numbers</h2>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {myTrackingNumbers.map((item) => {
+                const prefix = getPrefix(item.tracking_number);
+                const prefixInfo = TRACKING_PREFIX_INFO[prefix] || TRACKING_PREFIX_INFO['SR'];
+                const Icon = prefixInfo.icon;
+                const statusColor = item.status === 'delivered' || item.status === 'completed' ? 'bg-green-100 text-green-700' : item.status === 'pending' || item.status === 'received' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700';
+                return (
+                  <button
+                    key={item.tracking_number}
+                    onClick={() => handleTrackFromList(item.tracking_number)}
+                    className={`flex items-center gap-3 p-3 bg-white rounded-lg border hover:border-primary hover:shadow-sm transition text-left ${trackingNumber === item.tracking_number ? 'border-primary shadow-sm' : 'border-gray-200'}`}
+                  >
+                    <div className={`w-8 h-8 ${prefixInfo.color} rounded flex items-center justify-center shrink-0`}>
+                      <Icon size={16} className="text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-800 truncate">{item.label}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.tracking_number}</p>
+                    </div>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${statusColor}`}>
+                      {item.status}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Results */}
-      <section className="py-8 sm:py-12 md:py-16">
+      <section id="tracking-results" className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           {data ? (
             <div className="max-w-4xl mx-auto space-y-6">

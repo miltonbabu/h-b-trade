@@ -23,9 +23,20 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      // For admin routes, use admin token
+      if (config.url?.startsWith('/admin') || config.url?.startsWith('/auth')) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } else {
+        // For customer/public routes, prefer customer token
+        const customerToken = localStorage.getItem('customer_token');
+        const adminToken = localStorage.getItem('token');
+        const token = customerToken || adminToken;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
     }
     return config;
@@ -39,10 +50,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
         if (window.location.pathname.startsWith('/admin')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
           window.location.href = '/admin/login';
+        } else if (window.location.pathname.startsWith('/profile')) {
+          localStorage.removeItem('customer_token');
+          localStorage.removeItem('customer_user');
+          window.location.href = '/login';
         }
       }
     }

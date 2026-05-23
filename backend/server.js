@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Dhaka';
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,6 +14,7 @@ const logger = require('./config/logger');
 const authRoutes = require('./routes/auth');
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
+const customerRoutes = require('./routes/customer');
 
 const app = express();
 
@@ -62,7 +65,7 @@ app.use(cors({
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
+  max: process.env.NODE_ENV === 'production' ? 100 : 5000,
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -71,7 +74,7 @@ app.use('/api/', limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: process.env.NODE_ENV === 'production' ? 5 : 100,
   message: { error: 'Too many login attempts, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -91,6 +94,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/customer', customerRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ 

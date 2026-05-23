@@ -11,10 +11,12 @@ import {
   ArrowUp,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const settings = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,7 +58,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               <a
-                href="https://facebook.com/hbtradebd"
+                href={settings.facebook_page}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 text-gray-400 hover:text-white"
@@ -64,7 +66,7 @@ export default function Footer() {
                 <Facebook size={16} strokeWidth={1.5} />
               </a>
               <a
-                href="https://wa.me/8801835220729"
+                href={settings.whatsapp_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-green-500/20 hover:border-green-500/30 text-gray-400 hover:text-white"
@@ -134,7 +136,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3.5">
               <li className="flex items-start gap-3 group">
-                <a href="tel:+8801835220729" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Phone
                     size={14}
                     strokeWidth={1.5}
@@ -142,24 +144,23 @@ export default function Footer() {
                   />
                 </a>
                 <div className="text-gray-500 text-sm">
-                  <a href="tel:+8801835220729" className="hover:text-secondary transition-colors">+880 1835220729</a><br />
-                  <a href="tel:+8613071095097" className="hover:text-secondary transition-colors">+86 13071095097</a>
+                  <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="hover:text-secondary transition-colors">{settings.phone}</a>
                 </div>
               </li>
               <li className="flex items-start gap-3 group">
-                <a href="mailto:helpandbenefit30@gmail.com" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href={`mailto:${settings.email}`} className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <Mail
                     size={14}
                     strokeWidth={1.5}
                     className="text-gray-500 group-hover:text-primary transition-colors duration-300"
                   />
                 </a>
-                <a href="mailto:helpandbenefit30@gmail.com" className="text-gray-500 text-sm hover:text-secondary transition-colors">
-                  helpandbenefit30@gmail.com
+                <a href={`mailto:${settings.email}`} className="text-gray-500 text-sm hover:text-secondary transition-colors">
+                  {settings.email}
                 </a>
               </li>
               <li className="flex items-start gap-3 group">
-                <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <a href={`https://maps.google.com/?q=${encodeURIComponent(settings.office_address)}`} target="_blank" rel="noopener noreferrer" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
                   <MapPin
                     size={14}
                     strokeWidth={1.5}
@@ -167,18 +168,9 @@ export default function Footer() {
                   />
                 </a>
                 <div className="text-gray-500 text-xs leading-relaxed">
-                  <p className="font-medium text-gray-400 mb-0.5">
-                    <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">🇨🇳 China</a>
-                  </p>
-                  <p>
-                    <a href="https://maps.google.com/?q=Tahei+Town+Baiyun+District+Guangzhou" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">Tahei Town, Baiyun District, Guangzhou</a>
-                  </p>
-                  <p className="font-medium text-gray-400 mt-1.5 mb-0.5">
-                    <a href="https://maps.google.com/?q=Dhaka+Uttora+Sector+5+Road+3+House+25" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">🇧🇩 Bangladesh</a>
-                  </p>
-                  <p>
-                    <a href="https://maps.google.com/?q=Dhaka+Uttora+Sector+5+Road+3+House+25" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">Dhaka, Uttara, Sector 5, Road 3, House # 25</a>
-                  </p>
+                  {settings.office_address.split('|').map((addr, i) => (
+                    <p key={i}>{addr.trim()}</p>
+                  ))}
                 </div>
               </li>
             </ul>

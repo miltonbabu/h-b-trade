@@ -1,12 +1,15 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+const BD_TZ = 'Asia/Dhaka';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 export function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString('en-US', {
+    timeZone: BD_TZ,
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -15,6 +18,7 @@ export function formatDate(date: string | Date): string {
 
 export function formatDateTime(date: string | Date): string {
   return new Date(date).toLocaleString('en-US', {
+    timeZone: BD_TZ,
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -23,12 +27,11 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
-// Compact format for timeline step labels: "May 23 · 14:32"
 export function formatShortDateTime(date: string | Date): string {
   const d = new Date(date);
-  const month = d.toLocaleString('en-US', { month: 'short' });
-  const day = d.getDate();
-  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const month = d.toLocaleString('en-US', { timeZone: BD_TZ, month: 'short' });
+  const day = d.toLocaleString('en-US', { timeZone: BD_TZ, day: 'numeric' });
+  const time = d.toLocaleTimeString('en-GB', { timeZone: BD_TZ, hour: '2-digit', minute: '2-digit' });
   return `${month} ${day} · ${time}`;
 }
 

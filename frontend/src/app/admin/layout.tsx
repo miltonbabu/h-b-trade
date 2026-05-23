@@ -19,7 +19,8 @@ import {
   Users,
   Video,
   Wrench,
-  Receipt
+  Receipt,
+  UserCircle, Trash2
 } from 'lucide-react';
 import api from '@/lib/api';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -105,6 +106,8 @@ export default function AdminLayout({
     { href: '/admin/requests', label: 'Product Requests', icon: FileText, badge: notifications.requests, superAdminOnly: false },
     { href: '/admin/service-requests', label: 'Service Requests', icon: Wrench, badge: notifications.serviceRequests, superAdminOnly: false },
     { href: '/admin/messages', label: 'Messages', icon: MessageSquare, badge: notifications.messages, superAdminOnly: false },
+    { href: '/admin/customers', label: 'Customers', icon: UserCircle, badge: null, superAdminOnly: false },
+    { href: '/admin/cleanup', label: 'Data Cleanup', icon: Trash2, badge: null, superAdminOnly: true },
     { href: '/admin/admins', label: 'Admins', icon: Users, badge: null, superAdminOnly: true },
     { href: '/admin/settings', label: 'Settings', icon: Settings, badge: null, superAdminOnly: false },
   ];
@@ -131,8 +134,8 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-200 ease-in-out`}>
-        <div className="flex items-center justify-between h-16 px-4 bg-gray-800">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-900 flex flex-col transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-200 ease-in-out overflow-hidden`}>
+        <div className="flex items-center justify-between h-16 px-4 bg-gray-800 shrink-0">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">H</span>
@@ -144,7 +147,7 @@ export default function AdminLayout({
           </button>
         </div>
 
-        <nav className="mt-4">
+        <nav className="flex-1 overflow-y-auto mt-4 pb-4 min-h-0">
           {filteredMenuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -166,17 +169,17 @@ export default function AdminLayout({
               </Link>
             );
           })}
-        </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
-        </div>
+          <div className="mt-4 border-t border-gray-800 pt-4">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition"
+            >
+              <LogOut size={20} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </nav>
       </aside>
 
       {/* Main content */}
@@ -198,6 +201,13 @@ export default function AdminLayout({
                   {notifications.total > 9 ? '9+' : notifications.total}
                 </span>
               )}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="lg:hidden p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition"
+              title="Logout"
+            >
+              <LogOut size={20} />
             </button>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">

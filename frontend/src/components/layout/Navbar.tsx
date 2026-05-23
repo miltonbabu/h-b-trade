@@ -3,11 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Menu, X, Phone, Mail, Facebook } from "lucide-react";
+import { Menu, X, Phone, Mail, Facebook, User, LogOut } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useSettings } from "@/hooks/useSettings";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isReturningUser, setIsReturningUser] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
+  const settings = useSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +21,19 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('customer_user') || localStorage.getItem('hb_visited');
+    if (hasVisited) {
+      setIsReturningUser(true);
+    } else {
+      setIsReturningUser(false);
+    }
+  }, [isAuthenticated]);
+
+  const markVisited = () => {
+    localStorage.setItem('hb_visited', '1');
+  };
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -27,6 +45,11 @@ export default function Navbar() {
     { href: "/contact", label: "Contact" },
   ];
 
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+  };
+
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-white shadow-md"}`}
@@ -35,23 +58,23 @@ export default function Navbar() {
         <div className="container mx-auto px-4 flex justify-between items-center text-sm">
           <div className="flex items-center gap-6">
             <a
-              href="tel:+8801835220729"
+              href={`tel:${settings.phone.replace(/\s/g, '')}`}
               className="flex items-center gap-2 hover:text-yellow-300 transition-colors"
             >
               <Phone size={14} />
-              <span>+880 1835220729</span>
+              <span>{settings.phone}</span>
             </a>
             <a
-              href="mailto:helpandbenefit30@gmail.com"
+              href={`mailto:${settings.email}`}
               className="flex items-center gap-2 hover:text-yellow-300 transition-colors"
             >
               <Mail size={14} />
-              <span>helpandbenefit30@gmail.com</span>
+              <span>{settings.email}</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://facebook.com/hbtradebd"
+              href={settings.facebook_page}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-yellow-300 transition-colors hover:scale-110 transform"
@@ -64,9 +87,8 @@ export default function Navbar() {
 
       <nav className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14 sm:h-16">
-          {/* Logo: tighter on mobile so menu button has room */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
-            <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0">
+          <Link href="/" className="flex items-center group min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0">
               <Image
                 src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"
@@ -75,14 +97,6 @@ export default function Navbar() {
                 className="w-full h-full object-contain"
                 priority
               />
-            </div>
-            <div className="leading-none whitespace-nowrap">
-              <span className="text-xl sm:text-2xl md:text-3xl font-serif tracking-[-0.02em]">
-                <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">H</span>
-                <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">&</span>
-                <span className="bg-gradient-to-b from-green-600 to-green-800 bg-clip-text text-transparent">B</span>
-              </span>
-              <span className="text-[11px] sm:text-sm md:text-base font-serif text-secondary/70 tracking-[0.15em] ml-1 sm:ml-1.5 font-medium">TRADE</span>
             </div>
           </Link>
 
@@ -97,21 +111,66 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 text-gray-600 hover:text-primary font-medium transition"
+                >
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
+                    <User size={16} className="text-primary" />
+                  </div>
+                  <span className="hidden lg:inline">{user.name}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-red-500 transition"
+                  title="Logout"
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href={isReturningUser ? '/login' : '/signup'}
+                onClick={markVisited}
+                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition font-medium text-sm"
+              >
+                <User size={16} />
+                {isReturningUser ? 'Login' : 'Sign Up'}
+              </Link>
+            )}
           </div>
 
-          {/* Mobile menu trigger - 44px tap target */}
-          <button
-            className="md:hidden inline-flex items-center justify-center h-11 w-11 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isOpen}
-          >
-            {isOpen ? (
-              <X size={24} className="text-primary" />
+          <div className="flex items-center gap-2 md:hidden">
+            {isAuthenticated && user ? (
+              <Link href="/profile" className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition" onClick={() => setIsOpen(false)}>
+                <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
+                  <User size={14} className="text-primary" />
+                </div>
+              </Link>
             ) : (
-              <Menu size={24} className="text-primary" />
+              <Link
+                href={isReturningUser ? '/login' : '/signup'}
+                onClick={() => { markVisited(); setIsOpen(false); }}
+                className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-gray-600"
+              >
+                <User size={20} />
+              </Link>
             )}
-          </button>
+            <button
+              className="inline-flex items-center justify-center h-9 w-9 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isOpen}
+            >
+              {isOpen ? (
+                <X size={22} className="text-primary" />
+              ) : (
+                <Menu size={22} className="text-primary" />
+              )}
+            </button>
+          </div>
         </div>
 
         {isOpen && (
@@ -127,6 +186,50 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <div className="border-t border-gray-100 mt-2 pt-2">
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-3 min-h-11 px-4 text-gray-700 hover:text-primary hover:bg-primary/5 font-medium rounded-xl transition"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-primary font-bold text-xs">{user.name?.charAt(0) || 'U'}</span>
+                    </div>
+                    <span>My Profile</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 min-h-11 px-4 w-full text-red-500 hover:bg-red-50 font-medium rounded-xl transition"
+                  >
+                    <LogOut size={18} />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={isReturningUser ? '/login' : '/signup'}
+                    className="flex items-center gap-3 min-h-11 px-4 text-primary hover:bg-primary/5 font-medium rounded-xl transition"
+                    onClick={() => { markVisited(); setIsOpen(false); }}
+                  >
+                    <User size={18} />
+                    <span>{isReturningUser ? 'Login' : 'Sign Up'}</span>
+                  </Link>
+                  {isReturningUser && (
+                    <Link
+                      href="/signup"
+                      className="flex items-center gap-3 min-h-11 px-4 text-gray-500 hover:bg-gray-50 font-medium rounded-xl transition"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User size={18} />
+                      <span>Create Account</span>
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         )}
       </nav>

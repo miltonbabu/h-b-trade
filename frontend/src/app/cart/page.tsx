@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
+import { useSettings } from "@/hooks/useSettings";
 
 interface PaymentInfo {
   bkash?: string;
@@ -33,24 +34,24 @@ interface PaymentInfo {
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotalAmount, getTotalUnits, getItemTotalUnits, getItemTotalPrice, clearCart } =
     useCart();
+  const settings = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
-    bkash: '01835220729',
-    nagad: '01835220729',
-    bankAccount: `Bank: The City Bank
-Name: MD ARIFUL ISLAM RONY
-Account Number: 2183964509001
-Branch: Gulshan-02 Avenue
-Routing Number: 225261732
-Dhaka, Bangladesh`,
-    wechat: '',
-    alipay: '',
-    wechatQr: 'wechat-qr.png',
-    alipayQr: 'alipay-qr.png',
-  });
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
+
+  useEffect(() => {
+    setPaymentInfo({
+      bkash: settings.bkash,
+      nagad: settings.nagad,
+      bankAccount: settings.bank_account,
+      wechat: settings.wechat,
+      alipay: settings.alipay,
+      wechatQr: settings.wechat_qr,
+      alipayQr: settings.alipay_qr,
+    });
+  }, [settings.bkash, settings.nagad, settings.bank_account, settings.wechat, settings.alipay, settings.wechat_qr, settings.alipay_qr]);
 
   // User information state
   const [userInfo, setUserInfo] = useState({

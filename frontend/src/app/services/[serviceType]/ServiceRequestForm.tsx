@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Send, CheckCircle, Loader2, ShoppingCart, Package, Plane, Ship, Users, Globe, ArrowLeft, Copy, Check } from 'lucide-react';
+import { Send, CheckCircle, Loader2, ShoppingCart, Package, Plane, Ship, Users, Globe, ArrowLeft, Copy, Check, Upload } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 
@@ -110,7 +110,7 @@ const SERVICE_CONFIG: Record<string, {
     serviceType: 'air_cargo',
     icon: Plane,
     color: 'from-blue-500 to-blue-700',
-    description: 'Fast and reliable air freight services. Get your products from China to Bangladesh in 3-7 days.',
+    description: 'Fast and reliable air freight services. Get your products from China to Bangladesh in 7-10 days.',
     specificFields: [
       { key: 'cargo_description', label: 'Cargo Description', placeholder: 'What items need to be shipped?', required: true },
       { key: 'packaging_type', label: 'Packaging Type', placeholder: 'Select packaging type', required: true, options: [
@@ -140,7 +140,7 @@ const SERVICE_CONFIG: Record<string, {
     serviceType: 'sea_shipping',
     icon: Ship,
     color: 'from-red-500 to-red-700',
-    description: 'Cost-effective sea freight solutions for large shipments. 15-30 days delivery.',
+    description: 'Cost-effective sea freight solutions for large shipments. 30-45 days delivery.',
     specificFields: [
       { key: 'cargo_description', label: 'Cargo Description', placeholder: 'What items need to be shipped?', required: true },
       { key: 'cargo_type', label: 'Cargo Type', placeholder: 'e.g., General cargo, Hazardous, Perishable', required: true },
@@ -184,7 +184,7 @@ const SERVICE_CONFIG: Record<string, {
     serviceType: 'hand_carry',
     icon: Users,
     color: 'from-blue-500 to-blue-700',
-    description: 'Fastest delivery option for urgent and high-value items. 1-3 days delivery with personal escort.',
+    description: 'Fastest delivery option for urgent and high-value items. 1-7 days delivery with personal escort.',
     specificFields: [
       { key: 'item_description', label: 'Item Description', placeholder: 'What items need to be hand-carried?', required: true },
       { key: 'number_of_items', label: 'Number of Items', placeholder: 'e.g., 3 items' },
@@ -194,8 +194,8 @@ const SERVICE_CONFIG: Record<string, {
       { key: 'urgency', label: 'Urgency Level', placeholder: 'Select urgency', options: [
         { value: '', label: 'Select urgency level' },
         { value: 'urgent', label: 'Urgent (1-2 days)' },
-        { value: 'express', label: 'Express (2-3 days)' },
-        { value: 'standard', label: 'Standard (3-5 days)' },
+        { value: 'express', label: 'Express (3-5 days)' },
+        { value: 'standard', label: 'Standard (5-7 days)' },
       ] },
       { key: 'pickup_location', label: 'Pickup Location', placeholder: 'e.g., Guangzhou hotel, factory address' },
       { key: 'delivery_location', label: 'Delivery Location', placeholder: 'e.g., Dhaka office address' },
@@ -246,6 +246,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
   const [error, setError] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [copiedWarehouse, setCopiedWarehouse] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -311,6 +312,28 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
 
   const Icon = config.icon;
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      const validFiles = newFiles.filter(f => {
+        if (f.size > 6 * 1024 * 1024) {
+          setError(`"${f.name}" exceeds 6MB limit`);
+          return false;
+        }
+        return true;
+      });
+      setSelectedFiles(prev => {
+        const combined = [...prev, ...validFiles];
+        return combined.slice(0, 4);
+      });
+      setError('');
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const onSubmit = async (data: ServiceForm) => {
     setIsSubmitting(true);
     setError('');
@@ -322,20 +345,25 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
         if (value) details[key] = value;
       }
 
-      const response = await api.post('/service-request', {
-        service_type: config.serviceType,
-        name,
-        phone: phone || undefined,
-        whatsapp: whatsapp || undefined,
-        email,
-        company: company || undefined,
-        details: Object.keys(details).length > 0 ? details : undefined,
-        message: message || undefined,
+      const formData = new FormData();
+      formData.append('service_type', config.serviceType);
+      formData.append('name', name);
+      if (phone) formData.append('phone', phone);
+      if (whatsapp) formData.append('whatsapp', whatsapp);
+      formData.append('email', email);
+      if (company) formData.append('company', company);
+      if (Object.keys(details).length > 0) formData.append('details', JSON.stringify(details));
+      if (message) formData.append('message', message);
+      selectedFiles.forEach(file => formData.append('images', file));
+
+      const response = await api.post('/service-request', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setTrackingNumber(response.data.data.trackingNumber);
       setIsSuccess(true);
       reset();
+      setSelectedFiles([]);
     } catch (err: unknown) {
       const apiError = err as ApiError;
       setError(apiError?.response?.data?.error || 'Failed to submit request. Please try again.');
@@ -512,6 +540,51 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                     rows={4}
                     className="rounded-xl"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Product Images (Optional - max 4, 6MB each)
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="service-file-upload"
+                      disabled={selectedFiles.length >= 4}
+                    />
+                    <label htmlFor="service-file-upload" className={`cursor-pointer ${selectedFiles.length >= 4 ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Upload className="mx-auto text-primary mb-2" size={32} />
+                      <p className="text-gray-600 font-medium">
+                        {selectedFiles.length >= 4 ? 'Maximum 4 images selected' : 'Click to upload or drag and drop'}
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">PNG, JPG, GIF, WebP up to 6MB each</p>
+                    </label>
+                  </div>
+                  {selectedFiles.length > 0 && (
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="w-full h-24 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            x
+                          </button>
+                          <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Sender & Warehouse Section */}

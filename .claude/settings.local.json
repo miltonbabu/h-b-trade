@@ -10,7 +10,20 @@
       "PowerShell(try { Invoke-WebRequest \"http://localhost:5000\" -TimeoutSec 3 -UseBasicParsing | Out-Null; \"Backend: UP\" } catch { if \\($_.Exception.Response\\) { \"Backend: UP\" } else { \"Backend: DOWN\" } }; try { Invoke-WebRequest \"http://localhost:3000\" -TimeoutSec 5 -UseBasicParsing | Out-Null; \"Frontend: UP\" } catch { \"Frontend: DOWN\" })",
       "mcp__Claude_in_Chrome__list_connected_browsers",
       "Bash(ls \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\.claude\" 2>/dev/null || mkdir \"D:\\\\IDE\\\\Projects\\\\H & B Trade\\\\.claude\")",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" status)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" log -3 --oneline)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" diff --stat HEAD)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" diff backend/config/database.js)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" log --oneline -5 -- backend/config/database.js backend/routes/public.js frontend/src/app/services/[serviceType]/ServiceRequestForm.tsx)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" log --all --oneline)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" branch -a)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" log --oneline)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" remote -v)",
+      "Bash(git -C \"D:/IDE/Projects/H & B Trade\" log -1 --format=\"%H%n%s%n%cd\" --date=iso)"
     ]
   }
 }

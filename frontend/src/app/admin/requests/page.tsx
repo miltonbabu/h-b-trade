@@ -184,28 +184,28 @@ export default function AdminRequestsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Tracking</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Email</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Tracking</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Date</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {requests.map((request) => (
                     <tr key={request.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium">{request.name}</td>
-                      <td className="px-6 py-4 text-sm">{request.email}</td>
-                      <td className="px-6 py-4 text-sm">{request.product_name}</td>
-                      <td className="px-6 py-4 text-sm">
+                      <td className="px-3 py-2 text-sm font-medium">{request.name}</td>
+                      <td className="px-3 py-2 text-sm hidden md:table-cell">{request.email}</td>
+                      <td className="px-3 py-2 text-sm">{request.product_name}</td>
+                      <td className="px-3 py-2 text-sm hidden md:table-cell">
                         <span className="font-mono text-primary">{request.tracking_number || '-'}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <select
                           value={request.status}
                           onChange={(e) => handleStatusChange(request.id, e.target.value)}
@@ -224,9 +224,9 @@ export default function AdminRequestsPage() {
                           <option value="cancelled">Cancelled</option>
                         </select>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(request.created_at)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-3 py-2 text-sm text-gray-500 hidden md:table-cell">{formatDate(request.created_at)}</td>
+                      <td className="px-3 py-2 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           {request.status !== 'converted' && (
                             <Button
                               variant="ghost"
@@ -422,16 +422,30 @@ export default function AdminRequestsPage() {
                     </div>
                   </div>
                 </div>
-                {selectedRequest.image && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600 mb-2">Product Image</p>
-                    <img 
-                      src={`http://localhost:5000${selectedRequest.image}`} 
-                      alt="Product" 
-                      className="max-w-full h-auto rounded border"
-                    />
-                  </div>
-                )}
+                {selectedRequest.image && (() => {
+                  let imageUrls: string[] = [];
+                  try {
+                    const parsed = JSON.parse(selectedRequest.image);
+                    imageUrls = Array.isArray(parsed) ? parsed : [selectedRequest.image];
+                  } catch {
+                    imageUrls = [selectedRequest.image];
+                  }
+                  return imageUrls.length > 0 ? (
+                    <div className="col-span-2">
+                      <p className="text-sm text-gray-600 mb-2">Product Images</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {imageUrls.map((url, i) => (
+                          <img
+                            key={i}
+                            src={url.startsWith('http') ? url : `http://localhost:5000${url}`}
+                            alt={`Image ${i + 1}`}
+                            className="w-full h-32 object-cover rounded border"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
               </div>
               <div className="pt-4">
                 <Button variant="outline" className="w-full" onClick={() => setShowModal(false)}>

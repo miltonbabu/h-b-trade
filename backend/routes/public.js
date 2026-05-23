@@ -3,7 +3,9 @@ const router = express.Router();
 const { body } = require('express-validator');
 const db = require('../config/database');
 const { handleValidationErrors, xssProtection } = require('../middleware/validation');
-const { upload, handleUploadError } = require('../config/multer');
+const { upload, handleUploadError, MAX_FILES } = require('../config/multer');
+const { uploadMultipleToCloudinary } = require('../config/cloudinary');
+const { optionalAuth } = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
 
@@ -23,10 +25,8 @@ const productRequestValidation = [
   handleValidationErrors
 ];
 
-// IMPORTANT: multer must run BEFORE express-validator for multipart/form-data,
-// otherwise req.body is empty and every required-field validator fails with 400.
-router.post('/product-request', (req, res, next) => {
-  upload.single('image')(req, res, (err) => {
+router.post('/product-request', optionalAuth, (req, res, next) => {
+  upload.array('images', MAX_FILES)(req, res, (err) => {
     if (err) {
       return res.status(400).json({
         error: 'File upload error',
@@ -58,9 +58,21 @@ router.post('/product-request', (req, res, next) => {
       message
     } = req.body;
 
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+    let imageJson = null;
+    if (req.files && req.files.length > 0) {
+      try {
+        const urls = await uploadMultipleToCloudinary(req.files, 'hbtrade/product-requests');
+        if (urls.length > 0) {
+          imageJson = JSON.stringify(urls);
+        }
+      } catch (cloudErr) {
+        logger.error('Cloudinary upload failed for product-request:', cloudErr);
+      }
+    }
+
     const id = uuidv4();
     const trackingNumber = `PR${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2,5)}`;
+    const customerId = (req.user && req.user.role === 'customer') ? req.user.id : null;
 
     const values = [
       id,
@@ -82,14 +94,15 @@ router.post('/product-request', (req, res, next) => {
       shipping_method || null,
       specifications || null,
       message || null,
-      imagePath,
-      trackingNumber
+      imageJson,
+      trackingNumber,
+      customerId
     ];
 
     await db.run(
       `INSERT INTO product_requests
-       (id, name, phone, whatsapp, email, company, product_name, product_link, target_price, quantity, packaging_type, pack_quantity, master_pack_quantity, pack_dimensions, weight_per_pack, sample_needed, shipping_method, specifications, message, image, tracking_number)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, name, phone, whatsapp, email, company, product_name, product_link, target_price, quantity, packaging_type, pack_quantity, master_pack_quantity, pack_dimensions, weight_per_pack, sample_needed, shipping_method, specifications, message, image, tracking_number, customer_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values
     );
 
@@ -343,9 +356,7 @@ router.get('/settings', async (req, res) => {
     );
 
     if (settings) {
-      settings.bankAccount = settings.bankAccount
-        ? settings.bankAccount.replace(/\n/g, ' ').trim()
-        : null;
+      settings.bankAccount = settings.bankAccount || null;
     }
 
     res.json({
@@ -471,7 +482,7 @@ router.get('/products/:id', async (req, res) => {
 });
 
 // Public order creation endpoint
-router.post('/orders', [
+router.post('/orders', optionalAuth, [
   body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
   body('customerInfo').isObject().withMessage('Customer information is required'),
   body('shippingMethod').notEmpty().withMessage('Shipping method is required'),
@@ -560,11 +571,12 @@ router.post('/orders', [
       'hand': 'Hand Carry'
     };
     const shippingMethodName = shippingMethodMap[shippingMethod] || shippingMethod;
+    const customerId = (req.user && req.user.role === 'customer') ? req.user.id : null;
     
     await db.run(
       `INSERT INTO orders 
-       (id, order_number, tracking_number, customer_name, customer_info, product_name, product_codes, items_info, quantity, shipping_method, price, status, payment_info) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, product_codes, items_info, quantity, shipping_method, price, status, payment_info, customer_id) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id, 
         orderNumber, 
@@ -578,7 +590,8 @@ router.post('/orders', [
         shippingMethodName,
         serverTotal, 
         status || 'pending',
-        paymentInfoJson
+        paymentInfoJson,
+        customerId
       ]
     );
 
@@ -656,7 +669,17 @@ router.get('/videos/featured', async (req, res) => {
 });
 
 // Service Request submission (public)
-router.post('/service-request', [
+router.post('/service-request', optionalAuth, (req, res, next) => {
+  upload.array('images', MAX_FILES)(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: 'File upload error',
+        details: err.message
+      });
+    }
+    next();
+  });
+}, [
   body('service_type').trim().notEmpty().withMessage('Service type is required'),
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
@@ -674,6 +697,18 @@ router.post('/service-request', [
       message
     } = req.body;
 
+    let imageJson = null;
+    if (req.files && req.files.length > 0) {
+      try {
+        const urls = await uploadMultipleToCloudinary(req.files, 'hbtrade/service-requests');
+        if (urls.length > 0) {
+          imageJson = JSON.stringify(urls);
+        }
+      } catch (cloudErr) {
+        logger.error('Cloudinary upload failed for service-request:', cloudErr);
+      }
+    }
+
     const id = uuidv4();
     const TRACKING_PREFIXES = {
       'product_sourcing': 'PS',
@@ -686,12 +721,13 @@ router.post('/service-request', [
     const prefix = TRACKING_PREFIXES[service_type] || 'SR';
     const trackingNumber = `${prefix}${Date.now().toString().slice(-10)}`;
     const detailsJson = details ? JSON.stringify(details) : null;
+    const customerId = (req.user && req.user.role === 'customer') ? req.user.id : null;
 
     await db.run(
       `INSERT INTO service_requests
-       (id, service_type, name, phone, whatsapp, email, company, details, message, tracking_number)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, service_type, name, phone || null, whatsapp || null, email, company || null, detailsJson, message || null, trackingNumber]
+       (id, service_type, name, phone, whatsapp, email, company, details, message, image, tracking_number, customer_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, service_type, name, phone || null, whatsapp || null, email, company || null, detailsJson, message || null, imageJson, trackingNumber, customerId]
     );
 
     logger.info(`New service request: ${service_type} from ${email} - Tracking: ${trackingNumber}`);

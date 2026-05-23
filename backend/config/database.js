@@ -85,6 +85,33 @@ const initPostgresTables = async () => {
       )
     `);
 
+    // Customer accounts (separate table from admin users).
+    // Email and phone are both unique-when-present; signup requires email.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        phone VARCHAR(50) UNIQUE,
+        whatsapp VARCHAR(50),
+        company VARCHAR(255),
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP WITH TIME ZONE
+      )
+    `);
+    try {
+      await client.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_id UUID");
+      await client.query("ALTER TABLE product_requests ADD COLUMN IF NOT EXISTS customer_id UUID");
+      await client.query("ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS customer_id UUID");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_product_requests_customer_id ON product_requests(customer_id)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_service_requests_customer_id ON service_requests(customer_id)");
+    } catch (e) {
+      // Columns/indexes already exist, ignore
+    }
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS product_requests (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -249,6 +276,7 @@ const initPostgresTables = async () => {
         company VARCHAR(255),
         details TEXT,
         message TEXT,
+        image TEXT,
         status VARCHAR(50) DEFAULT 'received',
         tracking_number VARCHAR(50),
         admin_notes TEXT,
@@ -310,25 +338,32 @@ const initPostgresTables = async () => {
       }
     }
 
+    // Add image column to service_requests
+    try {
+      await client.query("ALTER TABLE service_requests ADD COLUMN IF NOT EXISTS image TEXT");
+    } catch (e) {
+      // Column already exists, ignore
+    }
+
     const adminResult = await client.query(
       "SELECT COUNT(*) FROM users WHERE email = $1",
-      ["admin@hbtrade.com"],
+      ["admin@hbtrade.ltd"],
     );
     if (parseInt(adminResult.rows[0].count) === 0) {
-      const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'HbTrade@2024!';
+      const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'hbtrade2026';
       const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
       await client.query(
         `
         INSERT INTO users (name, email, password, role)
-        VALUES ('Admin', 'admin@hbtrade.com', $1, 'super_admin')
+        VALUES ('Admin', 'admin@hbtrade.ltd', $1, 'super_admin')
       `,
         [hashedPassword],
       );
-      console.log(`Default admin created. Email: admin@hbtrade.com - Please change the default password immediately.`);
+      console.log(`Default admin created. Email: admin@hbtrade.ltd - Please change the default password immediately.`);
     }
 
     await client.query(
-      "UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.com' AND role = 'admin'"
+      "UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.ltd' AND role = 'admin'"
     );
 
     await client.query("COMMIT");
@@ -383,6 +418,21 @@ const initSQLite = async () => {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      phone TEXT UNIQUE,
+      whatsapp TEXT,
+      company TEXT,
+      password TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      deleted_at DATETIME
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS product_requests (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -408,7 +458,7 @@ const initSQLite = async () => {
     const productRequestsExtra = [
       'tracking_number', 'company', 'target_price', 'packaging_type',
       'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
-      'weight_per_pack', 'sample_needed', 'specifications', 'converted_to_order'
+      'weight_per_pack', 'sample_needed', 'specifications', 'converted_to_order', 'customer_id'
     ];
     for (const col of productRequestsExtra) {
       if (!prColumns.includes(col)) {
@@ -528,6 +578,9 @@ const initSQLite = async () => {
     if (!orderColumns.includes("estimated_delivery")) {
       db.run("ALTER TABLE orders ADD COLUMN estimated_delivery DATE");
     }
+    if (!orderColumns.includes("customer_id")) {
+      db.run("ALTER TABLE orders ADD COLUMN customer_id TEXT");
+    }
   }
 
   db.run(`
@@ -553,15 +606,28 @@ const initSQLite = async () => {
       company TEXT,
       details TEXT,
       message TEXT,
+      image TEXT,
       status TEXT DEFAULT 'received',
       tracking_number TEXT,
       admin_notes TEXT,
       price REAL,
       converted_order_id TEXT,
+      customer_id TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  const serviceRequestsInfo = db.exec("PRAGMA table_info(service_requests)");
+  if (serviceRequestsInfo.length > 0) {
+    const srColumns = serviceRequestsInfo[0].values.map(col => col[1]);
+    if (!srColumns.includes('customer_id')) {
+      db.run("ALTER TABLE service_requests ADD COLUMN customer_id TEXT");
+    }
+    if (!srColumns.includes('image')) {
+      db.run("ALTER TABLE service_requests ADD COLUMN image TEXT");
+    }
+  }
 
   db.run(`
     CREATE TABLE IF NOT EXISTS settings (
@@ -609,19 +675,19 @@ const initSQLite = async () => {
   }
 
   const adminResult = db.exec(
-    "SELECT COUNT(*) as count FROM users WHERE email = 'admin@hbtrade.com'",
+    "SELECT COUNT(*) as count FROM users WHERE email = 'admin@hbtrade.ltd'",
   );
   if (adminResult.length === 0 || adminResult[0].values[0][0] === 0) {
-    const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'HbTrade@2024!';
+    const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'hbtrade2026';
     const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
     db.run(
       `
       INSERT INTO users (id, name, email, password, role)
-      VALUES ('admin-1', 'Admin', 'admin@hbtrade.com', ?, 'super_admin')
+      VALUES ('admin-1', 'Admin', 'admin@hbtrade.ltd', ?, 'super_admin')
     `,
       [hashedPassword],
     );
-    console.log(`Default admin created. Email: admin@hbtrade.com - Please change the default password immediately.`);
+    console.log(`Default admin created. Email: admin@hbtrade.ltd - Please change the default password immediately.`);
   }
 
   saveDatabase();

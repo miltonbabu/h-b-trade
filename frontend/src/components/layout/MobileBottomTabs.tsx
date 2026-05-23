@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, PlusCircle, PackageSearch, Phone } from "lucide-react";
+import { Home, ShoppingBag, PlusCircle, PackageSearch, Phone, User } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const tabs = [
   {
@@ -30,10 +31,10 @@ const tabs = [
     match: (pathname: string) => pathname.startsWith("/tracking"),
   },
   {
-    label: "Contact",
-    icon: Phone,
-    href: "/contact",
-    match: (pathname: string) => pathname.startsWith("/contact"),
+    label: "Profile",
+    icon: User,
+    href: "/profile",
+    match: (pathname: string) => pathname.startsWith("/profile") || pathname.startsWith("/login") || pathname.startsWith("/signup"),
   },
 ];
 

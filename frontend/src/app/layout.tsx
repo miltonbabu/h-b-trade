@@ -7,6 +7,7 @@ import MobileBottomTabs from "@/components/layout/MobileBottomTabs";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import FloatingCartButton from "@/components/FloatingCartButton";
 import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
 
 const inter = Inter({
@@ -81,20 +82,18 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="H&B Trade" />
       </head>
       <body className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
-        <CartProvider>
-          <PWAServiceWorker />
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          {/* Spacer reserves room on mobile so the Footer's bottom
-              content isn't hidden by the fixed mobile tab bar. The body
-              also gets a global padding-bottom rule (in globals.css) so
-              mid-scroll content always clears the tab bar. */}
-          <div className="md:hidden h-20" aria-hidden="true" />
-          <MobileBottomTabs />
-          <FloatingCartButton />
-          <WhatsAppButton />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <PWAServiceWorker />
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <div className="md:hidden h-20" aria-hidden="true" />
+            <MobileBottomTabs />
+            <FloatingCartButton />
+            <WhatsAppButton />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

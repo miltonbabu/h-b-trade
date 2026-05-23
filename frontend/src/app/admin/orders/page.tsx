@@ -401,56 +401,56 @@ export default function AdminOrdersPage() {
               <p className="text-gray-500">No orders found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <div className="overflow-x-auto -mx-4 px-4">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Order #</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Customer</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Product</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Shipping</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Tracking</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Order #</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Product</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Shipping</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Tracking</th>
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Date</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {orders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium">{order.order_number}</td>
-                      <td className="px-6 py-4">{order.customer_name}</td>
-                      <td className="px-6 py-4">{order.product_name}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2 font-medium text-sm">{order.order_number}</td>
+                      <td className="px-3 py-2 text-sm">{order.customer_name}</td>
+                      <td className="px-3 py-2 text-sm hidden sm:table-cell max-w-[150px] truncate">{order.product_name}</td>
+                      <td className="px-3 py-2 hidden md:table-cell">
                         {order.shipping_method ? (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
                             {order.shipping_method}
                           </span>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <select
                           value={order.status}
                           onChange={(e) => handleQuickStatusUpdate(order.id, e.target.value)}
                           className={`px-2 py-1 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${getStatusColor(order.status)}`}
                           title="Click to change status"
                         >
-                          <option value="pending" className="bg-yellow-50">⏳ Pending</option>
-                          <option value="processing" className="bg-blue-50">🔄 Processing</option>
-                          <option value="guangzhou_warehouse" className="bg-purple-50">📦 Guangzhou Warehouse</option>
-                          <option value="in_transit" className="bg-cyan-50">✈️ In Transit</option>
-                          <option value="dhaka_customs" className="bg-orange-50">🛃 Dhaka Customs</option>
-                          <option value="dhaka_office" className="bg-teal-50">🏢 Dhaka Office</option>
-                          <option value="delivered" className="bg-green-50">✅ Delivered</option>
-                          <option value="cancelled" className="bg-red-50">❌ Cancelled</option>
+                          <option value="pending" className="bg-yellow-50">Pending</option>
+                          <option value="processing" className="bg-blue-50">Processing</option>
+                          <option value="guangzhou_warehouse" className="bg-purple-50">GZ Warehouse</option>
+                          <option value="in_transit" className="bg-cyan-50">In Transit</option>
+                          <option value="dhaka_customs" className="bg-orange-50">Dhaka Customs</option>
+                          <option value="dhaka_office" className="bg-teal-50">Dhaka Office</option>
+                          <option value="delivered" className="bg-green-50">Delivered</option>
+                          <option value="cancelled" className="bg-red-50">Cancelled</option>
                         </select>
                       </td>
-                      <td className="px-6 py-4 text-sm">{order.tracking_number || '-'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.created_at)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-3 py-2 text-xs text-gray-500 hidden lg:table-cell">{order.tracking_number || '-'}</td>
+                      <td className="px-3 py-2 text-xs text-gray-500 hidden md:table-cell">{formatDate(order.created_at)}</td>
+                      <td className="px-3 py-2 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"

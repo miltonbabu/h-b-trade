@@ -78,6 +78,16 @@ const canDelete = (req, res, next) => {
   }
 };
 
+const customerOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'customer') {
+    next();
+  } else {
+    res.status(403).json({
+      error: 'Access denied. Customer privileges required.'
+    });
+  }
+};
+
 const optionalAuth = async (req, res, next) => {
   try {
     let token;
@@ -100,4 +110,4 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { protect, adminOnly, superAdminOnly, canDelete, optionalAuth };
+module.exports = { protect, adminOnly, superAdminOnly, canDelete, customerOnly, optionalAuth };

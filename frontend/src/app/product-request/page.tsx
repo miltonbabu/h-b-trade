@@ -40,7 +40,7 @@ interface ApiError {
 export default function ProductRequestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
 
@@ -61,9 +61,7 @@ export default function ProductRequestPage() {
         if (value) formData.append(key, value);
       });
       
-      if (selectedFile) {
-        formData.append('image', selectedFile);
-      }
+      selectedFiles.forEach(file => formData.append('images', file));
 
       const response = await api.post('/product-request', formData, {
         headers: {
@@ -74,7 +72,7 @@ export default function ProductRequestPage() {
       setTrackingNumber(response.data.data.trackingNumber);
       setIsSuccess(true);
       reset();
-      setSelectedFile(null);
+      setSelectedFiles([]);
     } catch (err: unknown) {
       const apiError = err as ApiError;
       setError(apiError?.response?.data?.error || 'Failed to submit request. Please try again.');
@@ -84,14 +82,25 @@ export default function ProductRequestPage() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        setError('File size must be less than 5MB');
-        return;
-      }
-      setSelectedFile(file);
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      const validFiles = newFiles.filter(f => {
+        if (f.size > 6 * 1024 * 1024) {
+          setError(`"${f.name}" exceeds 6MB limit`);
+          return false;
+        }
+        return true;
+      });
+      setSelectedFiles(prev => {
+        const combined = [...prev, ...validFiles];
+        return combined.slice(0, 4);
+      });
+      setError('');
     }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   if (isSuccess) {
@@ -408,24 +417,47 @@ export default function ProductRequestPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product Image (Optional)
+                        Product Images (Optional - max 4, 6MB each)
                       </label>
                       <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
                         <input
                           type="file"
                           accept="image/*"
+                          multiple
                           onChange={handleFileChange}
                           className="hidden"
                           id="file-upload"
+                          disabled={selectedFiles.length >= 4}
                         />
-                        <label htmlFor="file-upload" className="cursor-pointer">
+                        <label htmlFor="file-upload" className={`cursor-pointer ${selectedFiles.length >= 4 ? 'opacity-50 pointer-events-none' : ''}`}>
                           <Upload className="mx-auto text-primary mb-2" size={32} />
                           <p className="text-gray-600 font-medium">
-                            {selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}
+                            {selectedFiles.length >= 4 ? 'Maximum 4 images selected' : 'Click to upload or drag and drop'}
                           </p>
-                          <p className="text-gray-400 text-sm mt-1">PNG, JPG, GIF up to 5MB</p>
+                          <p className="text-gray-400 text-sm mt-1">PNG, JPG, GIF, WebP up to 6MB each</p>
                         </label>
                       </div>
+                      {selectedFiles.length > 0 && (
+                        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {selectedFiles.map((file, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={file.name}
+                                className="w-full h-24 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeFile(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                x
+                              </button>
+                              <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

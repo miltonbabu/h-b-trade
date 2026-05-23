@@ -2,20 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Lock, Mail, Loader2 } from 'lucide-react';
-import api from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 
 interface LoginForm {
   email: string;
   password: string;
 }
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const router = useRouter();
+  const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,25 +29,18 @@ export default function AdminLoginPage() {
   } = useForm<LoginForm>();
 
   useEffect(() => {
-    // Check if already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      router.push('/admin/dashboard');
+    if (isAuthenticated) {
+      router.push('/profile');
     }
-  }, [router]);
+  }, [isAuthenticated, router]);
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     setError('');
 
     try {
-      const response = await api.post('/auth/login', data);
-      
-      // Store token and user data
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      router.push('/admin/dashboard');
+      await login(data.email, data.password);
+      router.push('/profile');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid email or password');
     } finally {
@@ -53,20 +49,19 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">H</span>
-            </div>
-            <div>
-              <span className="text-2xl font-bold text-primary">H&B</span>
-              <span className="text-2xl font-bold text-secondary"> Trade</span>
-            </div>
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <span className="text-3xl font-serif tracking-[-0.02em]">
+              <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">H</span>
+              <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">&</span>
+              <span className="bg-gradient-to-b from-green-600 to-green-800 bg-clip-text text-transparent">B</span>
+            </span>
+            <span className="text-base font-serif text-secondary/70 tracking-[0.15em] font-medium">TRADE</span>
           </div>
-          <CardTitle>Admin Login</CardTitle>
-          <p className="text-gray-600 text-sm">Sign in to access the admin dashboard</p>
+          <CardTitle>Login to Your Account</CardTitle>
+          <p className="text-gray-600 text-sm">Access your orders, requests, and tracking</p>
         </CardHeader>
         <CardContent>
           {error && (
@@ -84,14 +79,14 @@ export default function AdminLoginPage() {
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <Input
                   type="email"
-                  {...register('email', { 
+                  {...register('email', {
                     required: 'Email is required',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                       message: 'Invalid email address'
                     }
                   })}
-                  placeholder="admin@hbtrade.ltd"
+                  placeholder="your@email.com"
                   className="pl-10"
                 />
               </div>
@@ -134,6 +129,15 @@ export default function AdminLoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-600 text-sm">
+              Don&apos;t have an account?{' '}
+              <Link href="/signup" className="text-primary font-bold hover:underline text-base">
+                Create Account
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

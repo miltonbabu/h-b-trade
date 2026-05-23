@@ -4,11 +4,14 @@ const { body, param } = require("express-validator");
 const db = require("../config/database");
 const { getDateSQL, safeGetMany, safeGetOne } = db;
 const { protect, adminOnly, superAdminOnly, canDelete } = require("../middleware/auth");
+
+router.use(protect, adminOnly);
 const {
   handleValidationErrors,
   xssProtection,
 } = require("../middleware/validation");
 const { upload, handleUploadError } = require("../config/multer");
+const { uploadToCloudinary } = require("../config/cloudinary");
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../config/logger");
 
@@ -1296,7 +1299,7 @@ router.put("/settings", [
   handleValidationErrors
 ], async (req, res) => {
   try {
-    let {
+    const {
       phone,
       email,
       whatsapp_link,
@@ -1313,62 +1316,34 @@ router.put("/settings", [
       alipay_qr,
     } = req.body;
 
-    // Convert empty strings to null for COALESCE to work properly
-    phone = phone || null;
-    email = email || null;
-    whatsapp_link = whatsapp_link || null;
-    facebook_page = facebook_page || null;
-    facebook_group = facebook_group || null;
-    office_address = office_address || null;
-    company_name = company_name || null;
-    bkash = bkash || null;
-    nagad = nagad || null;
-    bank_account = bank_account || null;
-    wechat = wechat || null;
-    alipay = alipay || null;
-    wechat_qr = wechat_qr || null;
-    alipay_qr = alipay_qr || null;
+    const toNull = (v) => (v === undefined || v === null || v === '') ? null : v;
 
-    logger.info("Settings update - bank_account:", bank_account);
+    const fields = {
+      phone: toNull(phone),
+      email: toNull(email),
+      whatsapp_link: toNull(whatsapp_link),
+      facebook_page: toNull(facebook_page),
+      facebook_group: toNull(facebook_group),
+      office_address: toNull(office_address),
+      company_name: toNull(company_name),
+      bkash: toNull(bkash),
+      nagad: toNull(nagad),
+      bank_account: toNull(bank_account),
+      wechat: toNull(wechat),
+      alipay: toNull(alipay),
+      wechat_qr: toNull(wechat_qr),
+      alipay_qr: toNull(alipay_qr),
+    };
+
+    const setClauses = Object.keys(fields).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(fields);
 
     await db.run(
-      `UPDATE settings 
-       SET phone = COALESCE(?, phone),
-           email = COALESCE(?, email),
-           whatsapp_link = COALESCE(?, whatsapp_link),
-           facebook_page = COALESCE(?, facebook_page),
-           facebook_group = COALESCE(?, facebook_group),
-           office_address = COALESCE(?, office_address),
-           company_name = COALESCE(?, company_name),
-           bkash = COALESCE(?, bkash),
-           nagad = COALESCE(?, nagad),
-           bank_account = COALESCE(?, bank_account),
-           wechat = COALESCE(?, wechat),
-           alipay = COALESCE(?, alipay),
-           wechat_qr = COALESCE(?, wechat_qr),
-           alipay_qr = COALESCE(?, alipay_qr)
-       WHERE id = (SELECT id FROM settings LIMIT 1)`,
-      [
-        phone,
-        email,
-        whatsapp_link,
-        facebook_page,
-        facebook_group,
-        office_address,
-        company_name,
-        bkash,
-        nagad,
-        bank_account,
-        wechat,
-        alipay,
-        wechat_qr,
-        alipay_qr,
-      ],
+      `UPDATE settings SET ${setClauses} WHERE id = (SELECT id FROM settings LIMIT 1)`,
+      values,
     );
 
     const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
-    logger.info("Updated settings bank_account:", updatedSettings?.bank_account);
-
     logger.info("Settings updated");
 
     res.json({
@@ -1392,27 +1367,27 @@ router.post(
   async (req, res) => {
     try {
       logger.info("QR upload request received");
-      logger.info("Files:", req.files);
-      
-      const fs = require('fs');
-      const path = require('path');
       const updates = {};
 
       if (req.files && req.files.wechat_qr) {
-        const filePath = req.files.wechat_qr[0].path;
-        const fileBuffer = fs.readFileSync(filePath);
-        const base64 = `data:${req.files.wechat_qr[0].mimetype};base64,${fileBuffer.toString('base64')}`;
-        updates.wechat_qr = base64;
-        logger.info("WeChat QR converted to base64");
-        fs.unlinkSync(filePath);
+        try {
+          const result = await uploadToCloudinary(req.files.wechat_qr[0].buffer, 'hbtrade/qr-codes');
+          updates.wechat_qr = result.secure_url;
+          logger.info("WeChat QR uploaded to Cloudinary:", result.secure_url);
+        } catch (cloudErr) {
+          logger.error("Cloudinary upload failed for wechat_qr:", cloudErr);
+          return res.status(500).json({ error: "Failed to upload WeChat QR to Cloudinary" });
+        }
       }
       if (req.files && req.files.alipay_qr) {
-        const filePath = req.files.alipay_qr[0].path;
-        const fileBuffer = fs.readFileSync(filePath);
-        const base64 = `data:${req.files.alipay_qr[0].mimetype};base64,${fileBuffer.toString('base64')}`;
-        updates.alipay_qr = base64;
-        logger.info("Alipay QR converted to base64");
-        fs.unlinkSync(filePath);
+        try {
+          const result = await uploadToCloudinary(req.files.alipay_qr[0].buffer, 'hbtrade/qr-codes');
+          updates.alipay_qr = result.secure_url;
+          logger.info("Alipay QR uploaded to Cloudinary:", result.secure_url);
+        } catch (cloudErr) {
+          logger.error("Cloudinary upload failed for alipay_qr:", cloudErr);
+          return res.status(500).json({ error: "Failed to upload Alipay QR to Cloudinary" });
+        }
       }
 
       if (Object.keys(updates).length === 0) {
@@ -1438,7 +1413,7 @@ router.post(
       );
 
       const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
-      logger.info("Updated settings with QR codes");
+      logger.info("Updated settings with QR codes (Cloudinary URLs)");
 
       res.json({
         success: true,
@@ -2411,6 +2386,440 @@ router.post("/send-invoice", async (req, res) => {
   } catch (error) {
     logger.error("Send invoice error:", error);
     res.status(500).json({ error: "Failed to send invoice email", details: error.message });
+  }
+});
+
+router.post('/customers', async (req, res) => {
+  try {
+    const { name, email, password, phone, whatsapp, company } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const existing = await db.getOne('SELECT id FROM customers WHERE email = ? AND deleted_at IS NULL', [email.toLowerCase()]);
+    if (existing) {
+      return res.status(400).json({ error: 'A customer with this email already exists' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const { v4: uuidv4 } = require('uuid');
+    const id = uuidv4();
+
+    await db.run(
+      `INSERT INTO customers (id, name, email, phone, whatsapp, company, password) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, name, email.toLowerCase(), phone || null, whatsapp || null, company || null, hashedPassword]
+    );
+
+    logger.info(`Admin created customer: ${email}`);
+
+    res.status(201).json({ success: true, data: { id, name, email: email.toLowerCase(), phone: phone || null, whatsapp: whatsapp || null, company: company || null } });
+  } catch (error) {
+    logger.error('Admin create customer error:', error);
+    res.status(500).json({ error: 'Failed to create customer' });
+  }
+});
+
+router.get('/customers', async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let queryStr = 'SELECT id, name, email, phone, whatsapp, company, created_at, updated_at FROM customers WHERE deleted_at IS NULL';
+    let countStr = 'SELECT COUNT(*) as total FROM customers WHERE deleted_at IS NULL';
+    const params = [];
+    const countParams = [];
+
+    if (search) {
+      queryStr += ' AND (name LIKE ? OR email LIKE ? OR phone LIKE ? OR company LIKE ?)';
+      countStr += ' AND (name LIKE ? OR email LIKE ? OR phone LIKE ? OR company LIKE ?)';
+      const searchParam = `%${search}%`;
+      params.push(searchParam, searchParam, searchParam, searchParam);
+      countParams.push(searchParam, searchParam, searchParam, searchParam);
+    }
+
+    queryStr += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), offset);
+
+    const countResult = await db.getOne(countStr, countParams);
+    const customers = await db.getMany(queryStr, params);
+
+    res.json({
+      success: true,
+      data: customers,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: countResult ? countResult.total : 0,
+        pages: Math.ceil((countResult ? countResult.total : 0) / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    logger.error('Get customers error:', error);
+    res.status(500).json({ error: 'Failed to get customers' });
+  }
+});
+
+router.get('/customers/:id', async (req, res) => {
+  try {
+    const customer = await db.getOne(
+      'SELECT id, name, email, phone, whatsapp, company, created_at, updated_at FROM customers WHERE id = ? AND deleted_at IS NULL',
+      [req.params.id]
+    );
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    const orders = await db.getMany(
+      "SELECT id, order_number, product_name, status, tracking_number, price, created_at FROM orders WHERE customer_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 50",
+      [req.params.id]
+    );
+
+    const productRequests = await db.getMany(
+      "SELECT id, product_name, status, tracking_number, created_at FROM product_requests WHERE customer_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 50",
+      [req.params.id]
+    );
+
+    const serviceRequests = await db.getMany(
+      "SELECT id, service_type, status, tracking_number, created_at FROM service_requests WHERE customer_id = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 50",
+      [req.params.id]
+    );
+
+    res.json({
+      success: true,
+      data: { ...customer, orders, productRequests, serviceRequests }
+    });
+  } catch (error) {
+    logger.error('Get customer detail error:', error);
+    res.status(500).json({ error: 'Failed to get customer' });
+  }
+});
+
+router.put('/customers/:id', async (req, res) => {
+  try {
+    const { name, phone, whatsapp, company } = req.body;
+
+    const customer = await db.getOne(
+      'SELECT * FROM customers WHERE id = ? AND deleted_at IS NULL',
+      [req.params.id]
+    );
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    if (phone) {
+      const existing = await db.getOne(
+        'SELECT id FROM customers WHERE phone = ? AND id != ? AND deleted_at IS NULL',
+        [phone, req.params.id]
+      );
+      if (existing) {
+        return res.status(400).json({ error: 'Phone number already in use' });
+      }
+    }
+
+    await db.run(
+      'UPDATE customers SET name = ?, phone = ?, whatsapp = ?, company = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [name || customer.name, phone !== undefined ? phone : customer.phone, whatsapp !== undefined ? whatsapp : customer.whatsapp, company !== undefined ? company : customer.company, req.params.id]
+    );
+
+    const updated = await db.getOne(
+      'SELECT id, name, email, phone, whatsapp, company, created_at, updated_at FROM customers WHERE id = ?',
+      [req.params.id]
+    );
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    logger.error('Update customer error:', error);
+    res.status(500).json({ error: 'Failed to update customer' });
+  }
+});
+
+router.put('/customers/:id/reset-password', async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const customer = await db.getOne(
+      'SELECT id, name, email FROM customers WHERE id = ? AND deleted_at IS NULL',
+      [req.params.id]
+    );
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+    await db.run(
+      'UPDATE customers SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [hashedPassword, req.params.id]
+    );
+
+    logger.info(`Admin ${req.user.email} reset password for customer: ${customer.email}`);
+
+    res.json({ success: true, message: `Password reset successfully for ${customer.name}` });
+  } catch (error) {
+    logger.error('Reset customer password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+router.delete('/customers/:id', canDelete, async (req, res) => {
+  try {
+    const customer = await db.getOne(
+      'SELECT id, email FROM customers WHERE id = ?',
+      [req.params.id]
+    );
+
+    if (!customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+
+    await db.run('DELETE FROM orders WHERE customer_id = ?', [req.params.id]);
+    await db.run('DELETE FROM product_requests WHERE customer_id = ?', [req.params.id]);
+    await db.run('DELETE FROM service_requests WHERE customer_id = ?', [req.params.id]);
+    await db.run('DELETE FROM customers WHERE id = ?', [req.params.id]);
+
+    logger.info(`Customer hard deleted by admin: ${customer.email}`);
+
+    res.json({ success: true, message: 'Customer permanently deleted' });
+  } catch (error) {
+    logger.error('Delete customer error:', error);
+    res.status(500).json({ error: 'Failed to delete customer' });
+  }
+});
+
+router.delete('/customers/:id/orders/:orderId', async (req, res) => {
+  try {
+    await db.run('DELETE FROM orders WHERE id = ? AND customer_id = ?', [req.params.orderId, req.params.id]);
+    logger.info(`Admin hard deleted order ${req.params.orderId} for customer ${req.params.id}`);
+    res.json({ success: true, message: 'Order permanently deleted' });
+  } catch (error) {
+    logger.error('Admin delete order error:', error);
+    res.status(500).json({ error: 'Failed to delete order' });
+  }
+});
+
+router.delete('/customers/:id/product-requests/:reqId', async (req, res) => {
+  try {
+    await db.run('DELETE FROM product_requests WHERE id = ? AND customer_id = ?', [req.params.reqId, req.params.id]);
+    logger.info(`Admin hard deleted product request ${req.params.reqId}`);
+    res.json({ success: true, message: 'Product request permanently deleted' });
+  } catch (error) {
+    logger.error('Admin delete product request error:', error);
+    res.status(500).json({ error: 'Failed to delete request' });
+  }
+});
+
+router.delete('/customers/:id/service-requests/:reqId', async (req, res) => {
+  try {
+    await db.run('DELETE FROM service_requests WHERE id = ? AND customer_id = ?', [req.params.reqId, req.params.id]);
+    logger.info(`Admin hard deleted service request ${req.params.reqId}`);
+    res.json({ success: true, message: 'Service request permanently deleted' });
+  } catch (error) {
+    logger.error('Admin delete service request error:', error);
+    res.status(500).json({ error: 'Failed to delete request' });
+  }
+});
+
+router.delete('/customers/:id/all-data', canDelete, async (req, res) => {
+  try {
+    const customer = await db.getOne('SELECT id, email FROM customers WHERE id = ?', [req.params.id]);
+    if (!customer) return res.status(404).json({ error: 'Customer not found' });
+
+    await db.run('DELETE FROM tracking WHERE tracking_number IN (SELECT tracking_number FROM orders WHERE customer_id = ?)', [req.params.id]);
+    await db.run('DELETE FROM tracking WHERE tracking_number IN (SELECT tracking_number FROM product_requests WHERE customer_id = ?)', [req.params.id]);
+    await db.run('DELETE FROM tracking WHERE tracking_number IN (SELECT tracking_number FROM service_requests WHERE customer_id = ?)', [req.params.id]);
+    await db.run('DELETE FROM orders WHERE customer_id = ?', [req.params.id]);
+    await db.run('DELETE FROM product_requests WHERE customer_id = ?', [req.params.id]);
+    await db.run('DELETE FROM service_requests WHERE customer_id = ?', [req.params.id]);
+
+    logger.info(`Admin deleted all data for customer: ${customer.email}`);
+    res.json({ success: true, message: `All orders, requests, and tracking data deleted for ${customer.email}` });
+  } catch (error) {
+    logger.error('Delete customer all data error:', error);
+    res.status(500).json({ error: 'Failed to delete customer data' });
+  }
+});
+
+router.delete('/cleanup/soft-deleted', canDelete, async (req, res) => {
+  try {
+    let deleted = { orders: 0, product_requests: 0, service_requests: 0, products: 0, videos: 0, messages: 0 };
+
+    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages'];
+    for (const table of tables) {
+      try {
+        const result = await db.run(`DELETE FROM ${table} WHERE deleted_at IS NOT NULL`);
+        deleted[table] = result.changes || result.affectedRows || 0;
+      } catch (e) {}
+    }
+
+    try {
+      const orphanTracking = await db.getMany(
+        `SELECT t.tracking_number FROM tracking t
+         LEFT JOIN orders o ON t.tracking_number = o.tracking_number
+         LEFT JOIN product_requests pr ON t.tracking_number = pr.tracking_number
+         LEFT JOIN service_requests sr ON t.tracking_number = sr.tracking_number
+         WHERE o.id IS NULL AND pr.id IS NULL AND sr.id IS NULL`
+      );
+      if (orphanTracking.length > 0) {
+        const tns = orphanTracking.map(t => t.tracking_number);
+        const placeholders = tns.map(() => '?').join(',');
+        await db.run(`DELETE FROM tracking WHERE tracking_number IN (${placeholders})`, tns);
+      }
+      deleted['orphan_tracking'] = orphanTracking.length;
+    } catch (e) {}
+
+    logger.info(`Admin cleaned up soft-deleted records: ${JSON.stringify(deleted)}`);
+    res.json({ success: true, message: 'Cleanup complete', deleted });
+  } catch (error) {
+    logger.error('Cleanup soft-deleted error:', error);
+    res.status(500).json({ error: 'Failed to cleanup' });
+  }
+});
+
+router.get('/soft-deleted', async (req, res) => {
+  try {
+    const result = {};
+    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages'];
+    for (const table of tables) {
+      try {
+        const row = await db.getOne(`SELECT COUNT(*) as count FROM ${table} WHERE deleted_at IS NOT NULL`);
+        result[table] = row?.count || 0;
+      } catch (e) {
+        result[table] = 0;
+      }
+    }
+    res.json({ success: true, data: result });
+  } catch (error) {
+    logger.error('Get soft-deleted count error:', error);
+    res.status(500).json({ error: 'Failed to get soft-deleted counts' });
+  }
+});
+
+// ========== ADMIN MANAGEMENT (super_admin only) ==========
+
+router.get('/admins', superAdminOnly, async (req, res) => {
+  try {
+    const admins = await db.getMany(
+      'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC'
+    );
+    res.json({ success: true, data: admins });
+  } catch (error) {
+    logger.error('Get admins error:', error);
+    res.status(500).json({ error: 'Failed to get admins' });
+  }
+});
+
+router.post('/admins', superAdminOnly, async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const adminRole = role === 'super_admin' ? 'super_admin' : 'admin';
+
+    const existing = await db.getOne('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
+    if (existing) {
+      return res.status(400).json({ error: 'An admin with this email already exists' });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const id = uuidv4();
+
+    await db.run(
+      'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)',
+      [id, name, email.toLowerCase(), hashedPassword, adminRole]
+    );
+
+    logger.info(`Super admin ${req.user.email} created admin: ${email}`);
+
+    res.status(201).json({ success: true, data: { id, name, email: email.toLowerCase(), role: adminRole } });
+  } catch (error) {
+    logger.error('Create admin error:', error);
+    res.status(500).json({ error: 'Failed to create admin' });
+  }
+});
+
+router.put('/admins/:id', superAdminOnly, async (req, res) => {
+  try {
+    const { name, role } = req.body;
+    const admin = await db.getOne('SELECT * FROM users WHERE id = ?', [req.params.id]);
+    if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+    if (admin.email === 'admin@hbtrade.ltd' && role && role !== 'super_admin') {
+      return res.status(400).json({ error: 'Cannot change super admin primary role' });
+    }
+
+    const adminRole = role === 'super_admin' ? 'super_admin' : 'admin';
+    await db.run(
+      'UPDATE users SET name = ?, role = ? WHERE id = ?',
+      [name || admin.name, adminRole, req.params.id]
+    );
+
+    const updated = await db.getOne('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.params.id]);
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    logger.error('Update admin error:', error);
+    res.status(500).json({ error: 'Failed to update admin' });
+  }
+});
+
+router.delete('/admins/:id', superAdminOnly, async (req, res) => {
+  try {
+    const admin = await db.getOne('SELECT * FROM users WHERE id = ?', [req.params.id]);
+    if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+    if (admin.email === 'admin@hbtrade.ltd') {
+      return res.status(400).json({ error: 'Cannot delete the primary super admin' });
+    }
+
+    if (admin.id === req.user.id) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+
+    await db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+    logger.info(`Super admin ${req.user.email} deleted admin: ${admin.email}`);
+    res.json({ success: true, message: 'Admin deleted successfully' });
+  } catch (error) {
+    logger.error('Delete admin error:', error);
+    res.status(500).json({ error: 'Failed to delete admin' });
+  }
+});
+
+router.put('/admins/:id/reset-password', superAdminOnly, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const admin = await db.getOne('SELECT * FROM users WHERE id = ?', [req.params.id]);
+    if (!admin) return res.status(404).json({ error: 'Admin not found' });
+
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    await db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, req.params.id]);
+
+    logger.info(`Super admin ${req.user.email} reset password for admin: ${admin.email}`);
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    logger.error('Reset admin password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 

@@ -7,6 +7,27 @@ export interface User {
   created_at: string;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  whatsapp?: string;
+  company?: string;
+  role: 'customer';
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CustomerSignupData {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  whatsapp?: string;
+  company?: string;
+}
+
 // Product Request types
 export interface ProductRequest {
   id: string;
@@ -194,6 +215,7 @@ export interface ServiceRequest {
   details?: string;
   parsedDetails?: Record<string, string>;
   message?: string;
+  image?: string;
   status: string;
   tracking_number?: string;
   admin_notes?: string;
