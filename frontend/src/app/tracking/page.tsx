@@ -28,6 +28,18 @@ interface OrderTrackingData {
     note: string;
     created_at: string;
   }>;
+  statusInfo: {
+    label: string;
+    description: string;
+    icon: string;
+    color: string;
+  };
+  allStatuses: Array<{
+    value: string;
+    label: string;
+    description: string;
+    isCurrent: boolean;
+  }>;
 }
 
 interface ServiceTrackingData {
