@@ -63,9 +63,10 @@ export default function Navbar() {
       </div>
 
       <nav className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          {/* Logo: tighter on mobile so menu button has room */}
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0">
               <Image
                 src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"
@@ -75,9 +76,13 @@ export default function Navbar() {
                 priority
               />
             </div>
-            <div>
-              <span className="text-2xl md:text-3xl font-serif tracking-[-0.02em]"><span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">H</span><span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">&</span><span className="bg-gradient-to-b from-green-600 to-green-800 bg-clip-text text-transparent">B</span></span>
-              <span className="text-sm md:text-base font-serif text-secondary/70 tracking-[0.15em] ml-1.5 font-medium">TRADE</span>
+            <div className="leading-none whitespace-nowrap">
+              <span className="text-xl sm:text-2xl md:text-3xl font-serif tracking-[-0.02em]">
+                <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">H</span>
+                <span className="bg-gradient-to-b from-red-500 to-red-700 bg-clip-text text-transparent">&</span>
+                <span className="bg-gradient-to-b from-green-600 to-green-800 bg-clip-text text-transparent">B</span>
+              </span>
+              <span className="text-[11px] sm:text-sm md:text-base font-serif text-secondary/70 tracking-[0.15em] ml-1 sm:ml-1.5 font-medium">TRADE</span>
             </div>
           </Link>
 
@@ -94,9 +99,12 @@ export default function Navbar() {
             ))}
           </div>
 
+          {/* Mobile menu trigger - 44px tap target */}
           <button
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="md:hidden inline-flex items-center justify-center h-11 w-11 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
           >
             {isOpen ? (
               <X size={24} className="text-primary" />
@@ -107,12 +115,12 @@ export default function Navbar() {
         </div>
 
         {isOpen && (
-          <div className="md:hidden py-4 border-t animate-fade-in">
+          <div className="md:hidden py-3 border-t border-gray-100 animate-fade-in">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="block py-3 px-4 text-gray-700 hover:text-primary hover:bg-primary/5 font-medium rounded-lg transition-colors"
+                className="flex items-center min-h-11 px-4 text-gray-700 hover:text-primary hover:bg-primary/5 active:bg-primary/10 font-medium rounded-xl transition-colors duration-150"
                 onClick={() => setIsOpen(false)}
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
