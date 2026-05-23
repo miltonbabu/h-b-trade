@@ -428,9 +428,38 @@ router.get('/products', async (req, res) => {
     });
   } catch (error) {
     logger.error('Get products error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get products'
     });
+  }
+});
+
+// Public single-product endpoint - powers the product detail page
+router.get('/products/:id', async (req, res) => {
+  try {
+    const product = await db.getOne(
+      "SELECT id, product_code, name, category, price, moq, image, image2, image3, description, created_at FROM products WHERE id = ? AND status = 'active'",
+      [req.params.id]
+    );
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Fetch up to 4 related products from the same category
+    let related = [];
+    if (product.category) {
+      related = await db.getMany(
+        "SELECT id, product_code, name, category, price, moq, image FROM products WHERE category = ? AND id != ? AND status = 'active' ORDER BY created_at DESC LIMIT 4",
+        [product.category, product.id]
+      );
+    }
+
+    res.set('Cache-Control', 'public, max-age=60');
+    res.json({ success: true, data: product, related });
+  } catch (error) {
+    logger.error('Get product detail error:', error);
+    res.status(500).json({ error: 'Failed to get product' });
   }
 });
 

@@ -107,6 +107,15 @@
     background-image: linear-gradient(to right, transparent, rgba(15, 23, 42, 0.08), transparent);
     height: 1px;
   }
+
+  /* Slide-in from left (used by mobile filter drawer) */
+  .animate-slide-in {
+    animation: slide-in 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slide-in {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
 }
 
 /* Custom scrollbar */
