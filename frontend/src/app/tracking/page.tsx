@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -166,6 +168,19 @@ function getPrefix(trackingNumber: string): string {
   return match ? match[0] : '';
 }
 
+function SearchParamsHandler({ onNumberFound }: { onNumberFound: (number: string) => void }) {
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const numberFromUrl = searchParams.get('number');
+    if (numberFromUrl) {
+      onNumberFound(numberFromUrl);
+    }
+  }, [searchParams, onNumberFound]);
+  
+  return null;
+}
+
 export default function UnifiedTrackingPage() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -173,31 +188,27 @@ export default function UnifiedTrackingPage() {
   const [data, setData] = useState<TrackingData | null>(null);
   const { user, isAuthenticated } = useAuth();
   const [myTrackingNumbers, setMyTrackingNumbers] = useState<Array<{ tracking_number: string; type: string; label: string; status: string; created_at: string }>>([]);
-  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const numberFromUrl = searchParams.get('number');
-    if (numberFromUrl) {
-      setTrackingNumber(numberFromUrl);
-      setIsLoading(true);
-      setError('');
-      setData(null);
-      api.get(`/track/${numberFromUrl}`)
-        .then((response) => {
-          if (response.data.data) {
-            setData({ type: response.data.type, ...response.data.data });
-          } else {
-            setError('No tracking information found.');
-          }
-        })
-        .catch((err) => {
-          setError(err?.response?.data?.error || 'No tracking information found.');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [searchParams]);
+  const handleNumberFromUrl = (number: string) => {
+    setTrackingNumber(number);
+    setIsLoading(true);
+    setError('');
+    setData(null);
+    api.get(`/track/${number}`)
+      .then((response) => {
+        if (response.data.data) {
+          setData({ type: response.data.type, ...response.data.data });
+        } else {
+          setError('No tracking information found.');
+        }
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.error || 'No tracking information found.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -286,6 +297,10 @@ export default function UnifiedTrackingPage() {
 
   return (
     <div>
+      <Suspense fallback={null}>
+        <SearchParamsHandler onNumberFound={handleNumberFromUrl} />
+      </Suspense>
+      
       {/* Hero */}
       <section className="relative hero-gradient text-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 relative z-10">
