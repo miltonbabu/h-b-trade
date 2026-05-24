@@ -18,7 +18,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** identifier can be an email or a phone number */
+  login: (identifier: string, password: string) => Promise<void>;
   signup: (data: { name: string; email: string; password: string; phone?: string; whatsapp?: string; company?: string }) => Promise<void>;
   logout: () => void;
   updateUser: (user: AuthUser) => void;
@@ -47,8 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await api.post('/customer/login', { email, password });
+  const login = async (identifier: string, password: string) => {
+    const response = await api.post('/customer/login', { identifier, password });
     const { token: newToken, user: newUser } = response.data;
 
     localStorage.setItem('customer_token', newToken);

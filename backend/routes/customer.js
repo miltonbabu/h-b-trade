@@ -23,9 +23,19 @@ const registerValidation = [
   handleValidationErrors
 ];
 
+// Login accepts either an email or a phone number as the identifier
 const loginValidation = [
-  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('identifier').optional().trim(),
+  body('email').optional().trim(),
+  body('phone').optional().trim(),
   body('password').notEmpty().withMessage('Password is required'),
+  (req, res, next) => {
+    const id = req.body.identifier || req.body.email || req.body.phone;
+    if (!id || !String(id).trim()) {
+      return res.status(400).json({ error: 'Email or phone number is required' });
+    }
+    next();
+  },
   handleValidationErrors
 ];
 
@@ -97,12 +107,16 @@ router.post('/register', registerValidation, async (req, res) => {
 
 router.post('/login', loginValidation, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const raw = String(req.body.identifier || req.body.email || req.body.phone || '').trim();
+    const { password } = req.body;
+    // If it contains "@" treat as email, otherwise look up by phone
+    const isEmail = raw.includes('@');
+    const lookupQuery = isEmail
+      ? 'SELECT * FROM customers WHERE email = ? AND deleted_at IS NULL'
+      : 'SELECT * FROM customers WHERE phone = ? AND deleted_at IS NULL';
+    const lookupValue = isEmail ? raw.toLowerCase() : raw;
 
-    const customer = await db.getOne(
-      'SELECT * FROM customers WHERE email = ? AND deleted_at IS NULL',
-      [email.toLowerCase()]
-    );
+    const customer = await db.getOne(lookupQuery, [lookupValue]);
 
     if (!customer) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -111,7 +125,7 @@ router.post('/login', loginValidation, async (req, res) => {
     const isMatch = bcrypt.compareSync(password, customer.password);
 
     if (!isMatch) {
-      logger.warn(`Failed customer login attempt: ${email}`);
+      logger.warn(`Failed customer login attempt: ${raw}`);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -121,7 +135,7 @@ router.post('/login', loginValidation, async (req, res) => {
       { expiresIn: JWT_EXPIRE }
     );
 
-    logger.info(`Customer logged in: ${email}`);
+    logger.info(`Customer logged in: ${customer.email}`);
 
     res.json({
       success: true,

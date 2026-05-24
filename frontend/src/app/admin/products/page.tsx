@@ -5,9 +5,88 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Package, Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import { Package, Plus, Search, Edit, Trash2, X, Upload, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
+
+/** ImageField — file picker that uploads to Cloudinary via /admin/upload and
+ *  hands back the secure URL. Also accepts pasting a URL directly for power users. */
+function ImageField({
+  label, value, onChange, required,
+}: { label: string; value: string; onChange: (v: string) => void; required?: boolean }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await api.post('/admin/upload?folder=hbtrade/products', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      onChange(res.data?.url || '');
+    } catch (err) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setError(e.response?.data?.error || e.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      // Reset input so the same file can be reselected
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <div className="flex items-center gap-2">
+        {value ? (
+          <div className="relative w-16 h-16 rounded-lg border border-gray-200 overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={value} alt="" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow"
+              aria-label="Remove image"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center text-gray-300 shrink-0">
+            <Package size={20} />
+          </div>
+        )}
+        <div className="flex-1 flex flex-col gap-1">
+          <label className={`inline-flex items-center justify-center gap-2 h-10 px-3 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            {uploading ? 'Uploading…' : (value ? 'Replace image' : 'Upload image')}
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleFile}
+              className="hidden"
+              disabled={uploading}
+            />
+          </label>
+          <Input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="…or paste an image URL"
+            className="text-xs h-9"
+          />
+        </div>
+      </div>
+      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+    </div>
+  );
+}
 
 interface Product {
   id: string;
@@ -369,30 +448,22 @@ export default function AdminProductsPage() {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image URL 1 (Required)</label>
-                <Input
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="https://example.com/image1.jpg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image URL 2 (Optional)</label>
-                <Input
-                  value={formData.image2}
-                  onChange={(e) => setFormData({ ...formData, image2: e.target.value })}
-                  placeholder="https://example.com/image2.jpg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Image URL 3 (Optional)</label>
-                <Input
-                  value={formData.image3}
-                  onChange={(e) => setFormData({ ...formData, image3: e.target.value })}
-                  placeholder="https://example.com/image3.jpg"
-                />
-              </div>
+              <ImageField
+                label="Image 1"
+                required
+                value={formData.image}
+                onChange={(v) => setFormData({ ...formData, image: v })}
+              />
+              <ImageField
+                label="Image 2 (Optional)"
+                value={formData.image2}
+                onChange={(v) => setFormData({ ...formData, image2: v })}
+              />
+              <ImageField
+                label="Image 3 (Optional)"
+                value={formData.image3}
+                onChange={(v) => setFormData({ ...formData, image3: v })}
+              />
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <Textarea

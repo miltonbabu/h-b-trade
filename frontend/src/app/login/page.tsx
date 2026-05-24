@@ -7,12 +7,12 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Lock, Mail, Loader2 } from 'lucide-react';
+import { Lock, AtSign, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
 
 interface LoginForm {
-  email: string;
+  identifier: string;
   password: string;
 }
 
@@ -39,10 +39,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login(data.email, data.password);
+      await login(data.identifier, data.password);
       router.push('/profile');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid email or password');
+      setError(err.response?.data?.error || 'Invalid email/phone or password');
     } finally {
       setIsLoading(false);
     }
@@ -73,25 +73,23 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Email or Phone Number
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <AtSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <Input
-                  type="email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
+                  type="text"
+                  inputMode="email"
+                  autoComplete="username"
+                  {...register('identifier', {
+                    required: 'Email or phone number is required',
                   })}
-                  placeholder="your@email.com"
+                  placeholder="your@email.com  or  +880 1XXX-XXXXXX"
                   className="pl-10"
                 />
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              {errors.identifier && (
+                <p className="text-red-500 text-sm mt-1">{errors.identifier.message}</p>
               )}
             </div>
 

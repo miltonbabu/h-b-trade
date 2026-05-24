@@ -13,6 +13,7 @@ const {
 const { upload, handleUploadError } = require("../config/multer");
 const { uploadToCloudinary } = require("../config/cloudinary");
 const { v4: uuidv4 } = require("uuid");
+const bcrypt = require("bcryptjs");
 const logger = require("../config/logger");
 
 const ORDER_STATUS_SEQUENCE = [
@@ -1423,6 +1424,37 @@ router.post(
     } catch (error) {
       logger.error("QR upload error:", error);
       res.status(500).json({ error: "Failed to upload QR codes" });
+    }
+  },
+);
+
+/* Generic image upload — uploads a single file to Cloudinary and returns the
+   secure URL. Used by the admin Products page so admins can pick a file from
+   their computer instead of pasting a URL. Accepts ?folder=hbtrade/products
+   so callers can sub-organize their assets in Cloudinary. */
+router.post(
+  "/upload",
+  upload.single("file"),
+  handleUploadError,
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      const folder = String(req.query.folder || req.body.folder || "hbtrade/uploads").replace(/[^a-z0-9_\-\/]/gi, "");
+      const result = await uploadToCloudinary(req.file.buffer, folder);
+      logger.info(`Cloudinary upload OK: ${result.secure_url} (folder=${folder})`);
+      res.status(201).json({
+        success: true,
+        url: result.secure_url,
+        publicId: result.public_id,
+        bytes: result.bytes,
+        width: result.width,
+        height: result.height,
+      });
+    } catch (error) {
+      logger.error("Upload error:", error && error.message ? error.message : error);
+      res.status(500).json({ error: "Failed to upload file" });
     }
   },
 );
