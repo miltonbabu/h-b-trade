@@ -27,6 +27,7 @@ export default function AdminOrdersPage() {
     shipping_method: '',
     price: '',
     net_weight: '',
+    notes: '',
     status: 'pending',
     tracking_number: '',
   });
@@ -159,6 +160,7 @@ export default function AdminOrdersPage() {
       shipping_method: '',
       price: '',
       net_weight: '',
+      notes: '',
       status: 'pending',
       tracking_number: '',
     });
