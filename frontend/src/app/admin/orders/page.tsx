@@ -458,7 +458,7 @@ export default function AdminOrdersPage() {
                             onClick={() => {
                               const url = `${window.location.origin}/tracking?number=${encodeURIComponent(order.tracking_number || '')}`;
                               navigator.clipboard.writeText(url);
-                              setCopiedTracking(order.tracking_number);
+                              setCopiedTracking(order.tracking_number ?? null);
                               setTimeout(() => setCopiedTracking(null), 2000);
                             }}
                             title="Click to copy tracking link"
@@ -679,7 +679,7 @@ export default function AdminOrdersPage() {
                           onClick={() => {
                             const url = `${window.location.origin}/tracking?number=${encodeURIComponent(selectedOrder.tracking_number || '')}`;
                             navigator.clipboard.writeText(url);
-                            setCopiedTracking(selectedOrder.tracking_number);
+                            setCopiedTracking(selectedOrder.tracking_number ?? null);
                             setTimeout(() => setCopiedTracking(null), 2000);
                           }}
                           title="Copy tracking link to share with customer"
