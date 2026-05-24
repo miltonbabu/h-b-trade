@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/Textarea';
+import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle, Pencil } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
@@ -37,6 +38,9 @@ export default function AdminRequestsPage() {
   const [convertPrice, setConvertPrice] = useState('');
   const [convertStatus, setConvertStatus] = useState('processing');
   const [converting, setConverting] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -141,6 +145,49 @@ export default function AdminRequestsPage() {
   const openViewModal = async (request: ProductRequest) => {
     setSelectedRequest(request);
     setShowModal(true);
+  };
+
+  const openEditModal = (request: ProductRequest) => {
+    setSelectedRequest(request);
+    setEditFormData({
+      name: request.name || '',
+      phone: request.phone || '',
+      whatsapp: request.whatsapp || '',
+      email: request.email || '',
+      company: request.company || '',
+      product_name: request.product_name || '',
+      product_link: request.product_link || '',
+      target_price: request.target_price || '',
+      quantity: request.quantity || '',
+      packaging_type: request.packaging_type || '',
+      pack_quantity: request.pack_quantity || '',
+      master_pack_quantity: request.master_pack_quantity || '',
+      pack_dimensions: request.pack_dimensions || '',
+      weight_per_pack: request.weight_per_pack || '',
+      sample_needed: request.sample_needed || '',
+      shipping_method: request.shipping_method || '',
+      specifications: request.specifications || '',
+      message: request.message || '',
+      status: request.status || '',
+      tracking_number: request.tracking_number || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedRequest) return;
+    setSaving(true);
+    try {
+      await api.put(`/admin/requests/${selectedRequest.id}`, editFormData);
+      setShowEditModal(false);
+      fetchRequests();
+      toast.success('Request updated successfully');
+    } catch (error) {
+      console.error('Failed to update request:', error);
+      toast.error(`Update failed: ${errorMessage(error)}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -248,6 +295,14 @@ export default function AdminRequestsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => openEditModal(request)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Pencil size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(request.id)}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -274,178 +329,122 @@ export default function AdminRequestsPage() {
                 <X size={20} />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Name</p>
-                  <p className="font-medium">{selectedRequest.name}</p>
+            <CardContent className="space-y-5">
+              {/* Customer Info */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Customer Info</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><p className="text-xs text-gray-500">Name</p><p className="font-medium text-sm">{selectedRequest.name}</p></div>
+                  <div><p className="text-xs text-gray-500">Email</p><p className="font-medium text-sm">{selectedRequest.email}</p></div>
+                  {selectedRequest.phone && <div><p className="text-xs text-gray-500">Phone</p><p className="font-medium text-sm">{selectedRequest.phone}</p></div>}
+                  {selectedRequest.whatsapp && <div><p className="text-xs text-gray-500">WhatsApp</p><p className="font-medium text-sm">{selectedRequest.whatsapp}</p></div>}
+                  {selectedRequest.company && <div className="col-span-2"><p className="text-xs text-gray-500">Company</p><p className="font-medium text-sm">{selectedRequest.company}</p></div>}
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-medium">{selectedRequest.email}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-medium">{selectedRequest.phone || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">WhatsApp</p>
-                  <p className="font-medium">{selectedRequest.whatsapp || '-'}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-gray-600">Product Name</p>
-                  <p className="font-medium">{selectedRequest.product_name}</p>
-                </div>
-                {selectedRequest.product_link && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600">Product Link</p>
-                    <a 
-                      href={selectedRequest.product_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline flex items-center gap-1"
-                    >
-                      {selectedRequest.product_link}
-                      <ExternalLink size={14} />
-                    </a>
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm text-gray-600">Quantity</p>
-                  <p className="font-medium">{selectedRequest.quantity || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Shipping Method</p>
-                  <p className="font-medium">{selectedRequest.shipping_method || '-'}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-gray-600 mb-1">Tracking Number</p>
-                  {editingTracking === selectedRequest.id ? (
-                    <div className="flex gap-2">
-                      <Input
-                        value={trackingInput}
-                        onChange={(e) => setTrackingInput(e.target.value)}
-                        placeholder="Enter tracking number"
-                        className="flex-1"
-                      />
-                      <Button size="sm" onClick={() => handleTrackingUpdate(selectedRequest.id)}>
-                        <Save size={16} />
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingTracking(null)}>
-                        <X size={16} />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-medium text-primary">
-                        {selectedRequest.tracking_number || 'Not set'}
-                      </span>
-                      <Button size="sm" variant="ghost" onClick={() => startEditingTracking(selectedRequest)}>
-                        Edit
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Status</p>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedRequest.status)}`}>
-                    {selectedRequest.status}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Date</p>
-                  <p className="font-medium">{formatDate(selectedRequest.created_at)}</p>
-                </div>
-                {selectedRequest.message && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600">Message</p>
-                    <p className="font-medium bg-gray-50 p-3 rounded">{selectedRequest.message}</p>
-                  </div>
-                )}
+              </div>
 
-                {/* Full Product Details Section */}
-                <div className="col-span-2 border-t pt-4 mt-2">
-                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <FileText size={18} className="text-primary" />
-                    Complete Request Details
-                  </h4>
-                  <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 sm:p-5 border border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {Object.entries(DETAIL_LABELS).map(([key, label]) => {
-                        const rawValue = (selectedRequest as any)[key];
-                        if (!rawValue) return null;
-                        const strValue = String(rawValue);
+              {/* Product Details */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-2">
+                  <FileText size={16} className="text-primary" /> Product Details
+                </h4>
+                <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 border border-gray-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-white rounded-lg p-3 border border-gray-100 md:col-span-2">
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Product Name</p>
+                      <p className="text-sm font-semibold text-gray-900">{selectedRequest.product_name}</p>
+                    </div>
+                    {selectedRequest.product_link && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-100 md:col-span-2">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Product Link</p>
+                        <a href={selectedRequest.product_link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all flex items-center gap-1">
+                          {selectedRequest.product_link.length > 80 ? selectedRequest.product_link.substring(0, 80) + '...' : selectedRequest.product_link}
+                          <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    )}
+                    {Object.entries(DETAIL_LABELS).filter(([k]) => k !== 'product_name' && k !== 'product_link').map(([key, label]) => {
+                      const value = (selectedRequest as any)[key];
+                      if (!value) return null;
+                      return (
+                        <div key={key} className="bg-white rounded-lg p-3 border border-gray-100">
+                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                          <p className="text-sm font-medium text-gray-900">{String(value)}</p>
+                        </div>
+                      );
+                    })}
+                    {selectedRequest.specifications && (
+                      <div className="bg-white rounded-lg p-3 border border-gray-100 md:col-span-2">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Specifications</p>
+                        <p className="text-sm font-medium text-gray-900 whitespace-pre-wrap">{selectedRequest.specifications}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Message */}
+              {selectedRequest.message && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Message</h4>
+                  <p className="bg-gray-50 p-3 rounded-lg text-sm">{selectedRequest.message}</p>
+                </div>
+              )}
+
+              {/* Product Images */}
+              {selectedRequest.image && (() => {
+                let imageUrls: string[] = [];
+                try {
+                  const parsed = JSON.parse(selectedRequest.image);
+                  imageUrls = Array.isArray(parsed) ? parsed : [selectedRequest.image];
+                } catch {
+                  imageUrls = [selectedRequest.image];
+                }
+                const validUrls = imageUrls.filter(u => u);
+                return validUrls.length > 0 ? (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Product Images ({validUrls.length})</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {validUrls.map((url, i) => {
+                        const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
                         return (
-                          <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'product_link' || key === 'message' ? 'md:col-span-2' : ''}`}>
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                            {key === 'product_link' ? (
-                              <a href={strValue} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all flex items-center gap-1">
-                                {strValue.length > 60 ? strValue.substring(0, 60) + '...' : strValue}
-                                <ExternalLink size={12} />
-                              </a>
-                            ) : (
-                              <p className="text-sm font-medium text-gray-900 break-all">{strValue}</p>
-                            )}
-                          </div>
-                        );
-                      })}
-                      
-                      {/* Show any extra fields not in our label map */}
-                      {['specifications', 'details'].map(extraField => {
-                        const value = (selectedRequest as any)[extraField];
-                        if (!value) return null;
-                        let parsedValue;
-                        try { parsedValue = typeof value === 'string' ? JSON.parse(value) : value; } catch { parsedValue = value; }
-                        
-                        if (typeof parsedValue === 'object') {
-                          return (
-                            <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Details</p>
-                              <div className="grid grid-cols-2 gap-2 mt-1">
-                                {Object.entries(parsedValue as Record<string, unknown>).map(([k, v]) => (
-                                  <div key={k} className="bg-gray-50 rounded p-2">
-                                    <span className="text-xs text-gray-500">{DETAIL_LABELS[k] || k.replace(/_/g, ' ')}</span>
-                                    <p className="text-sm font-medium text-gray-900">{String(v ?? '')}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return (
-                          <div key={extraField} className="md:col-span-2 bg-white rounded-lg p-3 border border-gray-100">
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Additional Info</p>
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 rounded p-2 mt-1">{String(parsedValue)}</p>
-                          </div>
+                          <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                            <img src={src} alt={`Image ${i + 1}`} className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" />
+                          </a>
                         );
                       })}
                     </div>
                   </div>
-                </div>
-                {selectedRequest.image && (() => {
-                  let imageUrls: string[] = [];
-                  try {
-                    const parsed = JSON.parse(selectedRequest.image);
-                    imageUrls = Array.isArray(parsed) ? parsed : [selectedRequest.image];
-                  } catch {
-                    imageUrls = [selectedRequest.image];
-                  }
-                  return imageUrls.length > 0 ? (
-                    <div className="col-span-2">
-                      <p className="text-sm text-gray-600 mb-2">Product Images</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        {imageUrls.map((url, i) => (
-                          <img
-                            key={i}
-                            src={url.startsWith('http') ? url : `http://localhost:5000${url}`}
-                            alt={`Image ${i + 1}`}
-                            className="w-full h-32 object-cover rounded border"
-                          />
-                        ))}
+                ) : null;
+              })()}
+
+              {/* Admin Section */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Admin</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Tracking Number</p>
+                    {editingTracking === selectedRequest.id ? (
+                      <div className="flex gap-2">
+                        <Input value={trackingInput} onChange={(e) => setTrackingInput(e.target.value)} placeholder="Enter tracking number" className="flex-1" />
+                        <Button size="sm" onClick={() => handleTrackingUpdate(selectedRequest.id)}><Save size={16} /></Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingTracking(null)}><X size={16} /></Button>
                       </div>
-                    </div>
-                  ) : null;
-                })()}
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-medium text-primary text-sm">{selectedRequest.tracking_number || 'Not set'}</span>
+                        <Button size="sm" variant="ghost" onClick={() => startEditingTracking(selectedRequest)}>Edit</Button>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Status</p>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedRequest.status)}`}>{selectedRequest.status}</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Date</p>
+                    <p className="font-medium text-sm">{formatDate(selectedRequest.created_at)}</p>
+                  </div>
+                </div>
               </div>
               <div className="pt-4">
                 <Button variant="outline" className="w-full" onClick={() => setShowModal(false)}>
@@ -515,6 +514,146 @@ export default function AdminRequestsPage() {
                   disabled={converting}
                 >
                   {converting ? 'Converting...' : 'Confirm & Create Order'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Edit Request</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowEditModal(false)}>
+                <X size={20} />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Customer Info</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Name</label>
+                    <Input value={editFormData.name || ''} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                    <Input value={editFormData.phone || ''} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">WhatsApp</label>
+                    <Input value={editFormData.whatsapp || ''} onChange={(e) => setEditFormData({ ...editFormData, whatsapp: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Email</label>
+                    <Input value={editFormData.email || ''} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">Company</label>
+                    <Input value={editFormData.company || ''} onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Product Details</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.product_name}</label>
+                    <Input value={editFormData.product_name || ''} onChange={(e) => setEditFormData({ ...editFormData, product_name: e.target.value })} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.product_link}</label>
+                    <Input value={editFormData.product_link || ''} onChange={(e) => setEditFormData({ ...editFormData, product_link: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.target_price}</label>
+                    <Input value={editFormData.target_price || ''} onChange={(e) => setEditFormData({ ...editFormData, target_price: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.quantity}</label>
+                    <Input value={editFormData.quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, quantity: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.packaging_type}</label>
+                    <Input value={editFormData.packaging_type || ''} onChange={(e) => setEditFormData({ ...editFormData, packaging_type: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.pack_quantity}</label>
+                    <Input value={editFormData.pack_quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, pack_quantity: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.master_pack_quantity}</label>
+                    <Input value={editFormData.master_pack_quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, master_pack_quantity: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.pack_dimensions}</label>
+                    <Input value={editFormData.pack_dimensions || ''} onChange={(e) => setEditFormData({ ...editFormData, pack_dimensions: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.weight_per_pack}</label>
+                    <Input value={editFormData.weight_per_pack || ''} onChange={(e) => setEditFormData({ ...editFormData, weight_per_pack: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.sample_needed}</label>
+                    <select
+                      value={editFormData.sample_needed || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, sample_needed: e.target.value })}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.shipping_method}</label>
+                    <Input value={editFormData.shipping_method || ''} onChange={(e) => setEditFormData({ ...editFormData, shipping_method: e.target.value })} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">Specifications</label>
+                    <Textarea value={editFormData.specifications || ''} onChange={(e) => setEditFormData({ ...editFormData, specifications: e.target.value })} rows={3} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">Message</label>
+                    <Textarea value={editFormData.message || ''} onChange={(e) => setEditFormData({ ...editFormData, message: e.target.value })} rows={3} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Admin</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Status</label>
+                    <select
+                      value={editFormData.status || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="completed">Completed</option>
+                      <option value="converted">Converted</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Tracking Number</label>
+                    <Input value={editFormData.tracking_number || ''} onChange={(e) => setEditFormData({ ...editFormData, tracking_number: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </Button>
+                <Button className="flex-1" onClick={handleEditSave} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
             </CardContent>

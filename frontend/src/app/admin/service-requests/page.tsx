@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink, Pencil } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ServiceRequest } from '@/types';
@@ -113,6 +113,9 @@ export default function AdminServiceRequestsPage() {
   const [convertShipping, setConvertShipping] = useState('air-cargo');
   const [converting, setConverting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState<Record<string, string>>({});
+  const [editSaving, setEditSaving] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -269,6 +272,41 @@ export default function AdminServiceRequestsPage() {
     fetchRequests();
   };
 
+  const openEditModal = (request: ServiceRequest) => {
+    setSelectedRequest(request);
+    setEditFormData({
+      name: request.name || '',
+      phone: request.phone || '',
+      whatsapp: request.whatsapp || '',
+      email: request.email || '',
+      company: request.company || '',
+      message: request.message || '',
+      status: request.status || '',
+      admin_notes: request.admin_notes || '',
+      price: request.price?.toString() || '',
+      tracking_number: request.tracking_number || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedRequest) return;
+    setEditSaving(true);
+    try {
+      const payload: Record<string, unknown> = { ...editFormData };
+      if (payload.price !== undefined) payload.price = parseFloat(payload.price as string) || 0;
+      await api.put(`/admin/service-requests/${selectedRequest.id}`, payload);
+      setShowEditModal(false);
+      fetchRequests();
+      toast.success('Service request updated successfully');
+    } catch (error) {
+      console.error('Failed to update service request:', error);
+      toast.error(`Update failed: ${errorMessage(error)}`);
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -393,6 +431,14 @@ export default function AdminServiceRequestsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => openEditModal(request)}
+                              className="text-blue-600 hover:text-blue-700"
+                            >
+                              <Pencil size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDelete(request.id)}
                               className="text-red-600 hover:text-red-700"
                             >
@@ -487,9 +533,16 @@ export default function AdminServiceRequestsPage() {
               {selectedRequest.details && (() => {
                 let parsedDetails: Record<string, string>;
                 try {
-                  parsedDetails = typeof selectedRequest.details === 'string'
+                  let parsed = typeof selectedRequest.details === 'string'
                     ? JSON.parse(selectedRequest.details)
                     : selectedRequest.details;
+                  if (typeof parsed === 'string') {
+                    parsed = JSON.parse(parsed);
+                  }
+                  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                    return null;
+                  }
+                  parsedDetails = parsed;
                 } catch (e) {
                   return null;
                 }
@@ -551,18 +604,19 @@ export default function AdminServiceRequestsPage() {
                 } catch {
                   imageUrls = [selectedRequest.image];
                 }
-                return imageUrls.length > 0 ? (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-600 mb-2">Product Images</p>
+                const validUrls = imageUrls.filter(u => u);
+                return validUrls.length > 0 ? (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Product Images ({validUrls.length})</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {imageUrls.map((url, i) => (
-                        <img
-                          key={i}
-                          src={url.startsWith('http') ? url : `http://localhost:5000${url}`}
-                          alt={`Image ${i + 1}`}
-                          className="w-full h-32 object-cover rounded border"
-                        />
-                      ))}
+                      {validUrls.map((url, i) => {
+                        const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+                        return (
+                          <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                            <img src={src} alt={`Image ${i + 1}`} className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" />
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
                 ) : null;
@@ -741,6 +795,120 @@ export default function AdminServiceRequestsPage() {
         </div>
         );
       })()}
+
+      {/* Edit Modal */}
+      {showEditModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Edit Service Request</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowEditModal(false)}>
+                <X size={20} />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Customer Info</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Name</label>
+                    <Input value={editFormData.name || ''} onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                    <Input value={editFormData.phone || ''} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">WhatsApp</label>
+                    <Input value={editFormData.whatsapp || ''} onChange={(e) => setEditFormData({ ...editFormData, whatsapp: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Email</label>
+                    <Input value={editFormData.email || ''} onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-500 mb-1">Company</label>
+                    <Input value={editFormData.company || ''} onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              {selectedRequest.details && (() => {
+                let parsedDetails: Record<string, string>;
+                try {
+                  let parsed = typeof selectedRequest.details === 'string'
+                    ? JSON.parse(selectedRequest.details)
+                    : selectedRequest.details;
+                  if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+                  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+                  parsedDetails = parsed;
+                } catch { return null; }
+                const detailEntries = Object.entries(parsedDetails);
+                if (detailEntries.length === 0) return null;
+                return (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Service Details (read-only)</h4>
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                      {detailEntries.map(([key, value]) => (
+                        <div key={key} className="flex gap-2">
+                          <span className="text-xs font-medium text-gray-500 min-w-[140px]">{DETAIL_LABELS[key] || key.replace(/_/g, ' ')}:</span>
+                          <span className="text-sm text-gray-900 break-all">{String(value ?? '-')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Message</h4>
+                <Textarea value={editFormData.message || ''} onChange={(e) => setEditFormData({ ...editFormData, message: e.target.value })} rows={3} />
+              </div>
+
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Admin</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Status</label>
+                    <select
+                      value={editFormData.status || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                    >
+                      <option value="received">Received</option>
+                      <option value="processing">Processing</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Tracking Number</label>
+                    <Input value={editFormData.tracking_number || ''} onChange={(e) => setEditFormData({ ...editFormData, tracking_number: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Price (BDT)</label>
+                    <Input type="number" value={editFormData.price || ''} onChange={(e) => setEditFormData({ ...editFormData, price: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <label className="block text-xs text-gray-500 mb-1">Admin Notes</label>
+                <Textarea value={editFormData.admin_notes || ''} onChange={(e) => setEditFormData({ ...editFormData, admin_notes: e.target.value })} rows={3} />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </Button>
+                <Button className="flex-1" onClick={handleEditSave} disabled={editSaving}>
+                  {editSaving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

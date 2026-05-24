@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -172,6 +173,31 @@ export default function UnifiedTrackingPage() {
   const [data, setData] = useState<TrackingData | null>(null);
   const { user, isAuthenticated } = useAuth();
   const [myTrackingNumbers, setMyTrackingNumbers] = useState<Array<{ tracking_number: string; type: string; label: string; status: string; created_at: string }>>([]);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const numberFromUrl = searchParams.get('number');
+    if (numberFromUrl) {
+      setTrackingNumber(numberFromUrl);
+      setIsLoading(true);
+      setError('');
+      setData(null);
+      api.get(`/track/${numberFromUrl}`)
+        .then((response) => {
+          if (response.data.data) {
+            setData({ type: response.data.type, ...response.data.data });
+          } else {
+            setError('No tracking information found.');
+          }
+        })
+        .catch((err) => {
+          setError(err?.response?.data?.error || 'No tracking information found.');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isAuthenticated) return;

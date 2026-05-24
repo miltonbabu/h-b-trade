@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Package, Plus, Search, Edit, Trash2, X, Eye, Download, FileText, FileDown } from 'lucide-react';
+import { Package, Plus, Search, Edit, Trash2, X, Eye, Download, FileText, FileDown, Copy, Check, ExternalLink } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 import { Order } from '@/types';
@@ -30,6 +30,7 @@ export default function AdminOrdersPage() {
     status: 'pending',
     tracking_number: '',
   });
+  const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -132,6 +133,7 @@ export default function AdminOrdersPage() {
       quantity: order.quantity || '',
       shipping_method: order.shipping_method || '',
       price: order.price?.toString() || '',
+      notes: order.notes || '',
       net_weight: order.net_weight || '',
       status: order.status,
       tracking_number: order.tracking_number || '',
@@ -447,7 +449,28 @@ export default function AdminOrdersPage() {
                           <option value="cancelled" className="bg-red-50">Cancelled</option>
                         </select>
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500 hidden lg:table-cell">{order.tracking_number || '-'}</td>
+                      <td className="px-3 py-2 hidden lg:table-cell">
+                        {order.tracking_number ? (
+                          <span
+                            className="font-mono text-xs text-primary cursor-pointer hover:underline inline-flex items-center gap-1"
+                            onClick={() => {
+                              const url = `${window.location.origin}/tracking?number=${encodeURIComponent(order.tracking_number)}`;
+                              navigator.clipboard.writeText(url);
+                              setCopiedTracking(order.tracking_number);
+                              setTimeout(() => setCopiedTracking(null), 2000);
+                            }}
+                            title="Click to copy tracking link"
+                          >
+                            {copiedTracking === order.tracking_number ? (
+                              <><Check size={12} className="text-green-500" /> Link copied!</>
+                            ) : (
+                              <>{order.tracking_number}</>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 text-xs text-gray-500 hidden md:table-cell">{formatDate(order.created_at)}</td>
                       <td className="px-3 py-2 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -497,21 +520,21 @@ export default function AdminOrdersPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Customer Name *</label>
-                <Input
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Product Name *</label>
-                <Input
-                  value={formData.product_name}
-                  onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Customer Name *</label>
+                  <Input
+                    value={formData.customer_name}
+                    onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Product Name *</label>
+                  <Input
+                    value={formData.product_name}
+                    onChange={(e) => setFormData({ ...formData, product_name: e.target.value })}
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Quantity</label>
                   <Input
@@ -520,7 +543,7 @@ export default function AdminOrdersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price</label>
+                  <label className="block text-sm font-medium mb-1">Price (BDT)</label>
                   <Input
                     type="number"
                     value={formData.price}
@@ -537,45 +560,79 @@ export default function AdminOrdersPage() {
                     placeholder="e.g., 2.5"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tracking Number</label>
+                  <Input
+                    value={formData.tracking_number}
+                    onChange={(e) => setFormData({ ...formData, tracking_number: e.target.value })}
+                    placeholder="Enter tracking number"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">Notes</label>
+                  <Textarea
+                    value={formData.notes || ''}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Order notes"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Shipping Method</label>
+                  <select
+                    value={formData.shipping_method}
+                    onChange={(e) => setFormData({ ...formData, shipping_method: e.target.value })}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                  >
+                    <option value="">Select method</option>
+                    <option value="air-cargo">Air Cargo</option>
+                    <option value="sea-shipping">Sea Shipping</option>
+                    <option value="hand-carry">Hand Carry</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="guangzhou_warehouse">Guangzhou Warehouse</option>
+                    <option value="in_transit">In Transit</option>
+                    <option value="dhaka_customs">Dhaka Customs</option>
+                    <option value="dhaka_office">Dhaka Office</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Shipping Method</label>
-                <select
-                  value={formData.shipping_method}
-                  onChange={(e) => setFormData({ ...formData, shipping_method: e.target.value })}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                >
-                  <option value="">Select method</option>
-                  <option value="air-cargo">Air Cargo</option>
-                  <option value="sea-shipping">Sea Shipping</option>
-                  <option value="hand-carry">Hand Carry</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="guangzhou_warehouse">Guangzhou Warehouse Received</option>
-                  <option value="in_transit">In Transit</option>
-                  <option value="dhaka_customs">Dhaka Customs Clearance</option>
-                  <option value="dhaka_office">Dhaka Office</option>
-                  <option value="delivered">Delivered To Customer</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Tracking Number</label>
-                <Input
-                  value={formData.tracking_number}
-                  onChange={(e) => setFormData({ ...formData, tracking_number: e.target.value })}
-                  placeholder="Enter tracking number"
-                />
-              </div>
+              {/* Read-only items info from converted request */}
+              {selectedOrder?.items_info && (() => {
+                try {
+                  const raw = typeof selectedOrder.items_info === 'string' ? JSON.parse(selectedOrder.items_info) : selectedOrder.items_info;
+                  if (typeof raw === 'object' && !Array.isArray(raw) && raw !== null) {
+                    const entries = Object.entries(raw).filter(([k]) => !k.startsWith('_'));
+                    return (
+                      <div className="border-t pt-4">
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Original Request Details (read-only)</p>
+                        <div className="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                          <div className="grid grid-cols-2 gap-2">
+                            {entries.map(([k, v]) => (
+                              <div key={k} className="text-xs">
+                                <span className="text-gray-500">{k.replace(/_/g, ' ')}:</span>{' '}
+                                <span className="font-medium text-gray-800">{String(v ?? '').substring(0, 60)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                } catch { return null; }
+              })()}
               <div className="flex gap-2 pt-4">
                 <Button variant="outline" className="flex-1" onClick={() => setShowModal(false)}>
                   Cancel
@@ -610,7 +667,31 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Tracking Number</p>
-                    <p className="font-medium text-blue-600">{selectedOrder.tracking_number || '-'}</p>
+                    {selectedOrder.tracking_number ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-medium text-primary">
+                          {selectedOrder.tracking_number}
+                        </span>
+                        <button
+                          className="text-xs text-gray-500 hover:text-primary flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100"
+                          onClick={() => {
+                            const url = `${window.location.origin}/tracking?number=${encodeURIComponent(selectedOrder.tracking_number)}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedTracking(selectedOrder.tracking_number);
+                            setTimeout(() => setCopiedTracking(null), 2000);
+                          }}
+                          title="Copy tracking link to share with customer"
+                        >
+                          {copiedTracking === selectedOrder.tracking_number ? (
+                            <><Check size={14} className="text-green-500" /> Link copied!</>
+                          ) : (
+                            <><Copy size={14} /> Copy link</>
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Status</p>
@@ -659,6 +740,12 @@ export default function AdminOrdersPage() {
                                 <p className="font-medium">{customerInfo.whatsapp}</p>
                               </div>
                             )}
+                            {customerInfo.company && (
+                              <div className="col-span-2">
+                                <p className="text-sm text-gray-600">Company</p>
+                                <p className="font-medium">{customerInfo.company}</p>
+                              </div>
+                            )}
                             {customerInfo.address && (
                               <div className="col-span-2">
                                 <p className="text-sm text-gray-600">Address</p>
@@ -696,54 +783,120 @@ export default function AdminOrdersPage() {
                   {/* Items Details */}
                   {selectedOrder.items_info && (() => {
                     try {
-                      const items = typeof selectedOrder.items_info === 'string'
+                      const raw = typeof selectedOrder.items_info === 'string'
                         ? JSON.parse(selectedOrder.items_info)
                         : selectedOrder.items_info;
-                      return (
-                        <div className="space-y-2">
-                          {items.map((item: any, index: number) => (
-                            <div key={index} className="bg-gray-50 rounded-lg p-3 border">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-800">{item.productName}</p>
-                                  {item.productCode && (
-                                    <p className="text-xs text-gray-500 mt-1">Code: <span className="font-mono font-bold text-blue-600">{item.productCode}</span></p>
-                                  )}
-                                </div>
-                                <div className="text-right">
-                                  <p className="font-bold text-green-600">৳{(item.totalPrice || item.total || 0).toFixed(2)}</p>
-                                </div>
-                              </div>
-                              <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-4 gap-2 text-xs">
-                                <div>
-                                  <span className="text-gray-500">Unit Price:</span>
-                                  <span className="font-medium ml-1">৳{(item.unitPrice || item.price || 0).toFixed(2)}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">MOQ:</span>
-                                  <span className="font-medium ml-1">{item.moq || 1}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Batches:</span>
-                                  <span className="font-medium ml-1">{item.quantity}</span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Total Units:</span>
-                                  <span className="font-bold text-orange-600 ml-1">{item.totalUnits || (item.moq || 1) * item.quantity}</span>
-                                </div>
+
+                      // Converted request: flat object of key-value pairs
+                      if (!Array.isArray(raw) && typeof raw === 'object' && raw !== null) {
+                        const LABELS: Record<string, string> = {
+                          product_name: 'Product Name', product_link: 'Product Link',
+                          target_price: 'Target Price', quantity: 'Quantity',
+                          packaging_type: 'Packaging Type', pack_quantity: 'Qty per Pack',
+                          master_pack_quantity: 'Qty per Master Pack', pack_dimensions: 'Pack Dimensions',
+                          weight_per_pack: 'Weight per Pack', sample_needed: 'Sample Needed',
+                          shipping_method: 'Shipping Method', specifications: 'Specifications',
+                          message: 'Message', image: 'Image',
+                          _service_type: 'Service Type',
+                          cargo_description: 'Cargo Description', total_packs: 'Total Packs',
+                          total_weight: 'Total Weight', volume_weight: 'Volume Weight',
+                          cargo_value: 'Cargo Value', hs_code: 'HS Code',
+                          origin_airport: 'Origin Airport', destination_airport: 'Destination Airport',
+                          origin_port: 'Origin Port', destination_port: 'Destination Port',
+                          urgency: 'Urgency', product_category: 'Product Category',
+                          budget_range: 'Budget Range', product_names: 'Products Needed',
+                          container_type: 'Container Type', cargo_type: 'Cargo Type',
+                          total_volume: 'Total Volume', item_description: 'Item Description',
+                          number_of_items: 'Number of Items', box_dimensions: 'Box Dimensions',
+                          declared_value: 'Declared Value', preferred_date: 'Preferred Date',
+                          incoterm: 'Incoterm',
+                        };
+                        const entries = Object.entries(raw).filter(([k]) => !k.startsWith('_'));
+                        const imageField = raw.image ? raw.image : null;
+                        let imageUrls: string[] = [];
+                        if (imageField) {
+                          try {
+                            const p = JSON.parse(imageField);
+                            imageUrls = Array.isArray(p) ? p : [imageField];
+                          } catch { imageUrls = [imageField]; }
+                        }
+                        const nonImageEntries = entries.filter(([k]) => k !== 'image');
+
+                        return (
+                          <div className="space-y-3">
+                            <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-4 border border-gray-200">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {nonImageEntries.map(([key, value]) => {
+                                  const strVal = String(value ?? '');
+                                  if (!strVal) return null;
+                                  return (
+                                    <div key={key} className={`bg-white rounded-lg p-3 border border-gray-100 ${key === 'specifications' || key === 'cargo_description' || key === 'item_description' || key === 'message' || key === 'product_link' ? 'md:col-span-2' : ''}`}>
+                                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{LABELS[key] || key.replace(/_/g, ' ')}</p>
+                                      {key === 'product_link' ? (
+                                        <a href={strVal} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline break-all">{strVal}</a>
+                                      ) : (
+                                        <p className="text-sm font-medium text-gray-900 whitespace-pre-wrap">{strVal}</p>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
-                          ))}
-                          <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 mt-3">
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium text-gray-700">Total Units:</span>
-                              <span className="font-bold text-orange-600">
-                                {items.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)} units
-                              </span>
+                            {imageUrls.length > 0 && (
+                              <div>
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Product Images ({imageUrls.length})</p>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                  {imageUrls.filter(u => u).map((url: string, i: number) => {
+                                    const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+                                    return (
+                                      <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                                        <img src={src} alt={`Image ${i + 1}`} className="w-full h-32 object-cover rounded-lg border hover:opacity-80 cursor-pointer" />
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      // Cart order: array of items
+                      if (Array.isArray(raw)) {
+                        return (
+                          <div className="space-y-2">
+                            {raw.map((item: any, index: number) => (
+                              <div key={index} className="bg-gray-50 rounded-lg p-3 border">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <p className="font-medium text-gray-800">{item.productName}</p>
+                                    {item.productCode && (
+                                      <p className="text-xs text-gray-500 mt-1">Code: <span className="font-mono font-bold text-blue-600">{item.productCode}</span></p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-bold text-green-600">৳{(item.totalPrice || item.total || 0).toFixed(2)}</p>
+                                  </div>
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-4 gap-2 text-xs">
+                                  <div><span className="text-gray-500">Unit Price:</span> <span className="font-medium ml-1">৳{(item.unitPrice || item.price || 0).toFixed(2)}</span></div>
+                                  <div><span className="text-gray-500">MOQ:</span> <span className="font-medium ml-1">{item.moq || 1}</span></div>
+                                  <div><span className="text-gray-500">Batches:</span> <span className="font-medium ml-1">{item.quantity}</span></div>
+                                  <div><span className="text-gray-500">Total Units:</span> <span className="font-bold text-orange-600 ml-1">{item.totalUnits || (item.moq || 1) * item.quantity}</span></div>
+                                </div>
+                              </div>
+                            ))}
+                            <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 mt-3">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-700">Total Units:</span>
+                                <span className="font-bold text-orange-600">{raw.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)} units</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
+                        );
+                      }
+
+                      return null;
                     } catch (e) {
                       return null;
                     }

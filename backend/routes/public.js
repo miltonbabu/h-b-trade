@@ -720,7 +720,15 @@ router.post('/service-request', optionalAuth, (req, res, next) => {
     };
     const prefix = TRACKING_PREFIXES[service_type] || 'SR';
     const trackingNumber = `${prefix}${Date.now().toString().slice(-10)}`;
-    const detailsJson = details ? JSON.stringify(details) : null;
+    let detailsJson = null;
+    if (details) {
+      try {
+        const parsed = typeof details === 'string' ? JSON.parse(details) : details;
+        detailsJson = JSON.stringify(parsed);
+      } catch {
+        detailsJson = typeof details === 'string' ? details : JSON.stringify(details);
+      }
+    }
     const customerId = (req.user && req.user.role === 'customer') ? req.user.id : null;
 
     await db.run(

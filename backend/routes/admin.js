@@ -616,6 +616,8 @@ router.put("/orders/:id", [
       tracking_number,
       location,
       note,
+      notes,
+      product_link,
     } = req.body;
 
     const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [
@@ -664,6 +666,8 @@ router.put("/orders/:id", [
            net_weight = COALESCE(?, net_weight),
            status = COALESCE(?, status),
            tracking_number = COALESCE(?, tracking_number),
+           notes = COALESCE(?, notes),
+           product_link = COALESCE(?, product_link),
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
@@ -675,6 +679,8 @@ router.put("/orders/:id", [
         net_weight ?? null,
         status ?? null,
         effectiveTrackingNumber ?? null,
+        notes !== undefined ? notes : null,
+        product_link !== undefined ? product_link : null,
         req.params.id,
       ],
     );
@@ -1013,14 +1019,8 @@ router.get("/requests/:id", async (req, res) => {
   }
 });
 
-router.put("/requests/:id", [
-  body("status").optional().isIn(['pending', 'processing', 'completed', 'cancelled']).withMessage("Invalid status"),
-  body("tracking_number").optional().trim(),
-  handleValidationErrors
-], async (req, res) => {
+router.put("/requests/:id", async (req, res) => {
   try {
-    const { status, tracking_number } = req.body;
-
     const request = await db.getOne(
       "SELECT * FROM product_requests WHERE id = ?",
       [req.params.id],
@@ -1030,46 +1030,36 @@ router.put("/requests/:id", [
       return res.status(404).json({ error: "Request not found" });
     }
 
-    // Build update query dynamically based on what's provided
-    let updateQuery = "UPDATE product_requests SET ";
-    const updateParams = [];
+    const allowedFields = [
+      'name', 'phone', 'whatsapp', 'email', 'company',
+      'product_name', 'product_link', 'target_price', 'quantity',
+      'packaging_type', 'pack_quantity', 'master_pack_quantity',
+      'pack_dimensions', 'weight_per_pack', 'sample_needed',
+      'shipping_method', 'specifications', 'message',
+      'status', 'tracking_number'
+    ];
+
     const updates = [];
+    const updateParams = [];
 
-    if (status !== undefined) {
-      updates.push("status = ?");
-      updateParams.push(status);
-    }
-
-    if (tracking_number !== undefined) {
-      updates.push("tracking_number = ?");
-      updateParams.push(tracking_number);
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = ?`);
+        updateParams.push(req.body[field]);
+      }
     }
 
     if (updates.length === 0) {
-      return res.json({
-        success: true,
-        message: "No fields to update",
-        data: request,
-      });
+      return res.json({ success: true, message: "No fields to update", data: request });
     }
 
-    updateQuery += updates.join(", ") + " WHERE id = ?";
     updateParams.push(req.params.id);
+    await db.run(`UPDATE product_requests SET ${updates.join(", ")} WHERE id = ?`, updateParams);
 
-    await db.run(updateQuery, updateParams);
+    const updatedRequest = await db.getOne("SELECT * FROM product_requests WHERE id = ?", [req.params.id]);
+    logger.info(`Product request updated: ${req.params.id}`);
 
-    const updatedRequest = await db.getOne(
-      "SELECT * FROM product_requests WHERE id = ?",
-      [req.params.id],
-    );
-
-    logger.info(`Request updated: ${request.id} - Status: ${status} - Tracking: ${tracking_number}`);
-
-    res.json({
-      success: true,
-      message: "Request updated successfully",
-      data: updatedRequest,
-    });
+    res.json({ success: true, message: "Request updated successfully", data: updatedRequest });
   } catch (error) {
     logger.error("Update request error:", error);
     res.status(500).json({ error: "Failed to update request" });
@@ -1130,7 +1120,8 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
       name: request.name,
       email: request.email,
       phone: request.phone,
-      whatsapp: request.whatsapp
+      whatsapp: request.whatsapp,
+      company: request.company
     });
 
     // Map shipping method
@@ -1148,7 +1139,8 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     let itemsInfo = null;
     const detailsFields = ['product_name', 'product_link', 'target_price', 'quantity',
       'packaging_type', 'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
-      'weight_per_pack', 'sample_needed', 'shipping_method', 'specifications'];
+      'weight_per_pack', 'sample_needed', 'shipping_method', 'specifications',
+      'message', 'image'];
     const hasDetails = detailsFields.some(f => request[f]);
     if (hasDetails) {
       const items = {};
@@ -1159,8 +1151,8 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     // Insert into orders table
     await db.run(
       `INSERT INTO orders
-       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         orderId,
         orderNumber,
@@ -1172,7 +1164,8 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
         shippingMethod,
         price || 0,
         status,
-        itemsInfo
+        itemsInfo,
+        request.message || null
       ]
     );
 
@@ -1963,60 +1956,44 @@ router.get("/service-requests/:id", async (req, res) => {
 });
 
 // Update service request
-router.put("/service-requests/:id", [
-  body("status").optional().isIn(['received', 'in_progress', 'completed', 'cancelled']).withMessage("Invalid status"),
-  body("price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
-  handleValidationErrors
-], async (req, res) => {
+router.put("/service-requests/:id", async (req, res) => {
   try {
-    const { status, admin_notes, price } = req.body;
-
     const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
 
     if (!request) {
       return res.status(404).json({ error: "Service request not found" });
     }
 
-    // Validate status transition
-    if (status && status !== request.status) {
-      const allowedTransitions = SERVICE_STATUS_TRANSITIONS[request.status] || [];
-      if (!allowedTransitions.includes(status)) {
-        return res.status(400).json({
-          error: `Invalid status transition from "${SERVICE_STATUS_LABELS[request.status]}" to "${SERVICE_STATUS_LABELS[status] || status}". Allowed transitions: ${allowedTransitions.map(s => SERVICE_STATUS_LABELS[s]).join(', ') || 'None'}`,
-          currentStatus: request.status,
-          allowedTransitions,
-        });
-      }
+    const allowedFields = [
+      'name', 'phone', 'whatsapp', 'email', 'company',
+      'message', 'status', 'admin_notes', 'price', 'tracking_number'
+    ];
 
-      // Add tracking entry
-      if (request.tracking_number) {
-        await db.run(
-          `INSERT INTO tracking (id, tracking_number, status, location, note)
-           VALUES (?, ?, ?, ?, ?)`,
-          [uuidv4(), request.tracking_number, status, 'System', `Status changed to ${SERVICE_STATUS_LABELS[status] || status}`]
-        );
+    const updates = [];
+    const updateParams = [];
+
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = ?`);
+        updateParams.push(req.body[field]);
       }
     }
 
-    await db.run(
-      `UPDATE service_requests
-       SET status = COALESCE(?, status),
-           admin_notes = COALESCE(?, admin_notes),
-           price = COALESCE(?, price),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
-      [status || null, admin_notes !== undefined ? admin_notes : null, price !== undefined ? price : null, req.params.id]
-    );
+    if (updates.length > 0) {
+      updates.push("updated_at = CURRENT_TIMESTAMP");
+    }
+
+    if (updates.length === 0) {
+      return res.json({ success: true, message: "No fields to update", data: request });
+    }
+
+    updateParams.push(req.params.id);
+    await db.run(`UPDATE service_requests SET ${updates.join(", ")} WHERE id = ?`, updateParams);
 
     const updatedRequest = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
+    logger.info(`Service request updated: ${req.params.id}`);
 
-    logger.info(`Service request updated: ${request.tracking_number} - Status: ${request.status} → ${status || request.status}`);
-
-    res.json({
-      success: true,
-      message: "Service request updated successfully",
-      data: updatedRequest,
-    });
+    res.json({ success: true, message: "Service request updated successfully", data: updatedRequest });
   } catch (error) {
     logger.error("Update service request error:", error);
     res.status(500).json({ error: "Failed to update service request" });
@@ -2106,20 +2083,22 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
       try {
         const parsedDetails = JSON.parse(request.details);
         if (Object.keys(parsedDetails).length > 0) {
-          itemsInfo = JSON.stringify({
+          const info = {
             ...parsedDetails,
             _service_type: request.service_type,
-            _original_request_id: req.params.id,
-          });
+          };
+          if (request.image) info.image = request.image;
+          if (request.message) info.message = request.message;
+          itemsInfo = JSON.stringify(info);
         }
       } catch (e) {}
     }
 
     await db.run(
       `INSERT INTO orders
-       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status, itemsInfo]
+       (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status, itemsInfo, request.message || null]
     );
 
     // Update service request

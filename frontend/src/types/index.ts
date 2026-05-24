@@ -52,6 +52,8 @@ export interface ProductRequest {
   image?: string;
   tracking_number?: string;
   status: string;
+  converted_to_order?: string;
+  customer_id?: string;
   created_at: string;
 }
 
@@ -67,24 +69,14 @@ export interface Order {
   net_weight?: string;
   status: string;
   tracking_number?: string;
-  customer_info?: {
-    name?: string;
-    email?: string;
-    phone?: string;
-    whatsapp?: string;
-    address?: string;
-  };
-  items?: Array<{
-    productId?: string;
-    productCode?: string;
-    productName?: string;
-    quantity?: number;
-    price?: number;
-    total?: number;
-  }>;
-  product_codes?: string;
+  customer_info?: string;
   items_info?: string;
+  product_codes?: string;
+  product_link?: string;
+  notes?: string;
   payment_info?: string;
+  estimated_delivery?: string;
+  customer_id?: string;
   total_amount?: number;
   created_at: string;
   updated_at: string;
