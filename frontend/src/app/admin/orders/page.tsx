@@ -456,7 +456,7 @@ export default function AdminOrdersPage() {
                           <span
                             className="font-mono text-xs text-primary cursor-pointer hover:underline inline-flex items-center gap-1"
                             onClick={() => {
-                              const url = `${window.location.origin}/tracking?number=${encodeURIComponent(order.tracking_number)}`;
+                              const url = `${window.location.origin}/tracking?number=${encodeURIComponent(order.tracking_number || '')}`;
                               navigator.clipboard.writeText(url);
                               setCopiedTracking(order.tracking_number);
                               setTimeout(() => setCopiedTracking(null), 2000);
@@ -677,7 +677,7 @@ export default function AdminOrdersPage() {
                         <button
                           className="text-xs text-gray-500 hover:text-primary flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-100"
                           onClick={() => {
-                            const url = `${window.location.origin}/tracking?number=${encodeURIComponent(selectedOrder.tracking_number)}`;
+                            const url = `${window.location.origin}/tracking?number=${encodeURIComponent(selectedOrder.tracking_number || '')}`;
                             navigator.clipboard.writeText(url);
                             setCopiedTracking(selectedOrder.tracking_number);
                             setTimeout(() => setCopiedTracking(null), 2000);
