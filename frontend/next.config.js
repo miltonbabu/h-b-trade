@@ -43,7 +43,7 @@ const nextConfig = {
   compress: true,
   
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: false, // Temporarily show debug logs in production!
   },
 
   async rewrites() {
