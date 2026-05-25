@@ -22,6 +22,11 @@ export const api = axios.create({
 // Add token to requests
 api.interceptors.request.use(
   (config) => {
+    // Let browser set Content-Type for FormData (with boundary)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     if (typeof window !== 'undefined') {
       // For admin routes, use admin token
       if (config.url?.startsWith('/admin') || config.url?.startsWith('/auth')) {

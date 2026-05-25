@@ -59,11 +59,7 @@ export default function ProductRequestPage() {
       
       selectedFiles.forEach(file => formData.append('images', file));
 
-      const response = await api.post('/product-request', formData, {
-        headers: {
-          'Content-Type': undefined as any,
-        },
-      });
+      const response = await api.post('/product-request', formData);
 
       setTrackingNumber(response.data.data.trackingNumber);
       setIsSuccess(true);

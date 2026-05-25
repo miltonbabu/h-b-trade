@@ -324,9 +324,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
       if (message) formData.append('message', message);
       selectedFiles.forEach(file => formData.append('images', file));
 
-      const response = await api.post('/service-request', formData, {
-        headers: { 'Content-Type': undefined as any },
-      });
+      const response = await api.post('/service-request', formData);
 
       setTrackingNumber(response.data.data.trackingNumber);
       setIsSuccess(true);
