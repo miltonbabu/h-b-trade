@@ -86,11 +86,14 @@ export default function AdminSettingsPage() {
     setMessage({ type: '', text: '' });
 
     try {
-      await api.put('/admin/settings', formData);
+      console.log('PUT /admin/settings request body:', formData); // <-- DEBUG LOG
+      const res = await api.put('/admin/settings', formData);
+      console.log('PUT /admin/settings response:', res.data); // <-- DEBUG LOG
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
       fetchSettings();
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save settings. Please try again.' });
+    } catch (error: any) {
+      console.error('PUT /admin/settings error:', error.response?.data || error); // <-- DEBUG LOG
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to save settings. Please try again.' });
     } finally {
       setSaving(false);
     }
