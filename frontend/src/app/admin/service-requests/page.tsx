@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink, Pencil, Download } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink, Pencil, Download, FileDown } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ServiceRequest } from '@/types';
@@ -305,6 +305,188 @@ export default function AdminServiceRequestsPage() {
     toast.success(`Downloaded ${validUrls.length} image(s)`);
   };
 
+  // Generate HTML content for service request
+  const generateServiceRequestHTML = (request: ServiceRequest): string => {
+    const details = request.parsedDetails || {};
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Service Request - ${request.tracking_number || request.id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 28px; font-weight: bold; color: #0d9488; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 16px; font-weight: bold; color: #0d9488; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .field { margin-bottom: 10px; }
+          .label { font-size: 12px; color: #6b7280; }
+          .value { font-size: 14px; font-weight: 500; }
+          .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .status-received { background: #dbeafe; color: #1e40af; }
+          .status-in_progress { background: #fef3c7; color: #92400e; }
+          .status-completed { background: #d1fae5; color: #065f46; }
+          .status-cancelled { background: #fee2e2; color: #991b1b; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          .watermark {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; z-index: 0;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .watermark-inner {
+            display: flex; flex-direction: column; align-items: center;
+            transform: rotate(-25deg);
+            opacity: 0.06;
+          }
+          .watermark-logo { width: 180px; height: 180px; margin-bottom: 8px; }
+          .watermark-text { font-size: 52px; font-weight: 900; color: #0d9488; letter-spacing: 6px; }
+          .content-wrapper { position: relative; z-index: 1; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="watermark">
+          <div class="watermark-inner">
+            <img class="watermark-logo" src="https://res.cloudinary.com/dazghbdea/image/upload/v1779723059/hbtrade/products/uikmbc0grvurnn8lcdh8.png" alt="" />
+            <div class="watermark-text">H&B Trade</div>
+          </div>
+        </div>
+        <div class="content-wrapper">
+        <div class="header">
+          <div class="logo">H&B Trade</div>
+          <p style="color: #6b7280; margin: 5px 0;">Service Request Details</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Service Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Service Type</div>
+              <div class="value">${SERVICE_TYPE_LABELS[request.service_type] || request.service_type}</div>
+            </div>
+            <div class="field">
+              <div class="label">Tracking Number</div>
+              <div class="value">${request.tracking_number || 'Not assigned'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Status</div>
+              <div class="value"><span class="status status-${request.status}">${(request.status || 'received').toUpperCase()}</span></div>
+            </div>
+            <div class="field">
+              <div class="label">Request Date</div>
+              <div class="value">${formatDate(request.created_at)}</div>
+            </div>
+            ${request.price ? `
+            <div class="field">
+              <div class="label">Price (৳ BDT)</div>
+              <div class="value" style="color: #0d9488; font-size: 18px; font-weight: bold;">৳${parseFloat(request.price).toFixed(2)}</div>
+            </div>
+            ` : ''}
+            ${request.admin_notes ? `
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Admin Notes</div>
+              <div class="value">${request.admin_notes}</div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Customer Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Name</div>
+              <div class="value">${request.name || '-'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Email</div>
+              <div class="value">${request.email || '-'}</div>
+            </div>
+            ${request.phone ? `
+            <div class="field">
+              <div class="label">Phone</div>
+              <div class="value">${request.phone}</div>
+            </div>
+            ` : ''}
+            ${request.whatsapp ? `
+            <div class="field">
+              <div class="label">WhatsApp</div>
+              <div class="value">${request.whatsapp}</div>
+            </div>
+            ` : ''}
+            ${request.company ? `
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Company</div>
+              <div class="value">${request.company}</div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        ${Object.keys(details).length > 0 ? `
+        <div class="section">
+          <div class="section-title">Service Details</div>
+          <div class="grid">
+            ${Object.entries(details).map(([key, value]) => {
+              if (!value) return '';
+              const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              return `
+              <div class="field" ${String(value).length > 100 ? 'style="grid-column: span 2;"' : ''}>
+                <div class="label">${label}</div>
+                <div class="value">${String(value)}</div>
+              </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        ${request.message ? `
+        <div class="section">
+          <div class="section-title">Customer Message</div>
+          <div style="background: #f9fafb; padding: 15px; border-radius: 4px;">
+            ${request.message}
+          </div>
+        </div>
+        ` : ''}
+
+        <div class="footer">
+          <p>H&B Trade - Your Trusted Sourcing Partner</p>
+          <p style="margin-top: 10px;">Document generated on ${new Date().toLocaleString()}</p>
+        </div>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  // Download as PDF
+  const downloadAsPDF = (request: ServiceRequest) => {
+    const content = generateServiceRequestHTML(request);
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Download as DOC
+  const downloadAsDoc = (request: ServiceRequest) => {
+    const content = generateServiceRequestHTML(request);
+    const blob = new Blob([content], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `service-request-${request.tracking_number || request.id}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -526,9 +708,29 @@ export default function AdminServiceRequestsPage() {
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Service Request Details</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
-                <X size={20} />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadAsPDF(selectedRequest)}
+                  className="flex items-center gap-1"
+                >
+                  <FileDown size={16} />
+                  PDF
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadAsDoc(selectedRequest)}
+                  className="flex items-center gap-1"
+                >
+                  <FileText size={16} />
+                  DOC
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
+                  <X size={20} />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">

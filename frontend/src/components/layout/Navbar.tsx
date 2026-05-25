@@ -88,7 +88,7 @@ export default function Navbar() {
       <nav className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14 sm:h-16">
           <Link href="/" className="flex items-center group min-w-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0">
+            <div className="w-12 h-12 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0">
               <Image
                 src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"

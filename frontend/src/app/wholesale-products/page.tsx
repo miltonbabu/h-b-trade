@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import {
   Package,
@@ -11,6 +12,7 @@ import {
   X,
   Tag,
   ChevronDown,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -27,6 +29,7 @@ const SORT_LABELS: Record<SortOption, string> = {
 
 export default function WholesaleProductsPage() {
   const { items, getTotalItems } = useCart();
+  const { isAuthenticated } = useAuth();
   const cartQuantities = useMemo(() => {
     const m: Record<string, number> = {};
     items.forEach((it) => { m[it.id] = it.quantity; });
@@ -113,15 +116,25 @@ export default function WholesaleProductsPage() {
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 truncate">Wholesale Products</h1>
             <p className="text-sm text-gray-500 hidden sm:block">Browse our catalog and order directly</p>
           </div>
-          <Link href="/cart" className="shrink-0">
-            <Button size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-soft">
-              <ShoppingBag className="mr-1.5" size={16} />
-              <span className="hidden xs:inline">Cart</span>
-              <span className="ml-1.5 inline-flex items-center justify-center bg-white text-orange-600 rounded-full text-xs font-bold min-w-[20px] h-5 px-1.5">
-                {getTotalItems()}
-              </span>
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            {isAuthenticated && (
+              <Link href="/profile?tab=orders">
+                <Button size="sm" variant="outline" className="shadow-soft">
+                  <User className="mr-1.5" size={16} />
+                  <span className="hidden xs:inline">My Orders</span>
+                </Button>
+              </Link>
+            )}
+            <Link href="/cart">
+              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-soft">
+                <ShoppingBag className="mr-1.5" size={16} />
+                <span className="hidden xs:inline">Cart</span>
+                <span className="ml-1.5 inline-flex items-center justify-center bg-white text-orange-600 rounded-full text-xs font-bold min-w-[20px] h-5 px-1.5">
+                  {getTotalItems()}
+                </span>
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 

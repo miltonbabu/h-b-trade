@@ -267,6 +267,7 @@ export default function CartPage() {
                           <img
                             src={item.image}
                             alt={item.name}
+                            loading="lazy"
                             className="w-full h-full object-cover rounded-lg"
                           />
                         ) : (
@@ -567,6 +568,7 @@ export default function CartPage() {
                           <img
                             src={getImageSrc(paymentInfo.wechatQr)}
                             alt="WeChat Pay QR"
+                            loading="lazy"
                             className="w-40 h-40 object-contain rounded-lg mx-auto"
                           />
                         </div>
@@ -579,6 +581,7 @@ export default function CartPage() {
                           <img
                             src={getImageSrc(paymentInfo.alipayQr)}
                             alt="Alipay QR"
+                            loading="lazy"
                             className="w-40 h-40 object-contain rounded-lg mx-auto"
                           />
                         </div>
@@ -729,6 +732,7 @@ export default function CartPage() {
                                 <img
                                   src={getImageSrc(paymentInfo.wechatQr)}
                                   alt="WeChat Pay QR Code"
+                                  loading="lazy"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
@@ -750,6 +754,7 @@ export default function CartPage() {
                                 <img
                                   src={getImageSrc(paymentInfo.alipayQr)}
                                   alt="Alipay QR Code"
+                                  loading="lazy"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>

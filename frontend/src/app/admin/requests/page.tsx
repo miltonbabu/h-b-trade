@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle, Pencil, Download } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle, Pencil, Download, FileDown } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
@@ -179,6 +179,205 @@ export default function AdminRequestsPage() {
       }
     }
     toast.success(`Downloaded ${validUrls.length} image(s)`);
+  };
+
+  // Generate HTML content for product request
+  const generateRequestHTML = (request: ProductRequest): string => {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Product Request - ${request.tracking_number || request.id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 28px; font-weight: bold; color: #0d9488; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 16px; font-weight: bold; color: #0d9488; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+          .field { margin-bottom: 10px; }
+          .label { font-size: 12px; color: #6b7280; }
+          .value { font-size: 14px; font-weight: 500; }
+          .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+          .status-pending { background: #fef3c7; color: #92400e; }
+          .status-processing { background: #dbeafe; color: #1e40af; }
+          .status-completed { background: #d1fae5; color: #065f46; }
+          .status-converted { background: #e9d5ff; color: #6b21a8; }
+          .status-cancelled { background: #fee2e2; color: #991b1b; }
+          .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+          .watermark {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; z-index: 0;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .watermark-inner {
+            display: flex; flex-direction: column; align-items: center;
+            transform: rotate(-25deg);
+            opacity: 0.06;
+          }
+          .watermark-logo { width: 180px; height: 180px; margin-bottom: 8px; }
+          .watermark-text { font-size: 52px; font-weight: 900; color: #0d9488; letter-spacing: 6px; }
+          .content-wrapper { position: relative; z-index: 1; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="watermark">
+          <div class="watermark-inner">
+            <img class="watermark-logo" src="https://res.cloudinary.com/dazghbdea/image/upload/v1779723059/hbtrade/products/uikmbc0grvurnn8lcdh8.png" alt="" />
+            <div class="watermark-text">H&B Trade</div>
+          </div>
+        </div>
+        <div class="content-wrapper">
+        <div class="header">
+          <div class="logo">H&B Trade</div>
+          <p style="color: #6b7280; margin: 5px 0;">Product Request Details</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Request Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Tracking Number</div>
+              <div class="value">${request.tracking_number || 'Not assigned'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Status</div>
+              <div class="value"><span class="status status-${request.status}">${(request.status || 'pending').toUpperCase()}</span></div>
+            </div>
+            <div class="field">
+              <div class="label">Request Date</div>
+              <div class="value">${formatDate(request.created_at)}</div>
+            </div>
+            ${request.admin_notes ? `
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Admin Notes</div>
+              <div class="value">${request.admin_notes}</div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Customer Information</div>
+          <div class="grid">
+            <div class="field">
+              <div class="label">Name</div>
+              <div class="value">${request.name || '-'}</div>
+            </div>
+            <div class="field">
+              <div class="label">Email</div>
+              <div class="value">${request.email || '-'}</div>
+            </div>
+            ${request.phone ? `
+            <div class="field">
+              <div class="label">Phone</div>
+              <div class="value">${request.phone}</div>
+            </div>
+            ` : ''}
+            ${request.whatsapp ? `
+            <div class="field">
+              <div class="label">WhatsApp</div>
+              <div class="value">${request.whatsapp}</div>
+            </div>
+            ` : ''}
+            ${request.company ? `
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Company</div>
+              <div class="value">${request.company}</div>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Product Details</div>
+          <div class="grid">
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Product Name</div>
+              <div class="value">${request.product_name || '-'}</div>
+            </div>
+            ${request.product_link ? `
+            <div class="field" style="grid-column: span 2;">
+              <div class="label">Product Link / Reference</div>
+              <div class="value"><a href="${request.product_link}" target="_blank" style="color: #0d9488;">${request.product_link}</a></div>
+            </div>
+            ` : ''}
+            ${request.target_price ? `
+            <div class="field">
+              <div class="label">Target Price (৳ BDT)</div>
+              <div class="value">৳${parseFloat(request.target_price).toFixed(2)}</div>
+            </div>
+            ` : ''}
+            ${request.quantity ? `
+            <div class="field">
+              <div class="label">Quantity</div>
+              <div class="value">${request.quantity}</div>
+            </div>
+            ` : ''}
+            ${request.sample_needed ? `
+            <div class="field">
+              <div class="label">Sample Needed</div>
+              <div class="value">${request.sample_needed}</div>
+            </div>
+            ` : ''}
+            ${request.shipping_method ? `
+            <div class="field">
+              <div class="label">Shipping Method</div>
+              <div class="value">${request.shipping_method}</div>
+            </div>
+            ` : ''}
+          </div>
+          ${request.specifications ? `
+          <div style="margin-top: 15px;">
+            <div class="label">Specifications</div>
+            <div class="value" style="background: #f9fafb; padding: 10px; border-radius: 4px; margin-top: 5px;">${request.specifications}</div>
+          </div>
+          ` : ''}
+        </div>
+
+        ${request.message ? `
+        <div class="section">
+          <div class="section-title">Customer Message</div>
+          <div style="background: #f9fafb; padding: 15px; border-radius: 4px;">
+            ${request.message}
+          </div>
+        </div>
+        ` : ''}
+
+        <div class="footer">
+          <p>H&B Trade - Your Trusted Sourcing Partner</p>
+          <p style="margin-top: 10px;">Document generated on ${new Date().toLocaleString()}</p>
+        </div>
+        </div>
+      </body>
+      </html>
+    `;
+  };
+
+  // Download as PDF
+  const downloadAsPDF = (request: ProductRequest) => {
+    const content = generateRequestHTML(request);
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Download as DOC
+  const downloadAsDoc = (request: ProductRequest) => {
+    const content = generateRequestHTML(request);
+    const blob = new Blob([content], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `product-request-${request.tracking_number || request.id}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const openViewModal = async (request: ProductRequest) => {
@@ -359,9 +558,29 @@ export default function AdminRequestsPage() {
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Request Details</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
-                <X size={20} />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadAsPDF(selectedRequest)}
+                  className="flex items-center gap-1"
+                >
+                  <FileDown size={16} />
+                  PDF
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => downloadAsDoc(selectedRequest)}
+                  className="flex items-center gap-1"
+                >
+                  <FileText size={16} />
+                  DOC
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
+                  <X size={20} />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Customer Info */}

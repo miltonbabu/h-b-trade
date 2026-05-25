@@ -2054,13 +2054,25 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
 
     // Determine product name from details or service type
     let productName = SERVICE_TYPE_LABELS[request.service_type] || request.service_type;
+    let orderQuantity = '1';
     if (request.details) {
       try {
-        const details = JSON.parse(request.details);
+        // Handle HTML-encoded JSON strings
+        let detailsStr = request.details;
+        if (typeof detailsStr === 'string') {
+          // Decode HTML entities if present
+          detailsStr = detailsStr.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        }
+        const details = typeof detailsStr === 'string' ? JSON.parse(detailsStr) : detailsStr;
         if (details.product_name) productName = details.product_name;
         else if (details.cargo_description) productName = details.cargo_description;
         else if (details.item_description) productName = details.item_description;
         else if (details.cargo_type) productName = details.cargo_type;
+        // Handle wholesale_supply specific fields
+        else if (details.product_names) productName = details.product_names;
+        else if (details.product_category) productName = `${details.product_category} (Wholesale)`;
+        // Extract quantity
+        if (details.quantity) orderQuantity = details.quantity;
       } catch (e) {}
     }
 
@@ -2078,7 +2090,13 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
     let itemsInfo = null;
     if (request.details) {
       try {
-        const parsedDetails = JSON.parse(request.details);
+        // Handle HTML-encoded JSON strings
+        let detailsStr = request.details;
+        if (typeof detailsStr === 'string') {
+          // Decode HTML entities if present
+          detailsStr = detailsStr.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+        }
+        const parsedDetails = typeof detailsStr === 'string' ? JSON.parse(detailsStr) : detailsStr;
         if (Object.keys(parsedDetails).length > 0) {
           const info = {
             ...parsedDetails,
@@ -2095,7 +2113,7 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
       `INSERT INTO orders
        (id, order_number, tracking_number, customer_name, customer_info, product_name, quantity, shipping_method, price, status, items_info, notes)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, '1', shippingMethod, price || 0, status, itemsInfo, request.message || null]
+      [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, orderQuantity, shippingMethod, price || 0, status, itemsInfo, request.message || null]
     );
 
     // Update service request

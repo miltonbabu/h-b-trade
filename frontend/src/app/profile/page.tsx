@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
@@ -48,6 +48,7 @@ type Tab = 'overview' | 'orders' | 'requests' | 'service-requests';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading: authLoading, logout, updateUser } = useAuth();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -66,6 +67,14 @@ export default function ProfilePage() {
       router.push('/login');
     }
   }, [authLoading, isAuthenticated, router]);
+
+  // Read tab from URL query parameter
+  useEffect(() => {
+    const tabParam = searchParams?.get('tab');
+    if (tabParam && ['overview', 'orders', 'requests', 'service-requests'].includes(tabParam)) {
+      setActiveTab(tabParam as Tab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isAuthenticated) {
