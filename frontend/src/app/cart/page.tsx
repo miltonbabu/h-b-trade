@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
-import { useSettings } from "@/hooks/useSettings";
 
 interface PaymentInfo {
   bkash?: string;
@@ -34,7 +33,6 @@ interface PaymentInfo {
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotalAmount, getTotalUnits, getItemTotalUnits, getItemTotalPrice, clearCart } =
     useCart();
-  const settings = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -42,16 +40,25 @@ export default function CartPage() {
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
 
   useEffect(() => {
-    setPaymentInfo({
-      bkash: settings.bkash,
-      nagad: settings.nagad,
-      bankAccount: settings.bank_account,
-      wechat: settings.wechat,
-      alipay: settings.alipay,
-      wechatQr: settings.wechat_qr,
-      alipayQr: settings.alipay_qr,
-    });
-  }, [settings.bkash, settings.nagad, settings.bank_account, settings.wechat, settings.alipay, settings.wechat_qr, settings.alipay_qr]);
+    const fetchPaymentInfo = async () => {
+      try {
+        const res = await api.get('/settings');
+        const data = res.data.data;
+        setPaymentInfo({
+          bkash: data.bkash || '',
+          nagad: data.nagad || '',
+          bankAccount: data.bankAccount || data.bank_account || '',
+          wechat: data.wechat || '',
+          alipay: data.alipay || '',
+          wechatQr: data.wechatQr || data.wechat_qr || '',
+          alipayQr: data.alipayQr || data.alipay_qr || '',
+        });
+      } catch (err) {
+        console.error('Failed to fetch payment settings:', err);
+      }
+    };
+    fetchPaymentInfo();
+  }, []);
 
   // User information state
   const [userInfo, setUserInfo] = useState({

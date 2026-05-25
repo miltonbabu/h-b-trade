@@ -98,20 +98,23 @@ export default function AdminSettingsPage() {
   const handleQrUpload = async (field: 'wechat_qr' | 'alipay_qr', file: File) => {
     setMessage({ type: '', text: '' });
     try {
+      // Step 1: Upload to Cloudinary via generic upload endpoint
       const fd = new FormData();
-      fd.append(field, file);
-      const response = await api.post('/admin/settings/qr-upload', fd, {
-        headers: { 'Content-Type': undefined as any },
-      });
-      const updated = response.data.data;
-      setFormData(prev => ({
-        ...prev,
-        wechat_qr: updated.wechat_qr ?? prev.wechat_qr,
-        alipay_qr: updated.alipay_qr ?? prev.alipay_qr,
-      }));
+      fd.append('file', file);
+      const uploadRes = await api.post('/admin/upload?folder=hbtrade/qr-codes', fd);
+      const cloudinaryUrl = uploadRes.data.url;
+
+      if (!cloudinaryUrl) {
+        throw new Error('No URL returned from upload');
+      }
+
+      // Step 2: Save the Cloudinary URL to settings
+      await api.put('/admin/settings', { ...formData, [field]: cloudinaryUrl });
+      setFormData(prev => ({ ...prev, [field]: cloudinaryUrl }));
       setMessage({ type: 'success', text: 'QR code uploaded and saved!' });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to upload QR code.' });
+    } catch (error: any) {
+      console.error('QR upload error:', error);
+      setMessage({ type: 'error', text: error?.response?.data?.error || 'Failed to upload QR code.' });
     }
   };
 
