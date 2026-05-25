@@ -45,11 +45,15 @@ export interface ProductRequest {
   specifications?: string;
   message?: string;
   image?: string;
+  images?: string;
   tracking_number?: string;
   status: string;
+  admin_notes?: string;
+  price?: number;
   converted_to_order?: string;
   customer_id?: string;
   created_at: string;
+  updated_at?: string;
 }
 
 // Order types
