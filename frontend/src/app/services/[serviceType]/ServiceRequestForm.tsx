@@ -50,22 +50,6 @@ const SERVICE_CONFIG: Record<string, {
       { key: 'product_link', label: 'Product Link / Reference', placeholder: 'Link to the product (e.g., Alibaba, 1688, Amazon)' },
       { key: 'target_price', label: 'Target Price per Unit (৳ BDT)', placeholder: 'e.g., ৳250 per piece' },
       { key: 'quantity', label: 'Order Quantity', placeholder: 'e.g., 100 pieces, 50 cartons', required: true },
-      { key: 'packaging_type', label: 'Packaging Type', placeholder: 'Select packaging type', required: true, options: [
-        { value: '', label: 'Select packaging type' },
-        { value: 'carton', label: 'Carton / Box' },
-        { value: 'bag', label: 'Bag / Sack' },
-        { value: 'pallet', label: 'Pallet' },
-        { value: 'roll', label: 'Roll' },
-        { value: 'bundle', label: 'Bundle' },
-        { value: 'crate', label: 'Wooden Crate' },
-        { value: 'drum', label: 'Drum / Barrel' },
-        { value: 'case', label: 'Case' },
-        { value: 'other', label: 'Other (specify below)' },
-      ] },
-      { key: 'pack_quantity', label: 'Quantity per Pack / Inner Unit', placeholder: 'e.g., 20 pieces per inner pack' },
-      { key: 'master_pack_quantity', label: 'Quantity per Master Pack / Outer Unit', placeholder: 'e.g., 10 inner packs per master pack' },
-      { key: 'pack_dimensions', label: 'Master Pack Dimensions (L x W x H cm)', placeholder: 'e.g., 60 x 40 x 35 cm' },
-      { key: 'weight_per_pack', label: 'Weight per Master Pack (kg)', placeholder: 'e.g., 12 kg' },
       { key: 'specifications', label: 'Product Specifications', type: 'textarea', placeholder: 'Size, color, material, packaging requirements, logo/labeling, certifications needed (CE, FDA, etc.)' },
       { key: 'sample_needed', label: 'Sample Needed?', placeholder: 'Select', options: [
         { value: '', label: 'Select' },
@@ -84,22 +68,6 @@ const SERVICE_CONFIG: Record<string, {
       { key: 'product_category', label: 'Product Category', placeholder: 'e.g., Electronics, Clothing, Home & Garden', required: true },
       { key: 'product_names', label: 'Specific Products Needed', placeholder: 'List the products you want to buy' },
       { key: 'quantity', label: 'Total Order Quantity', placeholder: 'e.g., 500-1000 units', required: true },
-      { key: 'packaging_type', label: 'Packaging Type', placeholder: 'Select packaging type', required: true, options: [
-        { value: '', label: 'Select packaging type' },
-        { value: 'carton', label: 'Carton / Box' },
-        { value: 'bag', label: 'Bag / Sack' },
-        { value: 'pallet', label: 'Pallet' },
-        { value: 'roll', label: 'Roll' },
-        { value: 'bundle', label: 'Bundle' },
-        { value: 'crate', label: 'Wooden Crate' },
-        { value: 'drum', label: 'Drum / Barrel' },
-        { value: 'case', label: 'Case' },
-        { value: 'other', label: 'Other (specify below)' },
-      ] },
-      { key: 'pack_quantity', label: 'Quantity per Pack / Inner Unit', placeholder: 'e.g., 20 pieces per pack' },
-      { key: 'master_pack_quantity', label: 'Quantity per Master Pack / Outer Unit', placeholder: 'e.g., 10 packs per master pack' },
-      { key: 'pack_dimensions', label: 'Master Pack Dimensions (L x W x H cm)', placeholder: 'e.g., 60 x 40 x 35 cm' },
-      { key: 'weight_per_pack', label: 'Weight per Master Pack (kg)', placeholder: 'e.g., 15 kg' },
       { key: 'target_price', label: 'Target Price per Unit (৳ BDT)', placeholder: 'e.g., ৳150 - ৳300' },
       { key: 'budget_range', label: 'Total Budget Range (৳ BDT)', placeholder: 'e.g., ৳1,00,000 - ৳5,00,000' },
       { key: 'specifications', label: 'Quality & Packaging Requirements', type: 'textarea', placeholder: 'Product details, quality standards, packaging requirements, labeling, certifications needed' },
@@ -391,7 +359,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                 <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
               </div>
               <div className="flex flex-col gap-3">
-                <Link href="/services/track">
+                <Link href="/tracking">
                   <Button variant="gradient" className="w-full">Track Your Request</Button>
                 </Link>
                 <Button variant="outline" onClick={() => setIsSuccess(false)}>Submit Another Request</Button>

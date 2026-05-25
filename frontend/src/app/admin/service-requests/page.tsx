@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink, Pencil } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ArrowRight, CheckCircle, Save, ShoppingCart, Package, Plane, Ship, Users, Globe, ExternalLink, Pencil, Download } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { ServiceRequest } from '@/types';
@@ -48,11 +48,6 @@ const DETAIL_LABELS: Record<string, string> = {
   product_link: 'Product Link / Reference',
   target_price: 'Target Price (৳ BDT)',
   quantity: 'Quantity',
-  packaging_type: 'Packaging Type',
-  pack_quantity: 'Qty per Pack / Inner Unit',
-  master_pack_quantity: 'Qty per Master Pack / Outer Unit',
-  pack_dimensions: 'Master Pack Dimensions (L×W×H cm)',
-  weight_per_pack: 'Weight per Master Pack (kg)',
   specifications: 'Specifications / Requirements',
   sample_needed: 'Sample Needed?',
   product_category: 'Product Category',
@@ -264,6 +259,50 @@ export default function AdminServiceRequestsPage() {
       console.error('Failed to delete request:', error);
       toast.error(`Delete failed: ${errorMessage(error)}`);
     }
+  };
+
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+      toast.error('Failed to download image');
+    }
+  };
+
+  const downloadAllImages = async (imageString: string, requestId: string) => {
+    let imageUrls: string[] = [];
+    try {
+      const parsed = JSON.parse(imageString);
+      imageUrls = Array.isArray(parsed) ? parsed : [imageString];
+    } catch {
+      imageUrls = [imageString];
+    }
+    
+    const validUrls = imageUrls.filter(u => u);
+    if (validUrls.length === 0) {
+      toast.error('No images to download');
+      return;
+    }
+
+    // Download each image sequentially
+    for (let i = 0; i < validUrls.length; i++) {
+      const url = validUrls[i];
+      const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+      const filename = `service-image-${requestId}-${i + 1}.jpg`;
+      await downloadImage(src, filename);
+      // Small delay between downloads to avoid browser blocking
+      if (i < validUrls.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    toast.success(`Downloaded ${validUrls.length} image(s)`);
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -607,7 +646,18 @@ export default function AdminServiceRequestsPage() {
                 const validUrls = imageUrls.filter(u => u);
                 return validUrls.length > 0 ? (
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Product Images ({validUrls.length})</h4>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Product Images ({validUrls.length})</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadAllImages(selectedRequest.image!, selectedRequest.id)}
+                        className="text-xs flex items-center gap-1"
+                      >
+                        <Download size={14} />
+                        Download All
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {validUrls.map((url, i) => {
                         const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;

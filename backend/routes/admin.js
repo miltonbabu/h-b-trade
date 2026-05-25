@@ -1033,9 +1033,7 @@ router.put("/requests/:id", async (req, res) => {
     const allowedFields = [
       'name', 'phone', 'whatsapp', 'email', 'company',
       'product_name', 'product_link', 'target_price', 'quantity',
-      'packaging_type', 'pack_quantity', 'master_pack_quantity',
-      'pack_dimensions', 'weight_per_pack', 'sample_needed',
-      'shipping_method', 'specifications', 'message',
+      'sample_needed', 'shipping_method', 'specifications', 'message',
       'status', 'tracking_number'
     ];
 
@@ -1138,8 +1136,7 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     // Build items_info with all request details for full visibility
     let itemsInfo = null;
     const detailsFields = ['product_name', 'product_link', 'target_price', 'quantity',
-      'packaging_type', 'pack_quantity', 'master_pack_quantity', 'pack_dimensions',
-      'weight_per_pack', 'sample_needed', 'shipping_method', 'specifications',
+      'sample_needed', 'shipping_method', 'specifications',
       'message', 'image'];
     const hasDetails = detailsFields.some(f => request[f]);
     if (hasDetails) {

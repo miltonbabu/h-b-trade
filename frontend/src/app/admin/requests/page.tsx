@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle, Pencil } from 'lucide-react';
+import { FileText, Eye, Trash2, X, ExternalLink, Save, ArrowRight, CheckCircle, Pencil, Download } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, getStatusColor } from '@/lib/utils';
 import { ProductRequest } from '@/types';
@@ -16,11 +16,6 @@ const DETAIL_LABELS: Record<string, string> = {
   product_link: 'Product Link / Reference',
   target_price: 'Target Price (৳ BDT)',
   quantity: 'Quantity',
-  packaging_type: 'Packaging Type',
-  pack_quantity: 'Qty per Pack / Inner Unit',
-  master_pack_quantity: 'Qty per Master Pack / Outer Unit',
-  pack_dimensions: 'Pack Dimensions (L×W×H cm)',
-  weight_per_pack: 'Weight per Master Pack (kg)',
   sample_needed: 'Sample Needed?',
   shipping_method: 'Shipping Method',
 };
@@ -142,6 +137,50 @@ export default function AdminRequestsPage() {
     }
   };
 
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+      toast.error('Failed to download image');
+    }
+  };
+
+  const downloadAllImages = async (imageString: string, requestId: string) => {
+    let imageUrls: string[] = [];
+    try {
+      const parsed = JSON.parse(imageString);
+      imageUrls = Array.isArray(parsed) ? parsed : [imageString];
+    } catch {
+      imageUrls = [imageString];
+    }
+    
+    const validUrls = imageUrls.filter(u => u);
+    if (validUrls.length === 0) {
+      toast.error('No images to download');
+      return;
+    }
+
+    // Download each image sequentially
+    for (let i = 0; i < validUrls.length; i++) {
+      const url = validUrls[i];
+      const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+      const filename = `product-image-${requestId}-${i + 1}.jpg`;
+      await downloadImage(src, filename);
+      // Small delay between downloads to avoid browser blocking
+      if (i < validUrls.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    toast.success(`Downloaded ${validUrls.length} image(s)`);
+  };
+
   const openViewModal = async (request: ProductRequest) => {
     setSelectedRequest(request);
     setShowModal(true);
@@ -159,11 +198,6 @@ export default function AdminRequestsPage() {
       product_link: request.product_link || '',
       target_price: request.target_price || '',
       quantity: request.quantity || '',
-      packaging_type: request.packaging_type || '',
-      pack_quantity: request.pack_quantity || '',
-      master_pack_quantity: request.master_pack_quantity || '',
-      pack_dimensions: request.pack_dimensions || '',
-      weight_per_pack: request.weight_per_pack || '',
       sample_needed: request.sample_needed || '',
       shipping_method: request.shipping_method || '',
       specifications: request.specifications || '',
@@ -402,7 +436,18 @@ export default function AdminRequestsPage() {
                 const validUrls = imageUrls.filter(u => u);
                 return validUrls.length > 0 ? (
                   <div className="border-t pt-4">
-                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Product Images ({validUrls.length})</h4>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Product Images ({validUrls.length})</h4>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadAllImages(selectedRequest.image!, selectedRequest.id)}
+                        className="text-xs flex items-center gap-1"
+                      >
+                        <Download size={14} />
+                        Download All
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {validUrls.map((url, i) => {
                         const src = url.startsWith('http') ? url : `http://localhost:5000${url}`;
@@ -576,26 +621,6 @@ export default function AdminRequestsPage() {
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.quantity}</label>
                     <Input value={editFormData.quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, quantity: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.packaging_type}</label>
-                    <Input value={editFormData.packaging_type || ''} onChange={(e) => setEditFormData({ ...editFormData, packaging_type: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.pack_quantity}</label>
-                    <Input value={editFormData.pack_quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, pack_quantity: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.master_pack_quantity}</label>
-                    <Input value={editFormData.master_pack_quantity || ''} onChange={(e) => setEditFormData({ ...editFormData, master_pack_quantity: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.pack_dimensions}</label>
-                    <Input value={editFormData.pack_dimensions || ''} onChange={(e) => setEditFormData({ ...editFormData, pack_dimensions: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.weight_per_pack}</label>
-                    <Input value={editFormData.weight_per_pack || ''} onChange={(e) => setEditFormData({ ...editFormData, weight_per_pack: e.target.value })} />
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">{DETAIL_LABELS.sample_needed}</label>

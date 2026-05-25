@@ -47,11 +47,6 @@ router.post('/product-request', optionalAuth, (req, res, next) => {
       product_link,
       target_price,
       quantity,
-      packaging_type,
-      pack_quantity,
-      master_pack_quantity,
-      pack_dimensions,
-      weight_per_pack,
       sample_needed,
       shipping_method,
       specifications,
@@ -85,11 +80,6 @@ router.post('/product-request', optionalAuth, (req, res, next) => {
       product_link || null,
       target_price || null,
       quantity || null,
-      packaging_type || null,
-      pack_quantity || null,
-      master_pack_quantity || null,
-      pack_dimensions || null,
-      weight_per_pack || null,
       sample_needed || null,
       shipping_method || null,
       specifications || null,
@@ -101,8 +91,8 @@ router.post('/product-request', optionalAuth, (req, res, next) => {
 
     await db.run(
       `INSERT INTO product_requests
-       (id, name, phone, whatsapp, email, company, product_name, product_link, target_price, quantity, packaging_type, pack_quantity, master_pack_quantity, pack_dimensions, weight_per_pack, sample_needed, shipping_method, specifications, message, image, tracking_number, customer_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, name, phone, whatsapp, email, company, product_name, product_link, target_price, quantity, sample_needed, shipping_method, specifications, message, image, tracking_number, customer_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       values
     );
 

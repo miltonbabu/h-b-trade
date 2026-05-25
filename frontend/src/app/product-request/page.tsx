@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -19,11 +20,6 @@ interface ProductRequestForm {
   product_link: string;
   target_price: string;
   quantity: string;
-  packaging_type: string;
-  pack_quantity: string;
-  master_pack_quantity: string;
-  pack_dimensions: string;
-  weight_per_pack: string;
   sample_needed: string;
   shipping_method: string;
   message: string;
@@ -121,9 +117,16 @@ export default function ProductRequestPage() {
                 <p className="text-2xl font-bold text-primary">{trackingNumber}</p>
                 <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
               </div>
-              <Button variant="gradient" onClick={() => setIsSuccess(false)}>
-                Submit Another Request
-              </Button>
+              <div className="space-y-3">
+                <Link href="/tracking">
+                  <Button variant="gradient" className="w-full">
+                    Track Your Request
+                  </Button>
+                </Link>
+                <Button variant="outline" onClick={() => setIsSuccess(false)} className="w-full">
+                  Submit Another Request
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -298,78 +301,6 @@ export default function ProductRequestPage() {
                           <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>
                         )}
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Packaging Type <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          {...register('packaging_type', { required: 'Packaging type is required' })}
-                          className={`w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary ${errors.packaging_type ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
-                        >
-                          <option value="">Select packaging type</option>
-                          <option value="carton">Carton / Box</option>
-                          <option value="bag">Bag / Sack</option>
-                          <option value="pallet">Pallet</option>
-                          <option value="roll">Roll</option>
-                          <option value="bundle">Bundle</option>
-                          <option value="crate">Wooden Crate</option>
-                          <option value="drum">Drum / Barrel</option>
-                          <option value="case">Case</option>
-                          <option value="other">Other (specify in message)</option>
-                        </select>
-                        {errors.packaging_type && (
-                          <p className="text-red-500 text-sm mt-1">{errors.packaging_type.message}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Quantity per Pack / Inner Unit
-                        </label>
-                        <Input
-                          {...register('pack_quantity')}
-                          placeholder="e.g., 20 pieces per inner pack"
-                          className="rounded-xl"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Quantity per Master Pack / Outer Unit
-                        </label>
-                        <Input
-                          {...register('master_pack_quantity')}
-                          placeholder="e.g., 10 inner packs per master pack"
-                          className="rounded-xl"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Master Pack Dimensions (L x W x H cm)
-                        </label>
-                        <Input
-                          {...register('pack_dimensions')}
-                          placeholder="e.g., 60 x 40 x 35 cm"
-                          className="rounded-xl"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Weight per Master Pack (kg)
-                      </label>
-                      <Input
-                        {...register('weight_per_pack')}
-                        placeholder="e.g., 12 kg"
-                        className="rounded-xl"
-                      />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

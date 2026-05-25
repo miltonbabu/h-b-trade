@@ -40,11 +40,6 @@ export interface ProductRequest {
   product_link?: string;
   target_price?: string;
   quantity?: string;
-  packaging_type?: string;
-  pack_quantity?: string;
-  master_pack_quantity?: string;
-  pack_dimensions?: string;
-  weight_per_pack?: string;
   sample_needed?: string;
   shipping_method?: string;
   specifications?: string;
@@ -173,11 +168,6 @@ export interface ProductRequestFormData {
   product_link?: string;
   target_price?: string;
   quantity?: string;
-  packaging_type?: string;
-  pack_quantity?: string;
-  master_pack_quantity?: string;
-  pack_dimensions?: string;
-  weight_per_pack?: string;
   sample_needed?: string;
   shipping_method?: string;
   specifications?: string;
