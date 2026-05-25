@@ -46,6 +46,17 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
 
+  async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const backendBase = apiUrl.replace(/\/api\/?$/, '');
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendBase}/api/:path*`,
+      },
+    ];
+  },
+
   headers: async () => [
     {
       source: '/:all*(svg|jpg|jpeg|png|webp|avif|gif|ico|woff2|woff|ttf)',

@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
   const handleQrUpload = async (field: 'wechat_qr' | 'alipay_qr', file: File) => {
     setMessage({ type: '', text: '' });
     try {
-      // Step 1: Upload to Cloudinary via generic upload endpoint
+      // Step 1: Upload to Cloudinary
       const fd = new FormData();
       fd.append('file', file);
       const uploadRes = await api.post('/admin/upload?folder=hbtrade/qr-codes', fd);
@@ -108,24 +108,25 @@ export default function AdminSettingsPage() {
         throw new Error('No URL returned from upload');
       }
 
-      // Step 2: Save the Cloudinary URL to settings
-      await api.put('/admin/settings', { ...formData, [field]: cloudinaryUrl });
+      // Step 2: Save ONLY this field (not entire formData which may have huge old base64 blobs)
+      await api.put('/admin/settings', { [field]: cloudinaryUrl });
       setFormData(prev => ({ ...prev, [field]: cloudinaryUrl }));
       setMessage({ type: 'success', text: 'QR code uploaded and saved!' });
     } catch (error: any) {
       console.error('QR upload error:', error);
-      setMessage({ type: 'error', text: error?.response?.data?.error || 'Failed to upload QR code.' });
+      setMessage({ type: 'error', text: error?.response?.data?.error || error?.message || 'Failed to upload QR code.' });
     }
   };
 
   const handleQrRemove = async (field: 'wechat_qr' | 'alipay_qr') => {
     setMessage({ type: '', text: '' });
     try {
-      await api.put('/admin/settings', { ...formData, [field]: '' });
+      // Send only this field as empty
+      await api.put('/admin/settings', { [field]: '' });
       setFormData(prev => ({ ...prev, [field]: '' }));
       setMessage({ type: 'success', text: 'QR code removed.' });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to remove QR code.' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error?.message || 'Failed to remove QR code.' });
     }
   };
 

@@ -13,7 +13,7 @@ export const isApiMisconfigured = (): boolean => {
 };
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

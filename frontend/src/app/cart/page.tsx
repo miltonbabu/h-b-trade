@@ -16,6 +16,7 @@ import {
   Phone,
   Mail,
   MapPin,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -38,9 +39,11 @@ export default function CartPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
+  const [paymentInfoLoading, setPaymentInfoLoading] = useState(true);
 
   useEffect(() => {
     const fetchPaymentInfo = async () => {
+      setPaymentInfoLoading(true);
       try {
         const res = await api.get('/settings');
         const data = res.data.data;
@@ -54,7 +57,9 @@ export default function CartPage() {
           alipayQr: data.alipayQr || data.alipay_qr || '',
         });
       } catch (err) {
-        console.error('Failed to fetch payment settings:', err);
+        // Silently fail - QR codes just won't show
+      } finally {
+        setPaymentInfoLoading(false);
       }
     };
     fetchPaymentInfo();
@@ -573,6 +578,12 @@ export default function CartPage() {
                         </p>
                       </div>
                     )}
+                    {paymentInfoLoading ? (
+                      <div className="col-span-2 flex justify-center py-4">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                      </div>
+                    ) : (
+                      <>
                     {paymentInfo.wechatQr && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <p className="font-bold text-green-700 mb-2">
@@ -600,6 +611,8 @@ export default function CartPage() {
                           />
                         </div>
                       </div>
+                    )}
+                      </>
                     )}
                   </div>
 
@@ -742,13 +755,17 @@ export default function CartPage() {
                               <p className="font-bold text-green-700 mb-2">
                                 Scan WeChat Pay QR Code:
                               </p>
-                              {paymentInfo.wechatQr ? (
+                              {paymentInfoLoading ? (
+                                <div className="flex justify-center py-4">
+                                  <Loader2 className="w-8 h-8 animate-spin text-green-500" />
+                                </div>
+                              ) : paymentInfo.wechatQr ? (
                               <div className="bg-white p-4 rounded-lg flex justify-center">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={getImageSrc(paymentInfo.wechatQr)}
                                   alt="WeChat Pay QR Code"
-                                  className="w-48 h-48 mx-auto object-contain"
+                                  className="w-48 h-48 object-contain"
                                 />
                               </div>
                               ) : (
@@ -768,13 +785,17 @@ export default function CartPage() {
                               <p className="font-bold text-blue-700 mb-2">
                                 Scan Alipay QR Code:
                               </p>
-                              {paymentInfo.alipayQr ? (
+                              {paymentInfoLoading ? (
+                                <div className="flex justify-center py-4">
+                                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                </div>
+                              ) : paymentInfo.alipayQr ? (
                               <div className="bg-white p-4 rounded-lg flex justify-center">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={getImageSrc(paymentInfo.alipayQr)}
                                   alt="Alipay QR Code"
-                                  className="w-48 h-48 mx-auto object-contain"
+                                  className="w-48 h-48 object-contain"
                                 />
                               </div>
                               ) : (
