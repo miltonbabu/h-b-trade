@@ -47,6 +47,7 @@ export default function CartPage() {
       try {
         const res = await api.get('/settings');
         const data = res.data.data;
+        console.log('Settings API Response:', data); // <-- DEBUG LOG
         setPaymentInfo({
           bkash: data.bkash || '',
           nagad: data.nagad || '',
@@ -57,7 +58,7 @@ export default function CartPage() {
           alipayQr: data.alipayQr || data.alipay_qr || '',
         });
       } catch (err) {
-        // Silently fail - QR codes just won't show
+        console.error('Failed to fetch payment settings:', err); // <-- DEBUG LOG
       } finally {
         setPaymentInfoLoading(false);
       }

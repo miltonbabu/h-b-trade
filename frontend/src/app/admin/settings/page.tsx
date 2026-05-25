@@ -56,6 +56,7 @@ export default function AdminSettingsPage() {
     try {
       const response = await api.get('/admin/settings');
       const s = response.data.data;
+      console.log('Admin Settings API Response:', s); // <-- DEBUG LOG
       setFormData({
         company_name: s.company_name || '',
         phone: s.phone || '',
@@ -73,7 +74,7 @@ export default function AdminSettingsPage() {
         alipay_qr: s.alipay_qr || '',
       });
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      console.error('Failed to fetch settings:', error); // <-- DEBUG LOG
     } finally {
       setLoading(false);
     }
