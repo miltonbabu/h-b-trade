@@ -559,12 +559,11 @@ export default function CartPage() {
                         </p>
                       </div>
                     )}
-                    {(paymentInfo.wechatQr || paymentInfo.wechat) && (
+                    {paymentInfo.wechatQr && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <p className="font-bold text-green-700 mb-2">
                           WeChat Pay
                         </p>
-                        {paymentInfo.wechatQr && (
                         <div className="mt-2">
                           <img
                             src={getImageSrc(paymentInfo.wechatQr)}
@@ -573,18 +572,11 @@ export default function CartPage() {
                             className="w-40 h-40 object-contain rounded-lg mx-auto"
                           />
                         </div>
-                        )}
-                        {paymentInfo.wechat && (
-                          <p className="text-sm font-semibold text-gray-800 mt-2 text-center">
-                            ID: {paymentInfo.wechat}
-                          </p>
-                        )}
                       </div>
                     )}
-                    {(paymentInfo.alipayQr || paymentInfo.alipay) && (
+                    {paymentInfo.alipayQr && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p className="font-bold text-blue-700 mb-2">Alipay</p>
-                        {paymentInfo.alipayQr && (
                         <div className="mt-2">
                           <img
                             src={getImageSrc(paymentInfo.alipayQr)}
@@ -593,12 +585,6 @@ export default function CartPage() {
                             className="w-40 h-40 object-contain rounded-lg mx-auto"
                           />
                         </div>
-                        )}
-                        {paymentInfo.alipay && (
-                          <p className="text-sm font-semibold text-gray-800 mt-2 text-center">
-                            ID: {paymentInfo.alipay}
-                          </p>
-                        )}
                       </div>
                     )}
                   </div>
@@ -737,12 +723,11 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "wechat" && (paymentInfo.wechatQr || paymentInfo.wechat) && (
+                        {paymentMethod === "wechat" && paymentInfo.wechatQr && (
                             <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
                               <p className="font-bold text-green-700 mb-2">
-                                WeChat Pay:
+                                Scan WeChat Pay QR Code:
                               </p>
-                              {paymentInfo.wechatQr ? (
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
                                   src={getImageSrc(paymentInfo.wechatQr)}
@@ -751,12 +736,6 @@ export default function CartPage() {
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
-                              ) : null}
-                              {paymentInfo.wechat && (
-                                <p className="text-lg font-semibold text-gray-800 mt-2">
-                                  WeChat ID: {paymentInfo.wechat}
-                                </p>
-                              )}
                               <p className="text-sm text-gray-600 mt-2">
                                 Amount to pay:{" "}
                                 <span className="font-bold">
@@ -766,12 +745,11 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "alipay" && (paymentInfo.alipayQr || paymentInfo.alipay) && (
+                        {paymentMethod === "alipay" && paymentInfo.alipayQr && (
                             <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
                               <p className="font-bold text-blue-700 mb-2">
-                                Alipay:
+                                Scan Alipay QR Code:
                               </p>
-                              {paymentInfo.alipayQr ? (
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
                                   src={getImageSrc(paymentInfo.alipayQr)}
@@ -780,12 +758,6 @@ export default function CartPage() {
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
-                              ) : null}
-                              {paymentInfo.alipay && (
-                                <p className="text-lg font-semibold text-gray-800 mt-2">
-                                  Alipay ID: {paymentInfo.alipay}
-                                </p>
-                              )}
                               <p className="text-sm text-gray-600 mt-2">
                                 Amount to pay:{" "}
                                 <span className="font-bold">
