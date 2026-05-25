@@ -253,7 +253,7 @@ export default function AdminInvoicesPage() {
         quantity: qty,
         unitPrice: price,
         perPiecePrice: price,
-        weight: req.weight_per_pack || '',
+        weight: '',
         volume: '',
         total: subtotal,
       }],
