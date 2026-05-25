@@ -578,12 +578,12 @@ export default function CartPage() {
                         <p className="font-bold text-green-700 mb-2">
                           WeChat Pay
                         </p>
-                        <div className="mt-2">
+                        <div className="mt-2 flex justify-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={getImageSrc(paymentInfo.wechatQr)}
                             alt="WeChat Pay QR"
-                            loading="lazy"
-                            className="w-40 h-40 object-contain rounded-lg mx-auto"
+                            className="w-40 h-40 object-contain rounded-lg"
                           />
                         </div>
                       </div>
@@ -591,12 +591,12 @@ export default function CartPage() {
                     {paymentInfo.alipayQr && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p className="font-bold text-blue-700 mb-2">Alipay</p>
-                        <div className="mt-2">
+                        <div className="mt-2 flex justify-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={getImageSrc(paymentInfo.alipayQr)}
                             alt="Alipay QR"
-                            loading="lazy"
-                            className="w-40 h-40 object-contain rounded-lg mx-auto"
+                            className="w-40 h-40 object-contain rounded-lg"
                           />
                         </div>
                       </div>
@@ -743,11 +743,11 @@ export default function CartPage() {
                                 Scan WeChat Pay QR Code:
                               </p>
                               {paymentInfo.wechatQr ? (
-                              <div className="bg-white p-4 rounded-lg inline-block">
+                              <div className="bg-white p-4 rounded-lg flex justify-center">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={getImageSrc(paymentInfo.wechatQr)}
                                   alt="WeChat Pay QR Code"
-                                  loading="lazy"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
@@ -769,11 +769,11 @@ export default function CartPage() {
                                 Scan Alipay QR Code:
                               </p>
                               {paymentInfo.alipayQr ? (
-                              <div className="bg-white p-4 rounded-lg inline-block">
+                              <div className="bg-white p-4 rounded-lg flex justify-center">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={getImageSrc(paymentInfo.alipayQr)}
                                   alt="Alipay QR Code"
-                                  loading="lazy"
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
