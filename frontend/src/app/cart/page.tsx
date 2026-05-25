@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
-import { useSettings } from "@/hooks/useSettings";
+import { useSettings, clearSettingsCache } from "@/hooks/useSettings";
 
 interface PaymentInfo {
   bkash?: string;
@@ -40,6 +40,10 @@ export default function CartPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
+
+  useEffect(() => {
+    clearSettingsCache();
+  }, []);
 
   useEffect(() => {
     setPaymentInfo({
@@ -92,10 +96,17 @@ export default function CartPage() {
       return false;
     }
     if (paymentOption === "now") {
-      if (!paymentMethod || !transactionId || !paymentAmount) {
-        alert(
-          "Please provide payment method, transaction ID, and payment amount",
-        );
+      if (!paymentMethod) {
+        alert("Please select a payment method");
+        return false;
+      }
+      const isQrPayment = paymentMethod === "wechat" || paymentMethod === "alipay";
+      if (!isQrPayment && !transactionId) {
+        alert("Please provide the transaction ID");
+        return false;
+      }
+      if (!paymentAmount) {
+        alert("Please enter the payment amount");
         return false;
       }
     }
@@ -723,11 +734,12 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "wechat" && paymentInfo.wechatQr && (
+                        {paymentMethod === "wechat" && (
                             <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
                               <p className="font-bold text-green-700 mb-2">
                                 Scan WeChat Pay QR Code:
                               </p>
+                              {paymentInfo.wechatQr ? (
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
                                   src={getImageSrc(paymentInfo.wechatQr)}
@@ -736,6 +748,9 @@ export default function CartPage() {
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 italic">WeChat QR code not available yet. Please contact us for payment details.</p>
+                              )}
                               <p className="text-sm text-gray-600 mt-2">
                                 Amount to pay:{" "}
                                 <span className="font-bold">
@@ -745,11 +760,12 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod === "alipay" && paymentInfo.alipayQr && (
+                        {paymentMethod === "alipay" && (
                             <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
                               <p className="font-bold text-blue-700 mb-2">
                                 Scan Alipay QR Code:
                               </p>
+                              {paymentInfo.alipayQr ? (
                               <div className="bg-white p-4 rounded-lg inline-block">
                                 <img
                                   src={getImageSrc(paymentInfo.alipayQr)}
@@ -758,6 +774,9 @@ export default function CartPage() {
                                   className="w-48 h-48 mx-auto object-contain"
                                 />
                               </div>
+                              ) : (
+                                <p className="text-sm text-gray-500 italic">Alipay QR code not available yet. Please contact us for payment details.</p>
+                              )}
                               <p className="text-sm text-gray-600 mt-2">
                                 Amount to pay:{" "}
                                 <span className="font-bold">
@@ -767,7 +786,7 @@ export default function CartPage() {
                             </div>
                           )}
 
-                        {paymentMethod && (
+                        {paymentMethod && paymentMethod !== "wechat" && paymentMethod !== "alipay" && (
                           <>
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -801,6 +820,25 @@ export default function CartPage() {
                               />
                             </div>
                           </>
+                        )}
+
+                        {paymentMethod && (paymentMethod === "wechat" || paymentMethod === "alipay") && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Payment Amount *
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={paymentAmount}
+                              onChange={(e) =>
+                                setPaymentAmount(e.target.value)
+                              }
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                              placeholder={`Enter amount (Total: ৳${getTotalAmount().toFixed(2)})`}
+                              required
+                            />
+                          </div>
                         )}
                       </div>
                     )}
