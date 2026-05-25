@@ -36,47 +36,45 @@ const defaultSettings: SiteSettings = {
 };
 
 let cachedSettings: SiteSettings | null = null;
-let fetchPromise: Promise<SiteSettings> | null = null;
+let cacheTimestamp: number = 0;
+const CACHE_TTL = 60 * 1000; // 1 minute
 
 export function useSettings() {
   const [settings, setSettings] = useState<SiteSettings>(cachedSettings || defaultSettings);
 
   useEffect(() => {
-    if (cachedSettings) {
-      setSettings(cachedSettings);
-      return;
-    }
-
     const load = async () => {
-      if (!fetchPromise) {
-        fetchPromise = api.get('/settings').then((res) => {
-          const data = res.data.data;
-          const mapped: SiteSettings = {
-            company_name: data.company_name || defaultSettings.company_name,
-            phone: data.phone || defaultSettings.phone,
-            email: data.email || defaultSettings.email,
-            whatsapp_link: data.whatsapp_link || defaultSettings.whatsapp_link,
-            facebook_page: data.facebook_page || defaultSettings.facebook_page,
-            facebook_group: data.facebook_group || '',
-            office_address: data.office_address || defaultSettings.office_address,
-            bkash: data.bkash || defaultSettings.bkash,
-            nagad: data.nagad || defaultSettings.nagad,
-            bank_account: data.bank_account || data.bankAccount || '',
-            wechat: data.wechat || '',
-            alipay: data.alipay || '',
-            wechat_qr: data.wechat_qr || data.wechatQr || '',
-            alipay_qr: data.alipay_qr || data.alipayQr || '',
-          };
-          cachedSettings = mapped;
-          return mapped;
-        }).catch(() => {
-          return defaultSettings;
-        }).finally(() => {
-          fetchPromise = null;
-        });
+      const now = Date.now();
+      if (cachedSettings && (now - cacheTimestamp) < CACHE_TTL) {
+        setSettings(cachedSettings);
+        return;
       }
-      const result = await fetchPromise;
-      setSettings(result);
+
+      try {
+        const res = await api.get('/settings');
+        const data = res.data.data;
+        const mapped: SiteSettings = {
+          company_name: data.company_name || defaultSettings.company_name,
+          phone: data.phone || defaultSettings.phone,
+          email: data.email || defaultSettings.email,
+          whatsapp_link: data.whatsapp_link || defaultSettings.whatsapp_link,
+          facebook_page: data.facebook_page || defaultSettings.facebook_page,
+          facebook_group: data.facebook_group || '',
+          office_address: data.office_address || defaultSettings.office_address,
+          bkash: data.bkash || defaultSettings.bkash,
+          nagad: data.nagad || defaultSettings.nagad,
+          bank_account: data.bank_account || data.bankAccount || '',
+          wechat: data.wechat || '',
+          alipay: data.alipay || '',
+          wechat_qr: data.wechat_qr || data.wechatQr || '',
+          alipay_qr: data.alipay_qr || data.alipayQr || '',
+        };
+        cachedSettings = mapped;
+        cacheTimestamp = now;
+        setSettings(mapped);
+      } catch {
+        setSettings(cachedSettings || defaultSettings);
+      }
     };
 
     load();
@@ -87,5 +85,5 @@ export function useSettings() {
 
 export function clearSettingsCache() {
   cachedSettings = null;
-  fetchPromise = null;
+  cacheTimestamp = 0;
 }
