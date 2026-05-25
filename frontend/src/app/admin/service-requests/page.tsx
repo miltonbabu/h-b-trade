@@ -381,7 +381,7 @@ export default function AdminServiceRequestsPage() {
             ${request.price ? `
             <div class="field">
               <div class="label">Price (৳ BDT)</div>
-              <div class="value" style="color: #0d9488; font-size: 18px; font-weight: bold;">৳${parseFloat(request.price).toFixed(2)}</div>
+              <div class="value" style="color: #0d9488; font-size: 18px; font-weight: bold;">৳${request.price!.toFixed(2)}</div>
             </div>
             ` : ''}
             ${request.admin_notes ? `
