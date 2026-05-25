@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
       const fd = new FormData();
       fd.append(field, file);
       const response = await api.post('/admin/settings/qr-upload', fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined as any },
       });
       const updated = response.data.data;
       setFormData(prev => ({

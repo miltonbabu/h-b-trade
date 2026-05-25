@@ -325,7 +325,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
       selectedFiles.forEach(file => formData.append('images', file));
 
       const response = await api.post('/service-request', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined as any },
       });
 
       setTrackingNumber(response.data.data.trackingNumber);

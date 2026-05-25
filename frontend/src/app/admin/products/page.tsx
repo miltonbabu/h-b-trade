@@ -26,7 +26,7 @@ function ImageField({
       const form = new FormData();
       form.append('file', file);
       const res = await api.post('/admin/upload?folder=hbtrade/products', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined as any },
       });
       onChange(res.data?.url || '');
     } catch (err) {

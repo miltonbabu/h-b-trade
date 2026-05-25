@@ -61,7 +61,7 @@ export default function ProductRequestPage() {
 
       const response = await api.post('/product-request', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': undefined as any,
         },
       });
 
