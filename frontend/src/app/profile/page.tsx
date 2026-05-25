@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -47,6 +47,14 @@ interface ServiceRequest {
 type Tab = 'overview' | 'orders' | 'requests' | 'service-requests';
 
 export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <ProfileContent />
+    </Suspense>
+  );
+}
+
+function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading: authLoading, logout, updateUser } = useAuth();
