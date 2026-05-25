@@ -1285,7 +1285,6 @@ router.get("/settings", async (req, res) => {
 });
 
 router.put("/settings", [
-  body("email").optional().isEmail().withMessage("Valid email is required"),
   body("company_name").optional().trim(),
   handleValidationErrors
 ], async (req, res) => {
