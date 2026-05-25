@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import api from "@/lib/api";
-import { useSettings, clearSettingsCache } from "@/hooks/useSettings";
+import { useSettings } from "@/hooks/useSettings";
 
 interface PaymentInfo {
   bkash?: string;
@@ -40,10 +40,6 @@ export default function CartPage() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({});
-
-  useEffect(() => {
-    clearSettingsCache();
-  }, []);
 
   useEffect(() => {
     setPaymentInfo({

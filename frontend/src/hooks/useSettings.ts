@@ -37,10 +37,10 @@ const defaultSettings: SiteSettings = {
 
 let cachedSettings: SiteSettings | null = null;
 let cacheTimestamp: number = 0;
-const CACHE_TTL = 60 * 1000; // 1 minute
+const CACHE_TTL = 30 * 1000; // 30 seconds
 
 export function useSettings() {
-  const [settings, setSettings] = useState<SiteSettings>(cachedSettings || defaultSettings);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
 
   useEffect(() => {
     const load = async () => {
