@@ -1341,26 +1341,26 @@ router.post(
     try {
       logger.info("QR upload request received");
       const updates = {};
+      const path = require('path');
+      const fs = require('fs');
+      
+      const qrCodesDir = path.join(__dirname, '../../frontend/public/qr-codes');
+      
+      if (!fs.existsSync(qrCodesDir)) {
+        fs.mkdirSync(qrCodesDir, { recursive: true });
+      }
 
       if (req.files && req.files.wechat_qr) {
-        try {
-          const result = await uploadToCloudinary(req.files.wechat_qr[0].buffer, 'hbtrade/qr-codes');
-          updates.wechat_qr = result.secure_url;
-          logger.info("WeChat QR uploaded to Cloudinary:", result.secure_url);
-        } catch (cloudErr) {
-          logger.error("Cloudinary upload failed for wechat_qr:", cloudErr);
-          return res.status(500).json({ error: "Failed to upload WeChat QR to Cloudinary" });
-        }
+        const wechatPath = path.join(qrCodesDir, 'wechat-qr.png');
+        fs.writeFileSync(wechatPath, req.files.wechat_qr[0].buffer);
+        updates.wechat_qr = '/qr-codes/wechat-qr.png';
+        logger.info("WeChat QR saved to:", wechatPath);
       }
       if (req.files && req.files.alipay_qr) {
-        try {
-          const result = await uploadToCloudinary(req.files.alipay_qr[0].buffer, 'hbtrade/qr-codes');
-          updates.alipay_qr = result.secure_url;
-          logger.info("Alipay QR uploaded to Cloudinary:", result.secure_url);
-        } catch (cloudErr) {
-          logger.error("Cloudinary upload failed for alipay_qr:", cloudErr);
-          return res.status(500).json({ error: "Failed to upload Alipay QR to Cloudinary" });
-        }
+        const alipayPath = path.join(qrCodesDir, 'alipay-qr.png');
+        fs.writeFileSync(alipayPath, req.files.alipay_qr[0].buffer);
+        updates.alipay_qr = '/qr-codes/alipay-qr.png';
+        logger.info("Alipay QR saved to:", alipayPath);
       }
 
       if (Object.keys(updates).length === 0) {
@@ -1386,7 +1386,7 @@ router.post(
       );
 
       const updatedSettings = await db.getOne("SELECT * FROM settings LIMIT 1");
-      logger.info("Updated settings with QR codes (Cloudinary URLs)");
+      logger.info("Updated settings with QR codes (static files)");
 
       res.json({
         success: true,

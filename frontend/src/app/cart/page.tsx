@@ -53,11 +53,16 @@ export default function CartPage() {
           bankAccount: data.bankAccount || data.bank_account || '',
           wechat: data.wechat || '',
           alipay: data.alipay || '',
-          wechatQr: data.wechatQr || data.wechat_qr || '',
-          alipayQr: data.alipayQr || data.alipay_qr || '',
+          wechatQr: '/qr-codes/wechat-qr.png', // Use static file
+          alipayQr: '/qr-codes/alipay-qr.png', // Use static file
         });
       } catch (err) {
         console.error('[Cart] Failed to fetch payment settings:', err);
+        // Fallback to static QR codes even if API fails
+        setPaymentInfo({
+          wechatQr: '/qr-codes/wechat-qr.png',
+          alipayQr: '/qr-codes/alipay-qr.png',
+        });
       } finally {
         setPaymentInfoLoading(false);
       }
