@@ -806,4 +806,53 @@ router.get('/service-request/track/:tracking_number', async (req, res) => {
   }
 });
 
+router.post('/event-registration', async (req, res) => {
+  try {
+    const {
+      event_title,
+      full_name,
+      email,
+      phone,
+      whatsapp_number,
+      passport_number,
+      age,
+      profession,
+      division,
+      district,
+      business_type,
+      business_name,
+      business_certificate_number,
+      passport_images,
+      business_certificate_images,
+      additional_message,
+    } = req.body;
+
+    if (!full_name || !email || !event_title) {
+      return res.status(400).json({ error: 'Full name, email, and event title are required' });
+    }
+
+    const id = uuidv4();
+    const passportImagesJson = passport_images ? JSON.stringify(passport_images) : null;
+    const certificateImagesJson = business_certificate_images ? JSON.stringify(business_certificate_images) : null;
+
+    await db.run(
+      `INSERT INTO event_registrations 
+        (id, event_title, full_name, email, phone, whatsapp_number, passport_number, age, profession, division, district, business_type, business_name, business_certificate_number, passport_images, business_certificate_images, additional_message, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, event_title, full_name, email, phone || null, whatsapp_number || null, passport_number || null, age || null, profession || null, division || null, district || null, business_type || null, business_name || null, business_certificate_number || null, passportImagesJson, certificateImagesJson, additional_message || null, 'pending']
+    );
+
+    logger.info(`New event registration from: ${email} - ${event_title}`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Event registration submitted successfully',
+      data: { id, event_title, full_name, email, status: 'pending' }
+    });
+  } catch (error) {
+    logger.error('Event registration error:', error);
+    res.status(500).json({ error: 'Failed to submit event registration' });
+  }
+});
+
 module.exports = router;

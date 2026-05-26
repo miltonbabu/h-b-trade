@@ -744,3 +744,136 @@
   @apply scale-110;
   filter: drop-shadow(0 2px 4px rgba(13, 148, 136, 0.3));
 }
+
+/* ============================================
+   Events Page Styles - Tech-Forward Industrial Minimalism
+   ============================================ */
+
+.events-page {
+  /* Events primary color (CIAAF Red) */
+  --primary: #e63946;
+  --primary-foreground: #ffffff;
+  /* Events secondary color (Electric Blue) */
+  --secondary: #0066ff;
+  --secondary-foreground: #ffffff;
+}
+
+/* Events animations */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 160ms; }
+.stagger-4 { animation-delay: 240ms; }
+.stagger-5 { animation-delay: 320ms; }
+.stagger-6 { animation-delay: 400ms; }
+
+/* Events Page 3D Gallery Effects */
+.perspective-card-hover {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-3d-hover {
+  transform: rotateY(5deg) rotateX(-5deg) scale(1.05);
+  box-shadow: 0 25px 50px -12px rgba(230, 57, 70, 0.25), 0 0 40px rgba(0, 102, 255, 0.1);
+}
+
+/* Engine Animations */
+.animate-piston1 {
+  animation: piston1 0.8s infinite ease-in-out;
+}
+
+.animate-piston2 {
+  animation: piston2 0.8s infinite ease-in-out;
+  animation-delay: 0.27s;
+}
+
+.animate-piston3 {
+  animation: piston3 0.8s infinite ease-in-out;
+  animation-delay: 0.53s;
+}
+
+@keyframes piston1 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(15px); }
+}
+
+@keyframes piston2 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(15px); }
+}
+
+@keyframes piston3 {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(15px); }
+}
+
+.animate-spark1 {
+  animation: spark 0.4s infinite ease-in-out;
+}
+
+.animate-spark2 {
+  animation: spark 0.4s infinite ease-in-out;
+  animation-delay: 0.27s;
+}
+
+.animate-spark3 {
+  animation: spark 0.4s infinite ease-in-out;
+  animation-delay: 0.53s;
+}
+
+@keyframes spark {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 1s linear infinite;
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}

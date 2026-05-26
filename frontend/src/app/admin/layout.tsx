@@ -20,7 +20,7 @@ import {
   Video,
   Wrench,
   Receipt,
-  UserCircle, Trash2
+  UserCircle, Trash2, Calendar
 } from 'lucide-react';
 import api from '@/lib/api';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -105,6 +105,7 @@ export default function AdminLayout({
     { href: '/admin/tracking', label: 'Tracking', icon: Truck, badge: null, superAdminOnly: false },
     { href: '/admin/requests', label: 'Product Requests', icon: FileText, badge: notifications.requests, superAdminOnly: false },
     { href: '/admin/service-requests', label: 'Service Requests', icon: Wrench, badge: notifications.serviceRequests, superAdminOnly: false },
+    { href: '/admin/event-registrations', label: 'Event Registrations', icon: Calendar, badge: null, superAdminOnly: false },
     { href: '/admin/messages', label: 'Messages', icon: MessageSquare, badge: notifications.messages, superAdminOnly: false },
     { href: '/admin/customers', label: 'Customers', icon: UserCircle, badge: null, superAdminOnly: false },
     { href: '/admin/cleanup', label: 'Data Cleanup', icon: Trash2, badge: null, superAdminOnly: true },

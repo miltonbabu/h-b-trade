@@ -385,4 +385,19 @@ router.delete('/service-requests/:id', protect, customerOnly, async (req, res) =
   }
 });
 
+router.get('/event-registrations', protect, customerOnly, async (req, res) => {
+  try {
+    const registrations = await db.getMany(
+      `SELECT id, event_title, full_name, email, phone, whatsapp_number, passport_number, age, profession, division, district, business_type, business_name, business_certificate_number, passport_images, business_certificate_images, additional_message, status, admin_notes, created_at, updated_at
+       FROM event_registrations WHERE email = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
+      [req.user.email]
+    );
+
+    res.json({ success: true, data: registrations });
+  } catch (error) {
+    logger.error('Get customer event registrations error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

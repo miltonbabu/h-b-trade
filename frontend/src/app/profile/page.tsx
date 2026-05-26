@@ -12,7 +12,7 @@ import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 import {
   User, Package, FileText, Wrench, Truck, LogOut, Loader2,
   Mail, Phone, Building, Edit3, Save, Trash2, ChevronDown,
-  ChevronUp, Eye, Shield
+  ChevronUp, Eye, Shield, Calendar
 } from 'lucide-react';
 
 interface Order {
@@ -44,7 +44,23 @@ interface ServiceRequest {
   created_at: string;
 }
 
-type Tab = 'overview' | 'orders' | 'requests' | 'service-requests';
+interface EventRegistration {
+  id: string;
+  event_title: string;
+  full_name: string;
+  passport_number: string;
+  business_name: string;
+  business_type: string;
+  division: string;
+  district: string;
+  status: string;
+  admin_notes: string;
+  passport_images: string | string[];
+  business_certificate_images: string | string[];
+  created_at: string;
+}
+
+type Tab = 'overview' | 'orders' | 'requests' | 'service-requests' | 'event-registrations';
 
 export default function ProfilePage() {
   return (
@@ -62,6 +78,7 @@ function ProfileContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [productRequests, setProductRequests] = useState<ProductRequest[]>([]);
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>('orders');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -79,7 +96,7 @@ function ProfileContent() {
   // Read tab from URL query parameter
   useEffect(() => {
     const tabParam = searchParams?.get('tab');
-    if (tabParam && ['overview', 'orders', 'requests', 'service-requests'].includes(tabParam)) {
+    if (tabParam && ['overview', 'orders', 'requests', 'service-requests', 'event-registrations'].includes(tabParam)) {
       setActiveTab(tabParam as Tab);
     }
   }, [searchParams]);
@@ -93,14 +110,16 @@ function ProfileContent() {
   const fetchAllData = async () => {
     setIsLoading(true);
     try {
-      const [ordersRes, prRes, srRes] = await Promise.all([
+      const [ordersRes, prRes, srRes, erRes] = await Promise.all([
         api.get('/customer/orders'),
         api.get('/customer/product-requests'),
         api.get('/customer/service-requests'),
+        api.get('/customer/event-registrations').catch(() => ({ data: { data: [] } })),
       ]);
       setOrders(ordersRes.data.data || []);
       setProductRequests(prRes.data.data || []);
       setServiceRequests(srRes.data.data || []);
+      setEventRegistrations(erRes.data.data || []);
     } catch (err) {
       console.error('Failed to fetch customer data:', err);
     } finally {
@@ -185,6 +204,7 @@ function ProfileContent() {
     { key: 'orders', label: 'Orders', icon: Package, count: orders.length },
     { key: 'requests', label: 'Product Requests', icon: FileText, count: productRequests.length },
     { key: 'service-requests', label: 'Service Requests', icon: Wrench, count: serviceRequests.length },
+    { key: 'event-registrations', label: 'Event Registrations', icon: Calendar, count: eventRegistrations.length },
     { key: 'overview', label: 'My Profile', icon: User, count: 0 },
   ];
 
@@ -332,6 +352,15 @@ function ProfileContent() {
                     <Wrench size={24} className="mx-auto text-orange-500 mb-2" />
                     <p className="text-2xl font-bold">{serviceRequests.length}</p>
                     <p className="text-gray-500 text-sm">Service Requests</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <Calendar size={24} className="mx-auto text-purple-500 mb-2" />
+                    <p className="text-2xl font-bold">{eventRegistrations.length}</p>
+                    <p className="text-gray-500 text-sm">Event Registrations</p>
                   </div>
                 </CardContent>
               </Card>
@@ -484,6 +513,76 @@ function ProfileContent() {
                   </CardContent>
                 </Card>
               ))
+            )}
+          </div>
+        )}
+
+        {activeTab === 'event-registrations' && (
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="text-center py-12"><Loader2 className="animate-spin mx-auto text-primary" size={32} /></div>
+            ) : eventRegistrations.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Calendar size={48} className="mx-auto text-gray-300 mb-4" />
+                  <p className="text-gray-500">No event registrations yet</p>
+                  <Link href="/events" className="text-primary hover:underline mt-2 inline-block">View Events</Link>
+                </CardContent>
+              </Card>
+            ) : (
+              eventRegistrations.map((reg) => {
+                const eventStatusColors: Record<string, string> = {
+                  pending: 'bg-yellow-100 text-yellow-800',
+                  approved: 'bg-green-100 text-green-800',
+                  rejected: 'bg-red-100 text-red-800',
+                  contacted: 'bg-blue-100 text-blue-800',
+                };
+                const parseImages = (field: string | string[] | null): string[] => {
+                  if (!field) return [];
+                  if (Array.isArray(field)) return field;
+                  try { const p = JSON.parse(field); return Array.isArray(p) ? p : []; } catch { return []; }
+                };
+                const passportImages = parseImages(reg.passport_images);
+                const certImages = parseImages(reg.business_certificate_images);
+                return (
+                  <Card key={reg.id}>
+                    <CardContent className="py-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="font-semibold text-primary">{reg.event_title}</span>
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${eventStatusColors[reg.status] || 'bg-gray-100 text-gray-800'}`}>
+                              {reg.status}
+                            </span>
+                          </div>
+                          <p className="text-gray-700 font-medium">{reg.full_name} - {reg.business_name}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
+                            <span>{reg.division}, {reg.district}</span>
+                            <span>Passport: {reg.passport_number}</span>
+                            <span>{formatDate(reg.created_at)}</span>
+                          </div>
+                          {reg.admin_notes && (
+                            <p className="text-sm text-blue-600 mt-1">Admin Notes: {reg.admin_notes}</p>
+                          )}
+                          {(passportImages.length > 0 || certImages.length > 0) && (
+                            <div className="flex gap-2 mt-2">
+                              {passportImages.slice(0, 2).map((img, i) => (
+                                <img key={`p${i}`} src={img} alt={`Passport ${i+1}`} className="w-12 h-12 rounded object-cover" />
+                              ))}
+                              {certImages.slice(0, 2).map((img, i) => (
+                                <img key={`c${i}`} src={img} alt={`Cert ${i+1}`} className="w-12 h-12 rounded object-cover" />
+                              ))}
+                              {(passportImages.length + certImages.length > 4) && (
+                                <span className="text-xs text-gray-400 self-center">+{(passportImages.length + certImages.length) - 4} more</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         )}

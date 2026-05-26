@@ -288,6 +288,33 @@ const initPostgresTables = async () => {
     `);
 
     await client.query(`
+      CREATE TABLE IF NOT EXISTS event_registrations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_title VARCHAR(255) NOT NULL,
+        full_name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        whatsapp_number VARCHAR(50),
+        passport_number VARCHAR(100),
+        age VARCHAR(10),
+        profession VARCHAR(255),
+        division VARCHAR(100),
+        district VARCHAR(100),
+        business_type VARCHAR(50),
+        business_name VARCHAR(255),
+        business_certificate_number VARCHAR(255),
+        passport_images TEXT,
+        business_certificate_images TEXT,
+        additional_message TEXT,
+        status VARCHAR(50) DEFAULT 'pending',
+        admin_notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP WITH TIME ZONE
+      )
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS settings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         phone VARCHAR(50),
@@ -630,6 +657,33 @@ const initSQLite = async () => {
   }
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS event_registrations (
+      id TEXT PRIMARY KEY,
+      event_title TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      whatsapp_number TEXT,
+      passport_number TEXT,
+      age TEXT,
+      profession TEXT,
+      division TEXT,
+      district TEXT,
+      business_type TEXT,
+      business_name TEXT,
+      business_certificate_number TEXT,
+      passport_images TEXT,
+      business_certificate_images TEXT,
+      additional_message TEXT,
+      status TEXT DEFAULT 'pending',
+      admin_notes TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      deleted_at DATETIME
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       phone TEXT,
@@ -659,7 +713,7 @@ const initSQLite = async () => {
   }
 
   // Add deleted_at column to all tables for soft delete support
-  const sqliteTables = ['orders', 'product_requests', 'service_requests', 'messages', 'products', 'videos', 'tracking'];
+  const sqliteTables = ['orders', 'product_requests', 'service_requests', 'messages', 'products', 'videos', 'tracking', 'event_registrations'];
   for (const table of sqliteTables) {
     try {
       const tableInfo = db.exec(`PRAGMA table_info(${table})`);
@@ -703,6 +757,8 @@ const initSQLite = async () => {
     db.run("CREATE INDEX IF NOT EXISTS idx_service_requests_status ON service_requests(status)");
     db.run("CREATE INDEX IF NOT EXISTS idx_products_status ON products(status)");
     db.run("CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_event_registrations_status ON event_registrations(status)");
+    db.run("CREATE INDEX IF NOT EXISTS idx_event_registrations_email ON event_registrations(email)");
     saveDatabase();
   } catch (e) {
     // Indexes already exist, ignore

@@ -2661,9 +2661,9 @@ router.delete('/customers/:id/all-data', canDelete, async (req, res) => {
 
 router.delete('/cleanup/soft-deleted', canDelete, async (req, res) => {
   try {
-    let deleted = { orders: 0, product_requests: 0, service_requests: 0, products: 0, videos: 0, messages: 0 };
+    let deleted = { orders: 0, product_requests: 0, service_requests: 0, products: 0, videos: 0, messages: 0, event_registrations: 0 };
 
-    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages'];
+    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages', 'event_registrations'];
     for (const table of tables) {
       try {
         const result = await db.run(`DELETE FROM ${table} WHERE deleted_at IS NOT NULL`);
@@ -2698,13 +2698,14 @@ router.delete('/cleanup/soft-deleted', canDelete, async (req, res) => {
 router.get('/soft-deleted', async (req, res) => {
   try {
     const result = {};
-    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages'];
+    const tables = ['orders', 'product_requests', 'service_requests', 'products', 'videos', 'messages', 'event_registrations'];
     for (const table of tables) {
       try {
         const row = await db.getOne(`SELECT COUNT(*) as count FROM ${table} WHERE deleted_at IS NOT NULL`);
         result[table] = row?.count || 0;
       } catch (e) {
         result[table] = 0;
+        console.error(`Error counting soft-deleted in ${table}:`, e.message || e);
       }
     }
     res.json({ success: true, data: result });
@@ -2828,6 +2829,99 @@ router.put('/admins/:id/reset-password', superAdminOnly, async (req, res) => {
   } catch (error) {
     logger.error('Reset admin password error:', error);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Event Registrations
+router.get('/event-registrations', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+    const status = req.query.status;
+    const search = req.query.search;
+
+    let whereClause = "WHERE deleted_at IS NULL";
+    const queryParams = [];
+
+    if (status) {
+      whereClause += " AND status = ?";
+      queryParams.push(status);
+    }
+
+    if (search) {
+      whereClause += " AND (full_name LIKE ? OR email LIKE ? OR business_name LIKE ? OR passport_number LIKE ?)";
+      const searchParam = `%${search}%`;
+      queryParams.push(searchParam, searchParam, searchParam, searchParam);
+    }
+
+    const totalResult = await safeGetOne(`SELECT COUNT(*) as total FROM event_registrations ${whereClause}`, queryParams);
+    const total = totalResult?.total || 0;
+
+    const rows = await safeGetMany(
+      `SELECT * FROM event_registrations ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...queryParams, limit, offset]
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+    });
+  } catch (error) {
+    logger.error('Get event registrations error:', error);
+    res.status(500).json({ error: 'Failed to fetch event registrations' });
+  }
+});
+
+router.get('/event-registrations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const registration = await safeGetOne('SELECT * FROM event_registrations WHERE id = ? AND deleted_at IS NULL', [id]);
+
+    if (!registration) {
+      return res.status(404).json({ error: 'Event registration not found' });
+    }
+
+    res.json({ success: true, data: registration });
+  } catch (error) {
+    logger.error('Get event registration error:', error);
+    res.status(500).json({ error: 'Failed to fetch event registration' });
+  }
+});
+
+router.put('/event-registrations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_notes } = req.body;
+
+    await db.run(
+      `UPDATE event_registrations SET status = COALESCE(?, status), admin_notes = COALESCE(?, admin_notes), updated_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL`,
+      [status || null, admin_notes || null, id]
+    );
+
+    res.json({ success: true, message: 'Event registration updated successfully' });
+  } catch (error) {
+    logger.error('Update event registration error:', error);
+    res.status(500).json({ error: 'Failed to update event registration' });
+  }
+});
+
+router.delete('/event-registrations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const hardDelete = req.query.hard === 'true';
+
+    if (hardDelete && req.user.role === 'super_admin') {
+      await db.run('DELETE FROM event_registrations WHERE id = ?', [id]);
+    } else {
+      await db.run('UPDATE event_registrations SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?', [id]);
+    }
+
+    res.json({ success: true, message: 'Event registration deleted successfully' });
+  } catch (error) {
+    logger.error('Delete event registration error:', error);
+    res.status(500).json({ error: 'Failed to delete event registration' });
   }
 });
 

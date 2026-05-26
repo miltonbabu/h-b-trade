@@ -51,6 +51,7 @@ export default function CleanupPage() {
     products: 'Products',
     videos: 'Videos',
     messages: 'Messages',
+    event_registrations: 'Event Registrations',
   };
 
   return (
