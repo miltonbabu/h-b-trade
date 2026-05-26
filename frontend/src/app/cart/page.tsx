@@ -564,6 +564,8 @@ export default function CartPage() {
               </Card>
 
               {/* Payment Option Selection */}
+              <Card className="mt-6">
+                <CardContent className="p-6">
                   <div className="space-y-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Payment Option *
