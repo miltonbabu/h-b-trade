@@ -47,7 +47,6 @@ export default function CartPage() {
       try {
         const res = await api.get('/settings');
         const data = res.data.data;
-        console.log('Settings API Response:', data); // <-- DEBUG LOG
         setPaymentInfo({
           bkash: data.bkash || '',
           nagad: data.nagad || '',
@@ -58,7 +57,7 @@ export default function CartPage() {
           alipayQr: data.alipayQr || data.alipay_qr || '',
         });
       } catch (err) {
-        console.error('Failed to fetch payment settings:', err); // <-- DEBUG LOG
+        console.error('[Cart] Failed to fetch payment settings:', err);
       } finally {
         setPaymentInfoLoading(false);
       }
@@ -86,9 +85,23 @@ export default function CartPage() {
 
   const getImageSrc = (path: string | undefined) => {
     if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
     if (path.startsWith('data:')) return path;
-    if (path.startsWith('http')) return path;
+    // Raw base64 string (no data: prefix) — detect by checking if it looks like base64
+    if (/^[A-Za-z0-9+/=\s]+$/.test(path) && path.length > 100) {
+      return `data:image/png;base64,${path}`;
+    }
+    if (path.startsWith('/')) return path;
     return `/qr-codes/${path}`;
+  };
+
+  const handleQrError = (e: React.SyntheticEvent<HTMLImageElement>, fallback: string) => {
+    const img = e.currentTarget;
+    if (img.src !== fallback) {
+      img.src = fallback;
+    } else {
+      img.style.display = 'none';
+    }
   };
 
   const handleUserInfoChange = (field: string, value: string) => {
@@ -596,6 +609,7 @@ export default function CartPage() {
                             src={getImageSrc(paymentInfo.wechatQr)}
                             alt="WeChat Pay QR"
                             className="w-40 h-40 object-contain rounded-lg"
+                            onError={(e) => handleQrError(e, '/qr-codes/wechat-qr.png')}
                           />
                         </div>
                       </div>
@@ -609,6 +623,7 @@ export default function CartPage() {
                             src={getImageSrc(paymentInfo.alipayQr)}
                             alt="Alipay QR"
                             className="w-40 h-40 object-contain rounded-lg"
+                            onError={(e) => handleQrError(e, '/qr-codes/alipay-qr.png')}
                           />
                         </div>
                       </div>
@@ -767,6 +782,7 @@ export default function CartPage() {
                                   src={getImageSrc(paymentInfo.wechatQr)}
                                   alt="WeChat Pay QR Code"
                                   className="w-48 h-48 object-contain"
+                                  onError={(e) => handleQrError(e, '/qr-codes/wechat-qr.png')}
                                 />
                               </div>
                               ) : (
@@ -797,6 +813,7 @@ export default function CartPage() {
                                   src={getImageSrc(paymentInfo.alipayQr)}
                                   alt="Alipay QR Code"
                                   className="w-48 h-48 object-contain"
+                                  onError={(e) => handleQrError(e, '/qr-codes/alipay-qr.png')}
                                 />
                               </div>
                               ) : (

@@ -1289,41 +1289,24 @@ router.put("/settings", [
   handleValidationErrors
 ], async (req, res) => {
   try {
-    const {
-      phone,
-      email,
-      whatsapp_link,
-      facebook_page,
-      facebook_group,
-      office_address,
-      company_name,
-      bkash,
-      nagad,
-      bank_account,
-      wechat,
-      alipay,
-      wechat_qr,
-      alipay_qr,
-    } = req.body;
-
     const toNull = (v) => (v === undefined || v === null || v === '') ? null : v;
 
-    const fields = {
-      phone: toNull(phone),
-      email: toNull(email),
-      whatsapp_link: toNull(whatsapp_link),
-      facebook_page: toNull(facebook_page),
-      facebook_group: toNull(facebook_group),
-      office_address: toNull(office_address),
-      company_name: toNull(company_name),
-      bkash: toNull(bkash),
-      nagad: toNull(nagad),
-      bank_account: toNull(bank_account),
-      wechat: toNull(wechat),
-      alipay: toNull(alipay),
-      wechat_qr: toNull(wechat_qr),
-      alipay_qr: toNull(alipay_qr),
-    };
+    const allowedFields = [
+      'phone', 'email', 'whatsapp_link', 'facebook_page', 'facebook_group',
+      'office_address', 'company_name', 'bkash', 'nagad', 'bank_account',
+      'wechat', 'alipay', 'wechat_qr', 'alipay_qr',
+    ];
+
+    const fields = {};
+    for (const key of allowedFields) {
+      if (key in req.body) {
+        fields[key] = toNull(req.body[key]);
+      }
+    }
+
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
 
     const setClauses = Object.keys(fields).map(key => `${key} = ?`).join(', ');
     const values = Object.values(fields);

@@ -56,7 +56,6 @@ export default function AdminSettingsPage() {
     try {
       const response = await api.get('/admin/settings');
       const s = response.data.data;
-      console.log('Admin Settings API Response:', s); // <-- DEBUG LOG
       setFormData({
         company_name: s.company_name || '',
         phone: s.phone || '',
@@ -74,7 +73,7 @@ export default function AdminSettingsPage() {
         alipay_qr: s.alipay_qr || '',
       });
     } catch (error) {
-      console.error('Failed to fetch settings:', error); // <-- DEBUG LOG
+      console.error('Failed to fetch settings:', error);
     } finally {
       setLoading(false);
     }
@@ -86,13 +85,10 @@ export default function AdminSettingsPage() {
     setMessage({ type: '', text: '' });
 
     try {
-      console.log('PUT /admin/settings request body:', formData); // <-- DEBUG LOG
       const res = await api.put('/admin/settings', formData);
-      console.log('PUT /admin/settings response:', res.data); // <-- DEBUG LOG
       setMessage({ type: 'success', text: 'Settings saved successfully!' });
       fetchSettings();
     } catch (error: any) {
-      console.error('PUT /admin/settings error:', error.response?.data || error); // <-- DEBUG LOG
       setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to save settings. Please try again.' });
     } finally {
       setSaving(false);
@@ -136,6 +132,10 @@ export default function AdminSettingsPage() {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     if (url.startsWith('data:')) return url;
+    // Raw base64 string (no data: prefix) — detect by checking if it looks like base64
+    if (/^[A-Za-z0-9+/=\s]+$/.test(url) && url.length > 100) {
+      return `data:image/png;base64,${url}`;
+    }
     if (url.startsWith('/')) return url;
     return `/qr-codes/${url}`;
   };
