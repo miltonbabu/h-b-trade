@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import EventPopup from "@/components/events/EventPopup";
 import { Card, CardContent } from "@/components/ui/Card";
 import {
   Package,
@@ -189,6 +190,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <EventPopup />
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
         <div 

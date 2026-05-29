@@ -98,6 +98,12 @@ module.exports = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "float-rotate": {
+          "0%, 100%": { transform: "translateY(0) rotateY(0deg)" },
+          "25%": { transform: "translateY(-5px) rotateY(3deg)" },
+          "50%": { transform: "translateY(-10px) rotateY(0deg)" },
+          "75%": { transform: "translateY(-5px) rotateY(-3deg)" },
+        },
         "pulse-glow": {
           "0%, 100%": { boxShadow: "0 0 20px rgba(13, 148, 136, 0.4)" },
           "50%": { boxShadow: "0 0 40px rgba(13, 148, 136, 0.8)" },
@@ -129,6 +135,7 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "float": "float 3s ease-in-out infinite",
+        "float-rotate": "float-rotate 6s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "gradient-shift": "gradient-shift 3s ease infinite",
         "slide-in-right": "slide-in-right 0.5s ease-out",
