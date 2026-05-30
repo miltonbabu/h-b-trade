@@ -20,6 +20,13 @@ const EventPopup = () => {
     setIsClosing(true);
     setTimeout(() => {
       setIsVisible(false);
+    }, 300);
+  };
+
+  const handleRegisterClick = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsVisible(false);
       router.push("/events");
     }, 300);
   };
@@ -48,7 +55,7 @@ const EventPopup = () => {
           <X size={20} className="sm:w-[18px] sm:h-[18px]" />
         </button>
 
-        <div className="relative cursor-pointer" onClick={handleClose}>
+        <div className="relative cursor-pointer" onClick={handleRegisterClick}>
           <img
             src="/images/ciaafo_2026_popup_final.png"
             alt="CIAAF Zhengzhou 2026 - 24th China International Auto Aftermarket Fair"
@@ -61,7 +68,7 @@ const EventPopup = () => {
             Register now for the 24th China International Auto Aftermarket Fair
           </p>
           <button
-            onClick={handleClose}
+            onClick={handleRegisterClick}
             className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 active:from-orange-600 active:to-yellow-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
             Register Now →
