@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -170,13 +170,15 @@ function getPrefix(trackingNumber: string): string {
 
 function SearchParamsHandler({ onNumberFound }: { onNumberFound: (number: string) => void }) {
   const searchParams = useSearchParams();
+  const [processedNumber, setProcessedNumber] = useState<string | null>(null);
   
   useEffect(() => {
     const numberFromUrl = searchParams.get('number');
-    if (numberFromUrl) {
+    if (numberFromUrl && numberFromUrl !== processedNumber) {
+      setProcessedNumber(numberFromUrl);
       onNumberFound(numberFromUrl);
     }
-  }, [searchParams, onNumberFound]);
+  }, [searchParams]);
   
   return null;
 }
@@ -189,7 +191,7 @@ export default function UnifiedTrackingPage() {
   const { user, isAuthenticated } = useAuth();
   const [myTrackingNumbers, setMyTrackingNumbers] = useState<Array<{ tracking_number: string; type: string; label: string; status: string; created_at: string }>>([]);
 
-  const handleNumberFromUrl = (number: string) => {
+  const handleNumberFromUrl = useCallback((number: string) => {
     setTrackingNumber(number);
     setIsLoading(true);
     setError('');
@@ -208,7 +210,7 @@ export default function UnifiedTrackingPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
