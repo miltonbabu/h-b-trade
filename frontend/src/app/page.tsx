@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import EventPopup from "@/components/events/EventPopup";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
 import {
   Package,
   Plane,
@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { Video } from "@/types";
+
+// Lazy load event popup for faster initial page load
+const EventPopup = lazy(() => import("@/components/events/EventPopup"));
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -190,7 +193,9 @@ export default function HomePage() {
 
   return (
     <div>
-      <EventPopup />
+      <Suspense fallback={null}>
+        <EventPopup />
+      </Suspense>
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
         <div 
@@ -342,8 +347,19 @@ export default function HomePage() {
           </div>
 
           {videosLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+              {[...Array(2)].map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-0">
+                    <Skeleton className="w-full aspect-video" />
+                    <div className="p-4 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : videos.length === 0 ? (
             <div className="text-center py-12">

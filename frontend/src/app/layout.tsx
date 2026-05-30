@@ -1,14 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileBottomTabs from "@/components/layout/MobileBottomTabs";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import FloatingCartButton from "@/components/FloatingCartButton";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
+
+// Lazy load heavy components
+const WhatsAppButton = dynamic(() => import("@/components/WhatsAppButton"), {
+  loading: () => null,
+  ssr: false,
+});
+const FloatingCartButton = dynamic(() => import("@/components/FloatingCartButton"), {
+  loading: () => null,
+  ssr: false,
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,6 +89,14 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="H&B Trade" />
+        
+        {/* Preconnect to API for faster loading */}
+        <link rel="preconnect" href="https://api.hbtrade.ltd" />
+        <link rel="dns-prefetch" href="https://api.hbtrade.ltd" />
+        
+        {/* Preconnect to CDN for images */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
         <AuthProvider>

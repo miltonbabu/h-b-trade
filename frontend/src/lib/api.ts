@@ -18,6 +18,7 @@ export const isApiMisconfigured = (): boolean => {
 
 export const api = axios.create({
   baseURL: API_URL,
+  timeout: 10000, // 10 second timeout for faster failure
   headers: {
     'Content-Type': 'application/json',
   },
