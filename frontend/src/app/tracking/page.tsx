@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Skeleton, CardSkeleton, ProgressSkeleton } from '@/components/ui/Skeleton';
 import { Search, Package, CheckCircle, Truck, Plane, Home, Loader2, Warehouse, Building, ClipboardCheck, XCircle, ShoppingCart, Ship, Users, Globe, Clock, Wrench } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDate, formatDateTime, formatShortDateTime } from '@/lib/utils';
@@ -385,7 +386,13 @@ export default function UnifiedTrackingPage() {
       {/* Results */}
       <section id="tracking-results" className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
-          {data ? (
+          {isLoading ? (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Card><CardSkeleton /></Card>
+              <Card><ProgressSkeleton /></Card>
+              <Card><CardSkeleton /></Card>
+            </div>
+          ) : data ? (
             <div className="max-w-4xl mx-auto space-y-6">
 
               {/* Type Badge */}

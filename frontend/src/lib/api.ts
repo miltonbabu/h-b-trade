@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+// In-memory cache for GET requests with TTL
+const cache = new Map<string, { data: any; expires: number }>();
+const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.hbtrade.ltd/api';
 
 // Detect the #1 production misconfiguration: NEXT_PUBLIC_API_URL was never set on
@@ -19,9 +23,18 @@ export const api = axios.create({
   },
 });
 
-// Add token to requests
+// Caching request interceptor for GET requests
 api.interceptors.request.use(
   (config) => {
+    // Check cache for GET requests
+    if (config.method?.toLowerCase() === 'get') {
+      const cacheKey = `${config.url}${config.params ? JSON.stringify(config.params) : ''}`;
+      const cached = cache.get(cacheKey);
+      if (cached && cached.expires > Date.now()) {
+        return Promise.reject({ cached: true, data: cached.data, status: 200 });
+      }
+    }
+    
     // Let browser set Content-Type for FormData (with boundary)
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
@@ -49,10 +62,36 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle response errors
+// Function to invalidate cache
+export const invalidateCache = (pattern?: string) => {
+  if (pattern) {
+    for (const key of cache.keys()) {
+      if (key.includes(pattern)) {
+        cache.delete(key);
+      }
+    }
+  } else {
+    cache.clear();
+  }
+};
+
+// Handle response with caching and error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config?.method?.toLowerCase() === 'get') {
+      const cacheKey = `${response.config.url}${response.config.params ? JSON.stringify(response.config.params) : ''}`;
+      const ttl = (response.config as any).cacheTTL || DEFAULT_TTL;
+      cache.set(cacheKey, {
+        data: response,
+        expires: Date.now() + ttl,
+      });
+    }
+    return response;
+  },
   (error) => {
+    if (error.cached && error.status === 200) {
+      return Promise.resolve(error.data);
+    }
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         if (window.location.pathname.startsWith('/admin')) {
