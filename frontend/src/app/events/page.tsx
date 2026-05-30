@@ -130,54 +130,54 @@ function EventsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 relative z-10">
+                <div className="space-y-4 sm:space-y-6 relative z-10">
                   <div>
-                    <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 animate-gradient-shift">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight sm:leading-normal mb-2 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 animate-gradient-shift">
                       Join the <span className="text-orange-400">2026 CIAAF</span> Zhengzhou
                     </h1>
-                    <div className="inline-block mb-4">
-                      <div className="bg-gradient-to-r from-teal-500 to-emerald-500 px-6 py-3 rounded-full shadow-xl animate-pulse">
-                        <p className="text-white font-bold text-lg">📅 June 26-28, 2026</p>
+                    <div className="inline-block mb-3 sm:mb-4">
+                      <div className="bg-gradient-to-r from-teal-500 to-emerald-500 px-3 py-1.5 sm:px-6 sm:py-3 rounded-full shadow-xl animate-pulse">
+                        <p className="text-white font-bold text-xs sm:text-base md:text-lg">📅 June 26-28, 2026</p>
                       </div>
                     </div>
-                    <p className="text-lg text-white leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg text-white leading-relaxed">
                       The 24th China International Auto Aftermarket Fair brings together industry leaders, innovators, and professionals from around the globe. Register now to participate in this premier B2B event.
                     </p>
                   </div>
 
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-1 h-6 bg-cyan-400 mt-1"></div>
+                  <div className="space-y-2 sm:space-y-3 pt-2 sm:pt-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="w-1 h-5 sm:h-6 bg-cyan-400 mt-0.5 sm:mt-1"></div>
                       <div>
-                        <p className="font-semibold text-yellow-200">100,000+ Annual Visitors</p>
-                        <p className="text-sm text-cyan-200">Wholesalers, distributors, retailers, and industry leaders</p>
+                        <p className="font-semibold text-sm sm:text-base text-yellow-200">100,000+ Annual Visitors</p>
+                        <p className="text-xs sm:text-sm text-cyan-200">Wholesalers, distributors, retailers, and industry leaders</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-1 h-6 bg-orange-400 mt-1"></div>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="w-1 h-5 sm:h-6 bg-orange-400 mt-0.5 sm:mt-1"></div>
                       <div>
-                        <p className="font-semibold text-yellow-200">3,000+ Exhibitors</p>
-                        <p className="text-sm text-cyan-200">Domestic and international automotive aftermarket suppliers</p>
+                        <p className="font-semibold text-sm sm:text-base text-yellow-200">3,000+ Exhibitors</p>
+                        <p className="text-xs sm:text-sm text-cyan-200">Domestic and international automotive aftermarket suppliers</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-1 h-6 bg-cyan-400 mt-1"></div>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="w-1 h-5 sm:h-6 bg-cyan-400 mt-0.5 sm:mt-1"></div>
                       <div>
-                        <p className="font-semibold text-yellow-200">UFI Certified</p>
-                        <p className="text-sm text-cyan-200">Recognized by the Global Association of the Exhibition Industry</p>
+                        <p className="font-semibold text-sm sm:text-base text-yellow-200">UFI Certified</p>
+                        <p className="text-xs sm:text-sm text-cyan-200">Recognized by the Global Association of the Exhibition Industry</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-6 flex flex-col sm:flex-row gap-4">
+                  <div className="pt-3 sm:pt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button
                       onClick={scrollToForm}
-                      className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 animate-pulse w-full sm:w-auto"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 animate-pulse w-full sm:w-auto"
                     >
                       <span>Register Now</span>
-                      <ArrowDown className="w-5 h-5 animate-bounce" />
+                      <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce" />
                     </button>
-                    <Link href="/events/detail" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-800/80 hover:bg-slate-700/90 text-white font-bold text-lg rounded-xl shadow-xl border border-orange-400/50 hover:border-orange-400 transition-all duration-300 w-full sm:w-auto">
+                    <Link href="/events/detail" className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-slate-800/80 hover:bg-slate-700/90 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl border border-orange-400/50 hover:border-orange-400 transition-all duration-300 w-full sm:w-auto">
                       View Event Details
                     </Link>
                   </div>
