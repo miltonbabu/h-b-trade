@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import dynamic from "next/dynamic";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -8,16 +7,7 @@ import MobileBottomTabs from "@/components/layout/MobileBottomTabs";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
-
-// Lazy load heavy components
-const WhatsAppButton = dynamic(() => import("@/components/WhatsAppButton"), {
-  loading: () => null,
-  ssr: false,
-});
-const FloatingCartButton = dynamic(() => import("@/components/FloatingCartButton"), {
-  loading: () => null,
-  ssr: false,
-});
+import ClientDynamicComponents from "@/components/ClientDynamicComponents";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -122,8 +112,7 @@ export default function RootLayout({
             <Footer />
             <div className="md:hidden h-20" aria-hidden="true" />
             <MobileBottomTabs />
-            <FloatingCartButton />
-            <WhatsAppButton />
+            <ClientDynamicComponents />
           </CartProvider>
         </AuthProvider>
       </body>
