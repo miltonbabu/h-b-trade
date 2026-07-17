@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 const HackerNotice = () => {
   const [lines, setLines] = useState<string[]>([]);
   const [showBox, setShowBox] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const fullText = [
     "> Initializing secure connection...",
@@ -22,6 +24,8 @@ const HackerNotice = () => {
   ];
 
   useEffect(() => {
+    if (dismissed) return;
+
     let currentLines: string[] = [];
     let index = 0;
 
@@ -43,21 +47,28 @@ const HackerNotice = () => {
       clearInterval(typeInterval);
       clearTimeout(showTimer);
     };
-  }, []);
+  }, [dismissed]);
 
-  if (!showBox) return null;
+  if (!showBox || dismissed) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[100] w-80 max-w-[calc(100vw-2rem)]">
-      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_20px_rgba(0,255,0,0.5)] overflow-hidden font-mono">
+    <div className="fixed top-4 right-4 z-[150] w-80 max-w-[calc(100vw-2rem)] select-none">
+      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_20px_rgba(0,255,0,0.7)] overflow-hidden font-mono">
         {/* Terminal header bar */}
-        <div className="flex items-center justify-between bg-green-900/40 border-b border-green-500 px-3 py-1.5">
+        <div className="flex items-center justify-between bg-green-900/60 border-b border-green-500 px-3 py-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
             <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
           </div>
           <span className="text-green-400 text-[10px] tracking-wider">root@cn-gov:~#</span>
+          <button
+            onClick={() => setDismissed(true)}
+            className="text-green-400 hover:text-red-500 transition-colors"
+            aria-label="Close terminal"
+          >
+            <X size={14} />
+          </button>
         </div>
 
         {/* Terminal body */}
