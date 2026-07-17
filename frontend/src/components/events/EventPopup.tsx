@@ -17,19 +17,23 @@ const EventPopup = () => {
     }
 
     // Show popup after 1.5s
-    const timer = setTimeout(() => {
+    const showTimer = setTimeout(() => {
       setIsVisible(true);
-      // Auto-hide after 1 second of being visible
-      setTimeout(() => {
-        setIsClosing(true);
-        setTimeout(() => {
-          setIsVisible(false);
-          sessionStorage.setItem("eventPopupShown", "true");
-        }, 300);
-      }, 1000);
     }, 1500);
 
-    return () => clearTimeout(timer);
+    // Auto-hide after 2.5s (1s after showing)
+    const hideTimer = setTimeout(() => {
+      setIsClosing(true);
+      setTimeout(() => {
+        setIsVisible(false);
+        sessionStorage.setItem("eventPopupShown", "true");
+      }, 300);
+    }, 2500);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, []);
 
   const handleRegisterClick = () => {
