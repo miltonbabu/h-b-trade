@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
 
 const HackerNotice = () => {
   const [lines, setLines] = useState<string[]>([]);
   const [showBox, setShowBox] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
 
   const fullText = [
     "> Initializing secure connection...",
@@ -24,8 +22,6 @@ const HackerNotice = () => {
   ];
 
   useEffect(() => {
-    if (dismissed) return;
-
     let currentLines: string[] = [];
     let index = 0;
 
@@ -47,13 +43,13 @@ const HackerNotice = () => {
       clearInterval(typeInterval);
       clearTimeout(showTimer);
     };
-  }, [dismissed]);
+  }, []);
 
-  if (!showBox || dismissed) return null;
+  if (!showBox) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none p-4">
-      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_30px_rgba(0,255,0,0.8)] overflow-hidden font-mono w-full max-w-md pointer-events-auto">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_30px_rgba(0,255,0,0.8)] overflow-hidden font-mono w-full max-w-md">
         {/* Terminal header bar */}
         <div className="flex items-center justify-between bg-green-900/60 border-b border-green-500 px-3 py-1.5">
           <div className="flex items-center gap-1.5">
@@ -62,13 +58,7 @@ const HackerNotice = () => {
             <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
           </div>
           <span className="text-green-400 text-[10px] tracking-wider">root@cn-gov:~#</span>
-          <button
-            onClick={() => setDismissed(true)}
-            className="text-green-400 hover:text-red-500 transition-colors"
-            aria-label="Close terminal"
-          >
-            <X size={14} />
-          </button>
+          <span className="w-3.5"></span>
         </div>
 
         {/* Terminal body */}
