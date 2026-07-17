@@ -9,9 +9,26 @@ const EventPopup = () => {
   const router = useRouter();
 
   useEffect(() => {
+    // Check if popup was already shown in this session
+    const alreadyShown = sessionStorage.getItem("eventPopupShown");
+
+    if (alreadyShown) {
+      return; // Don't show again
+    }
+
+    // Show popup after 1.5s
     const timer = setTimeout(() => {
       setIsVisible(true);
+      // Auto-hide after 1 second of being visible
+      setTimeout(() => {
+        setIsClosing(true);
+        setTimeout(() => {
+          setIsVisible(false);
+          sessionStorage.setItem("eventPopupShown", "true");
+        }, 300);
+      }, 1000);
     }, 1500);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -19,6 +36,7 @@ const EventPopup = () => {
     setIsClosing(true);
     setTimeout(() => {
       setIsVisible(false);
+      sessionStorage.setItem("eventPopupShown", "true");
       router.push("/events");
     }, 300);
   };

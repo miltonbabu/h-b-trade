@@ -41,7 +41,7 @@ const HackerNotice = () => {
 
     const showTimer = setTimeout(() => {
       setShowBox(true);
-    }, 500);
+    }, 2000);
 
     return () => {
       clearInterval(typeInterval);
@@ -52,8 +52,8 @@ const HackerNotice = () => {
   if (!showBox || dismissed) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[150] w-80 max-w-[calc(100vw-2rem)] select-none">
-      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_20px_rgba(0,255,0,0.7)] overflow-hidden font-mono">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center pointer-events-none p-4">
+      <div className="bg-black border-2 border-green-500 rounded-lg shadow-[0_0_30px_rgba(0,255,0,0.8)] overflow-hidden font-mono w-full max-w-md pointer-events-auto">
         {/* Terminal header bar */}
         <div className="flex items-center justify-between bg-green-900/60 border-b border-green-500 px-3 py-1.5">
           <div className="flex items-center gap-1.5">
@@ -72,11 +72,11 @@ const HackerNotice = () => {
         </div>
 
         {/* Terminal body */}
-        <div className="p-3 h-64 overflow-y-auto">
+        <div className="p-3 sm:p-4 max-h-[50vh] overflow-y-auto">
           {lines.map((line, i) => (
             <div
               key={i}
-              className={`text-xs leading-relaxed whitespace-pre-wrap break-words ${
+              className={`text-[10px] sm:text-xs leading-relaxed whitespace-pre-wrap break-words ${
                 line.includes("WARNING") || line.includes("under Chinese government")
                   ? "text-red-500 font-bold"
                   : line.includes("terminated")

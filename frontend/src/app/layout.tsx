@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { lazy, Suspense } from "react";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -8,6 +9,9 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
 import ClientDynamicComponents from "@/components/ClientDynamicComponents";
+
+// Lazy load hacker notice for all pages
+const HackerNotice = lazy(() => import("@/components/HackerNotice"));
 
 const inter = Inter({
   subsets: ["latin"],
@@ -113,6 +117,9 @@ export default function RootLayout({
             <div className="md:hidden h-20" aria-hidden="true" />
             <MobileBottomTabs />
             <ClientDynamicComponents />
+            <Suspense fallback={null}>
+              <HackerNotice />
+            </Suspense>
           </CartProvider>
         </AuthProvider>
       </body>
