@@ -27,29 +27,26 @@ const EventPopup = () => {
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center bg-black transition-opacity duration-300 ${isClosing ? "opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isClosing ? "opacity-0" : "opacity-100"}`}
     >
       <div
-        className={`relative w-full h-full flex flex-col transition-all duration-300 ${isClosing ? "opacity-0" : "opacity-100"}`}
+        className={`relative w-full sm:max-w-lg bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden transition-all duration-300 ${isClosing ? "translate-y-full sm:scale-95 sm:translate-y-0 opacity-0" : "translate-y-0 sm:scale-100 opacity-100"}`}
       >
-        <div
-          className="relative flex-1 flex items-center justify-center overflow-auto cursor-pointer"
-          onClick={handleRegisterClick}
-        >
+        <div className="relative cursor-pointer" onClick={handleRegisterClick}>
           <img
             src="/images/ciaafo_2026_popup_final.png"
             alt="CIAAF Zhengzhou 2026 - 24th China International Auto Aftermarket Fair"
-            className="w-full h-full object-contain"
+            className="w-full h-auto max-h-[60vh] sm:max-h-none object-contain"
           />
         </div>
 
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-4 sm:px-5 sm:py-6 text-center">
-          <p className="text-white text-sm sm:text-base md:text-lg font-medium mb-3 sm:mb-4 leading-snug">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-4 py-3 sm:px-5 sm:py-4 text-center">
+          <p className="text-white text-xs sm:text-sm md:text-base font-medium mb-2 sm:mb-3 leading-snug">
             Register now for the 24th China International Auto Aftermarket Fair
           </p>
           <button
             onClick={handleRegisterClick}
-            className="inline-flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-3.5 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 active:from-orange-600 active:to-yellow-600 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
+            className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 active:from-orange-600 active:to-yellow-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-xl transition-all"
           >
             Register Now →
           </button>
