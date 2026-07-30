@@ -952,25 +952,25 @@ export default function AdminInvoicesPage() {
                         <style>
                           body { margin: 0; padding: 20px; font-family: sans-serif; background: #f3f4f6; }
                           .preview-box { background: white; padding: 40px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-radius: 8px; }
-                          .header { background: #0d9488; color: white; padding: 20px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; }
-                          .accent { height: 4px; background: #f97316; }
+                          .header { background: #1e3a5f; color: white; padding: 20px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; }
+                          .accent { height: 4px; background: #047857; }
                           h1 { margin: 0; font-size: 24px; }
                           .subtitle { font-size: 11px; opacity: 0.85; margin-top: 4px; }
                           .inv-num { font-size: 18px; font-weight: bold; text-align: right; }
                           .inv-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
                           .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0; }
                           .info-box { background: #f9fafb; padding: 14px; border-radius: 6px; border: 1px solid #e5e7eb; }
-                          .info-title { font-size: 9px; font-weight: 700; color: #0d9488; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+                          .info-title { font-size: 9px; font-weight: 700; color: #1e3a5f; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
                           .field { margin-bottom: 4px; font-size: 10px; }
                           .field-label { color: #9ca3af; }
                           .field-value { color: #1e293b; font-weight: 500; }
                           table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-                          th { background: #0d9488; color: white; padding: 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
+                          th { background: #1e3a5f; color: white; padding: 8px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; }
                           td { padding: 8px; font-size: 10px; border-bottom: 1px solid #e5e7eb; }
-                          tr:nth-child(even) td { background: #f0fdfa; }
+                          tr:nth-child(even) td { background: #f0f4f9; }
                           .total-section { text-align: right; margin-top: 12px; }
                           .total-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; max-width: 300px; margin-left: auto; }
-                          .total-final { font-size: 14px; font-weight: bold; color: #0d9488; border-top: 2px solid #0d9488; padding-top: 8px; margin-top: 8px; }
+                          .total-final { font-size: 14px; font-weight: bold; color: #1e3a5f; border-top: 2px solid #1e3a5f; padding-top: 8px; margin-top: 8px; }
                           .footer { text-align: center; font-size: 9px; color: #9ca3af; margin-top: 24px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
                         </style>
                       </head>

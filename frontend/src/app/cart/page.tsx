@@ -205,22 +205,22 @@ export default function CartPage() {
 
   if (orderSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
         <Card className="max-w-lg w-full mx-4">
           <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Package className="w-10 h-10 text-emerald-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               Order Placed Successfully!
             </h2>
             <p className="text-gray-600 mb-2">Your order has been submitted.</p>
 
-            <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-6">
+            <div className="bg-slate-100 border-2 border-slate-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1">
                 Your Tracking Number:
               </p>
-              <p className="text-2xl font-bold text-orange-600">
+              <p className="text-2xl font-bold text-amber-600">
                 {trackingNumber}
               </p>
               <p className="text-xs text-gray-500 mt-2">
@@ -230,12 +230,12 @@ export default function CartPage() {
 
             <div className="space-y-3">
               <Link href="/tracking" className="block">
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
                   Track Your Order
                 </Button>
               </Link>
               <Link href="/wholesale-products" className="block">
-                <Button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+                <Button className="w-full bg-slate-800 hover:bg-slate-900 text-white">
                   Continue Shopping
                 </Button>
               </Link>
@@ -247,9 +247,9 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white py-12">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4">
             <Link href="/wholesale-products">
@@ -275,14 +275,14 @@ export default function CartPage() {
           <Card className="max-w-2xl mx-auto">
             <CardContent className="p-12 text-center">
               <ShoppingBag className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 Your cart is empty
               </h2>
               <p className="text-gray-600 mb-6">
                 Add some products to get started!
               </p>
               <Link href="/wholesale-products">
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                <Button className="bg-red-600 hover:bg-red-700 text-white">
                   Browse Products
                 </Button>
               </Link>
@@ -292,7 +292,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">
                 Cart Items ({items.length})
               </h2>
               {items.map((item) => (
@@ -318,12 +318,12 @@ export default function CartPage() {
                       {/* Product Details */}
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-xl font-bold text-gray-800">
+                          <h3 className="text-xl font-bold text-slate-900">
                             {item.name}
                           </h3>
                           <Button
                             onClick={() => removeItem(item.id)}
-                            className="text-red-500 hover:text-red-700 p-0 h-auto"
+                            className="text-gray-400 hover:text-red-600 p-0 h-auto"
                             variant="ghost"
                           >
                             <Trash2 size={20} />
@@ -333,7 +333,7 @@ export default function CartPage() {
                           {item.description}
                         </p>
                         <div className="flex items-center gap-4 mb-3">
-                          <span className="text-2xl font-bold text-orange-600">
+                          <span className="text-2xl font-bold text-amber-600">
                             ৳{item.price.toFixed(2)}
                           </span>
                           <span className="text-sm text-gray-500">
@@ -357,7 +357,7 @@ export default function CartPage() {
                             </div>
                             <div className="col-span-2 border-t border-gray-200 pt-2 mt-1">
                               <span className="text-gray-500">Total Units:</span>
-                              <span className="font-bold text-orange-600 ml-1">{getItemTotalUnits(item)} units</span>
+                              <span className="font-bold text-amber-600 ml-1">{getItemTotalUnits(item)} units</span>
                             </div>
                           </div>
                         </div>
@@ -371,7 +371,7 @@ export default function CartPage() {
                               onClick={() =>
                                 updateQuantity(item.id, item.quantity - 1)
                               }
-                              className="w-8 h-8 p-0 bg-gray-200 hover:bg-gray-300 text-gray-700"
+                              className="w-8 h-8 p-0 bg-slate-800 hover:bg-slate-900 text-white"
                             >
                               <Minus size={16} />
                             </Button>
@@ -382,7 +382,7 @@ export default function CartPage() {
                               onClick={() =>
                                 updateQuantity(item.id, item.quantity + 1)
                               }
-                              className="w-8 h-8 p-0 bg-orange-500 hover:bg-orange-600 text-white"
+                              className="w-8 h-8 p-0 bg-slate-800 hover:bg-slate-900 text-white"
                             >
                               <Plus size={16} />
                             </Button>
@@ -397,7 +397,7 @@ export default function CartPage() {
                         <span className="text-gray-600">
                           Item Total ({getItemTotalUnits(item)} units × ৳{item.price.toFixed(2)}):
                         </span>
-                        <span className="text-2xl font-bold text-gray-800">
+                        <span className="text-2xl font-bold text-slate-900">
                           ৳{getItemTotalPrice(item).toFixed(2)}
                         </span>
                       </div>
@@ -409,7 +409,7 @@ export default function CartPage() {
               {/* User Information Form */}
               <Card className="mt-6">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <User size={24} />
                     Your Information
                   </h3>
@@ -424,7 +424,7 @@ export default function CartPage() {
                         onChange={(e) =>
                           handleUserInfoChange("name", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         placeholder="Enter your full name"
                         required
                       />
@@ -439,7 +439,7 @@ export default function CartPage() {
                         onChange={(e) =>
                           handleUserInfoChange("phone", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         placeholder="Enter your phone number"
                         required
                       />
@@ -454,7 +454,7 @@ export default function CartPage() {
                         onChange={(e) =>
                           handleUserInfoChange("email", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -468,7 +468,7 @@ export default function CartPage() {
                         onChange={(e) =>
                           handleUserInfoChange("whatsapp", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         placeholder="Enter WhatsApp number"
                       />
                     </div>
@@ -481,7 +481,7 @@ export default function CartPage() {
                         onChange={(e) =>
                           handleUserInfoChange("address", e.target.value)
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         placeholder="Enter your full delivery address"
                         rows={3}
                         required
@@ -494,7 +494,7 @@ export default function CartPage() {
               {/* Shipping Method Selection */}
               <Card className="mt-6">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <Package size={24} />
                     Shipping Method *
                   </h3>
@@ -504,12 +504,12 @@ export default function CartPage() {
                       onClick={() => setShippingMethod("air")}
                       className={`p-6 border-2 rounded-lg text-left transition-all ${
                         shippingMethod === "air"
-                          ? "border-orange-500 bg-orange-50"
+                          ? "border-red-600 bg-red-50"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
                     >
                       <div className="text-4xl mb-2">✈️</div>
-                      <p className="font-bold text-gray-800 text-lg">
+                      <p className="font-bold text-slate-900 text-lg">
                         Air Cargo
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -524,12 +524,12 @@ export default function CartPage() {
                       onClick={() => setShippingMethod("sea")}
                       className={`p-6 border-2 rounded-lg text-left transition-all ${
                         shippingMethod === "sea"
-                          ? "border-orange-500 bg-orange-50"
+                          ? "border-red-600 bg-red-50"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
                     >
                       <div className="text-4xl mb-2">🚢</div>
-                      <p className="font-bold text-gray-800 text-lg">
+                      <p className="font-bold text-slate-900 text-lg">
                         Sea Freight
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -544,12 +544,12 @@ export default function CartPage() {
                       onClick={() => setShippingMethod("hand")}
                       className={`p-6 border-2 rounded-lg text-left transition-all ${
                         shippingMethod === "hand"
-                          ? "border-orange-500 bg-orange-50"
+                          ? "border-red-600 bg-red-50"
                           : "border-gray-300 hover:border-gray-400"
                       }`}
                     >
                       <div className="text-4xl mb-2">✋</div>
-                      <p className="font-bold text-gray-800 text-lg">
+                      <p className="font-bold text-slate-900 text-lg">
                         Hand Carry
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
@@ -576,11 +576,11 @@ export default function CartPage() {
                         onClick={() => setPaymentOption("later")}
                         className={`p-4 border-2 rounded-lg text-left transition-all ${
                           paymentOption === "later"
-                            ? "border-orange-500 bg-orange-50"
+                            ? "border-red-600 bg-red-50"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
                       >
-                        <p className="font-bold text-gray-800">Pay Later</p>
+                        <p className="font-bold text-slate-900">Pay Later</p>
                         <p className="text-sm text-gray-600">
                           Pay after order confirmation
                         </p>
@@ -590,11 +590,11 @@ export default function CartPage() {
                         onClick={() => setPaymentOption("now")}
                         className={`p-4 border-2 rounded-lg text-left transition-all ${
                           paymentOption === "now"
-                            ? "border-orange-500 bg-orange-50"
+                            ? "border-red-600 bg-red-50"
                             : "border-gray-300 hover:border-gray-400"
                         }`}
                       >
-                        <p className="font-bold text-gray-800">Pay Now</p>
+                        <p className="font-bold text-slate-900">Pay Now</p>
                         <p className="text-sm text-gray-600">
                           Make payment now
                         </p>
@@ -605,8 +605,8 @@ export default function CartPage() {
                     {paymentOption === "now" && (
                       <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
                         {/* Payment Instructions */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                          <h4 className="font-bold text-blue-800 mb-2">
+                        <div className="bg-slate-100 border border-slate-200 rounded-lg p-4 mb-4">
+                          <h4 className="font-bold text-slate-900 mb-2">
                             Payment Instructions:
                           </h4>
                           <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
@@ -634,7 +634,7 @@ export default function CartPage() {
                           <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                             required
                           >
                             <option value="">Select payment method</option>
@@ -665,8 +665,8 @@ export default function CartPage() {
                         )}
 
                         {paymentMethod === "nagad" && paymentInfo.nagad && (
-                          <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4">
-                            <p className="font-bold text-orange-700 mb-1">
+                          <div className="bg-accent/10 border-2 border-accent/30 rounded-lg p-4">
+                            <p className="font-bold text-accent-800 mb-1">
                               Send payment to this Nagad number:
                             </p>
                             <p className="text-2xl font-bold text-gray-800">
@@ -683,8 +683,8 @@ export default function CartPage() {
 
                         {paymentMethod === "bank" &&
                           paymentInfo.bankAccount && (
-                            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-                              <p className="font-bold text-blue-700 mb-2">
+                            <div className="bg-secondary/5 border-2 border-secondary/20 rounded-lg p-4">
+                              <p className="font-bold text-secondary-800 mb-2">
                                 Bank Account Details:
                               </p>
                               <p className="text-sm font-semibold text-gray-800 whitespace-pre-line">
@@ -700,13 +700,13 @@ export default function CartPage() {
                           )}
 
                         {paymentMethod === "wechat" && (
-                            <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                              <p className="font-bold text-green-700 mb-2">
+                            <div className="bg-secondary/5 border-2 border-secondary/20 rounded-lg p-4">
+                              <p className="font-bold text-secondary-800 mb-2">
                                 Scan WeChat Pay QR Code:
                               </p>
                               {paymentInfoLoading ? (
                                 <div className="flex justify-center py-4">
-                                  <Loader2 className="w-8 h-8 animate-spin text-green-500" />
+                                  <Loader2 className="w-8 h-8 animate-spin text-secondary" />
                                 </div>
                               ) : paymentInfo.wechatQr ? (
                               <div className="bg-white p-4 rounded-lg flex justify-center">
@@ -731,13 +731,13 @@ export default function CartPage() {
                           )}
 
                         {paymentMethod === "alipay" && (
-                            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-                              <p className="font-bold text-blue-700 mb-2">
+                            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                              <p className="font-bold text-blue-900 mb-2">
                                 Scan Alipay QR Code:
                               </p>
                               {paymentInfoLoading ? (
                                 <div className="flex justify-center py-4">
-                                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
                                 </div>
                               ) : paymentInfo.alipayQr ? (
                               <div className="bg-white p-4 rounded-lg flex justify-center">
@@ -773,8 +773,8 @@ export default function CartPage() {
                                 onChange={(e) =>
                                   setTransactionId(e.target.value)
                                 }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="Enter your transaction ID"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
+                                placeholder="Enter transaction ID"
                                 required
                               />
                             </div>
@@ -789,31 +789,12 @@ export default function CartPage() {
                                 onChange={(e) =>
                                   setPaymentAmount(e.target.value)
                                 }
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                                 placeholder={`Enter amount (Total: ৳${getTotalAmount().toFixed(2)})`}
                                 required
                               />
                             </div>
                           </>
-                        )}
-
-                        {paymentMethod && (paymentMethod === "wechat" || paymentMethod === "alipay") && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Payment Amount *
-                            </label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={paymentAmount}
-                              onChange={(e) =>
-                                setPaymentAmount(e.target.value)
-                              }
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                              placeholder={`Enter amount (Total: ৳${getTotalAmount().toFixed(2)})`}
-                              required
-                            />
-                          </div>
                         )}
                       </div>
                     )}
@@ -826,7 +807,7 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <Card className="sticky top-4">
                 <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                  <h2 className="text-2xl font-bold text-slate-900 mb-6">
                     Order Summary
                   </h2>
 
@@ -843,16 +824,16 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
-                      <span className="text-green-600 font-medium">
+                      <span className="text-emerald-600 font-medium">
                         Calculated later
                       </span>
                     </div>
                     <div className="border-t border-gray-200 pt-4">
                       <div className="flex justify-between">
-                        <span className="text-xl font-bold text-gray-800">
+                        <span className="text-xl font-bold text-slate-900">
                           Total
                         </span>
-                        <span className="text-2xl font-bold text-orange-600">
+                        <span className="text-2xl font-bold text-amber-700">
                           ৳{getTotalAmount().toFixed(2)}
                         </span>
                       </div>
@@ -862,7 +843,7 @@ export default function CartPage() {
                   <Button
                     onClick={handlePlaceOrder}
                     disabled={isProcessing || items.length === 0}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 text-lg font-bold"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-bold rounded-xl"
                   >
                     {isProcessing ? (
                       <>

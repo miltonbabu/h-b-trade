@@ -52,7 +52,7 @@ export default function ContactPage() {
             <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
               Contact Us
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-blue-100">
+            <p className="text-base sm:text-lg md:text-xl text-white/80">
               Have questions? We&apos;re here to help. Reach out to us through any of the channels below.
             </p>
           </div>
@@ -60,18 +60,18 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-4 sm:py-8 md:py-16">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* Contact Information */}
             <div>
-              <h2 className="text-2xl font-bold mb-4 sm:mb-6">Get in Touch</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-4 sm:mb-6">Get in Touch</h2>
               
               <div className="space-y-4 sm:space-y-6">
                 <Card>
                   <CardContent className="p-4 sm:p-6 flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="text-primary" size={24} />
+                    <div className="w-12 h-12 bg-slate-800/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Phone className="text-slate-800" size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
@@ -83,8 +83,8 @@ export default function ContactPage() {
 
                 <Card>
                   <CardContent className="p-4 sm:p-6 flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Mail className="text-primary" size={24} />
+                    <div className="w-12 h-12 bg-sky-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="text-sky-600" size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Email</h3>
@@ -96,8 +96,8 @@ export default function ContactPage() {
 
                 <Card>
                   <CardContent className="p-4 sm:p-6 flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="text-primary" size={24} />
+                    <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="text-red-600" size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Office Addresses</h3>
@@ -135,7 +135,7 @@ export default function ContactPage() {
                     href="https://facebook.com/hbtradebd"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+                    className="flex items-center gap-2 bg-[#1877f2] text-white px-6 py-3 rounded-lg hover:bg-[#166fe5] transition"
                   >
                     <Facebook size={20} />
                     Facebook
@@ -149,14 +149,14 @@ export default function ContactPage() {
               {isSuccess ? (
                 <Card className="text-center">
                   <CardContent className="p-8">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                      <CheckCircle className="text-green-500" size={40} />
+                    <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                      <CheckCircle className="text-emerald-600" size={40} />
                     </div>
-                    <h2 className="text-2xl font-bold mb-4">Message Sent!</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Message Sent!</h2>
                     <p className="text-gray-600 mb-4 sm:mb-6">
                       Thank you for contacting us. We&apos;ll get back to you within 24 hours.
                     </p>
-                    <Button onClick={() => setIsSuccess(false)}>
+                    <Button onClick={() => setIsSuccess(false)} className="bg-slate-800 hover:bg-slate-900 text-white">
                       Send Another Message
                     </Button>
                   </CardContent>
@@ -164,10 +164,10 @@ export default function ContactPage() {
               ) : (
                 <Card>
                   <CardContent className="p-4 sm:p-6">
-                    <h2 className="text-2xl font-bold mb-4 sm:mb-6">Send Us a Message</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4 sm:mb-6">Send Us a Message</h2>
                     
                     {error && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 sm:mb-6">
+                      <div className="bg-accent/10 border border-accent/30 text-accent-700 px-4 py-3 rounded-lg mb-4 sm:mb-6">
                         {error}
                       </div>
                     )}
@@ -181,10 +181,10 @@ export default function ContactPage() {
                           <Input
                             {...register('name', { required: 'Name is required' })}
                             placeholder="Enter your name"
-                            className={errors.name ? 'border-red-500' : ''}
+                            className={errors.name ? 'border-accent' : ''}
                           />
                           {errors.name && (
-                            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                            <p className="text-accent text-sm mt-1">{errors.name.message}</p>
                           )}
                         </div>
 
@@ -202,10 +202,10 @@ export default function ContactPage() {
                               }
                             })}
                             placeholder="your@email.com"
-                            className={errors.email ? 'border-red-500' : ''}
+                            className={errors.email ? 'border-accent' : ''}
                           />
                           {errors.email && (
-                            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                            <p className="text-accent text-sm mt-1">{errors.email.message}</p>
                           )}
                         </div>
                       </div>
@@ -228,17 +228,17 @@ export default function ContactPage() {
                           {...register('message', { required: 'Message is required' })}
                           placeholder="How can we help you?"
                           rows={5}
-                          className={errors.message ? 'border-red-500' : ''}
+                          className={errors.message ? 'border-accent' : ''}
                         />
                         {errors.message && (
-                          <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                          <p className="text-accent text-sm mt-1">{errors.message.message}</p>
                         )}
                       </div>
 
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full"
+                        className="w-full bg-red-600 hover:bg-red-700 text-white"
                         disabled={isSubmitting}
                       >
                         {isSubmitting ? (
@@ -263,10 +263,10 @@ export default function ContactPage() {
       </section>
 
       {/* Map Section */}
-      <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
+      <section className="py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold">Our Locations</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Our Locations</h2>
             <p className="text-gray-600">Visit us at our offices in China and Bangladesh</p>
           </div>
           
@@ -280,7 +280,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold">China Office</h3>
+                  <h3 className="font-semibold text-slate-900">China Office</h3>
                   <p className="text-gray-600 text-sm">Guangzhou, China</p>
                 </div>
               </CardContent>
@@ -295,7 +295,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold">Bangladesh Office</h3>
+                  <h3 className="font-semibold text-slate-900">Bangladesh Office</h3>
                   <p className="text-gray-600 text-sm">Uttara Sector 05, Road 03, House 25, Dhaka</p>
                 </div>
               </CardContent>

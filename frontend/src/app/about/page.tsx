@@ -12,22 +12,37 @@ export default function AboutPage() {
       icon: Shield,
       title: 'Trust & Reliability',
       description: 'We build long-term relationships based on trust and transparent communication.',
+      iconBg: 'bg-slate-800/10',
+      iconColor: 'text-slate-800',
     },
     {
       icon: Award,
       title: 'Quality Excellence',
       description: 'We ensure the highest quality standards in every product we source.',
+      iconBg: 'bg-amber-500/10',
+      iconColor: 'text-amber-600',
     },
     {
       icon: Users,
       title: 'Customer Focus',
       description: 'Your success is our priority. We go above and beyond to meet your needs.',
+      iconBg: 'bg-sky-500/10',
+      iconColor: 'text-sky-600',
     },
     {
       icon: Globe,
       title: 'Global Network',
       description: 'Strong partnerships with suppliers and logistics providers worldwide.',
+      iconBg: 'bg-emerald-600/10',
+      iconColor: 'text-emerald-700',
     },
+  ];
+
+  const stats = [
+    { value: '5+', label: 'Years Experience', color: 'text-red-600' },
+    { value: '500+', label: 'Happy Clients', color: 'text-sky-600' },
+    { value: '1000+', label: 'Orders Delivered', color: 'text-emerald-600' },
+    { value: '50+', label: 'Supplier Partners', color: 'text-amber-600' },
   ];
 
   return (
@@ -39,7 +54,7 @@ export default function AboutPage() {
             <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
               About H&B Trade
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-blue-100">
+            <p className="text-base sm:text-lg md:text-xl text-white/80">
               Your trusted bridge between China and Bangladesh for quality products and reliable logistics services.
             </p>
           </div>
@@ -66,24 +81,14 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="bg-gray-100 rounded-2xl p-5 sm:p-8">
+            <div className="bg-slate-50 rounded-2xl p-5 sm:p-8">
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">5+</div>
-                  <div className="text-gray-600">Years Experience</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">500+</div>
-                  <div className="text-gray-600">Happy Clients</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">1000+</div>
-                  <div className="text-gray-600">Orders Delivered</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">50+</div>
-                  <div className="text-gray-600">Supplier Partners</div>
-                </div>
+                {stats.map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className={`text-4xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
+                    <div className="text-gray-600">{stat.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -91,16 +96,16 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-4 sm:py-8 md:py-16 bg-gray-50">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-            <Card className="border-l-4 border-l-primary">
+            <Card className="border-l-4 border-l-slate-800">
               <CardContent className="p-5 sm:p-8">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <Target className="text-primary" size={28} />
+                  <div className="w-14 h-14 bg-slate-800/10 rounded-lg flex items-center justify-center">
+                    <Target className="text-slate-800" size={28} />
                   </div>
-                  <h3 className="text-2xl font-bold">Our Mission</h3>
+                  <h3 className="text-2xl font-bold text-slate-900">Our Mission</h3>
                 </div>
                 <p className="text-gray-600 text-lg">
                   To empower businesses in Bangladesh by providing seamless access to quality products from China, offering reliable logistics solutions, and building lasting partnerships that drive mutual growth and success.
@@ -108,13 +113,13 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-secondary">
+            <Card className="border-l-4 border-l-emerald-600">
               <CardContent className="p-5 sm:p-8">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center">
-                    <Eye className="text-secondary" size={28} />
+                  <div className="w-14 h-14 bg-emerald-600/10 rounded-lg flex items-center justify-center">
+                    <Eye className="text-emerald-700" size={28} />
                   </div>
-                  <h3 className="text-2xl font-bold">Our Vision</h3>
+                  <h3 className="text-2xl font-bold text-slate-900">Our Vision</h3>
                 </div>
                 <p className="text-gray-600 text-lg">
                   To become the most trusted and preferred sourcing and logistics partner for China-Bangladesh trade, known for our reliability, transparency, and commitment to customer success.
@@ -141,10 +146,10 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <Card key={index} className="text-center card-hover">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <value.icon className="text-primary" size={32} />
+                  <div className={`w-16 h-16 ${value.iconBg} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <value.icon className={value.iconColor} size={32} />
                   </div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2">{value.title}</h3>
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 mb-2">{value.title}</h3>
                   <p className="text-gray-600">{value.description}</p>
                 </CardContent>
               </Card>
@@ -154,13 +159,13 @@ export default function AboutPage() {
       </section>
 
       {/* Services Overview */}
-      <section className="py-4 sm:py-8 md:py-16 bg-primary text-white">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-6 sm:mb-8 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               What We Offer
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
               Comprehensive solutions for all your China-Bangladesh trade needs
             </p>
           </div>
@@ -168,7 +173,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             <div className="bg-white/10 rounded-lg p-4 sm:p-6">
               <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Product Sourcing</h3>
-              <ul className="space-y-2 text-blue-100">
+              <ul className="space-y-2 text-white/80">
                 <li>- Supplier verification</li>
                 <li>- Quality inspection</li>
                 <li>- Price negotiation</li>
@@ -177,7 +182,7 @@ export default function AboutPage() {
             </div>
             <div className="bg-white/10 rounded-lg p-4 sm:p-6">
               <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Logistics Services</h3>
-              <ul className="space-y-2 text-blue-100">
+              <ul className="space-y-2 text-white/80">
                 <li>- Air cargo</li>
                 <li>- Sea shipping</li>
                 <li>- Hand carry service</li>
@@ -186,7 +191,7 @@ export default function AboutPage() {
             </div>
             <div className="bg-white/10 rounded-lg p-4 sm:p-6">
               <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-4">Business Support</h3>
-              <ul className="space-y-2 text-blue-100">
+              <ul className="space-y-2 text-white/80">
                 <li>- Canton Fair assistance</li>
                 <li>- Translation services</li>
                 <li>- Market research</li>
@@ -218,21 +223,21 @@ export default function AboutPage() {
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Users className="text-gray-400" size={40} />
                 </div>
-                <h3 className="font-semibold text-lg">Sourcing Team</h3>
+                <h3 className="font-semibold text-lg text-slate-900">Sourcing Team</h3>
                 <p className="text-gray-600">Product experts in China</p>
               </div>
               <div>
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Globe className="text-gray-400" size={40} />
                 </div>
-                <h3 className="font-semibold text-lg">Logistics Team</h3>
+                <h3 className="font-semibold text-lg text-slate-900">Logistics Team</h3>
                 <p className="text-gray-600">Shipping & customs experts</p>
               </div>
               <div>
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <Users className="text-gray-400" size={40} />
                 </div>
-                <h3 className="font-semibold text-lg">Support Team</h3>
+                <h3 className="font-semibold text-lg text-slate-900">Support Team</h3>
                 <p className="text-gray-600">24/7 customer assistance</p>
               </div>
             </div>

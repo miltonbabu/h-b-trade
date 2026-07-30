@@ -9,7 +9,6 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
 import ClientDynamicComponents from "@/components/ClientDynamicComponents";
-import HackerNotice from "@/components/HackerNotice";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,8 +22,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0d9488" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f766e" },
+    { media: "(prefers-color-scheme: light)", color: "#1e3a5f" },
+    { media: "(prefers-color-scheme: dark)", color: "#152a47" },
   ],
 };
 
@@ -76,7 +75,7 @@ export default function RootLayout({
         />
         <link rel="manifest" href="/manifest.json" />
         <meta name="application-name" content="H&B Trade" />
-        <meta name="theme-color" content="#0d9488" />
+        <meta name="theme-color" content="#1e3a5f" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -117,7 +116,6 @@ export default function RootLayout({
             <div className="md:hidden h-20" aria-hidden="true" />
             <MobileBottomTabs />
             <ClientDynamicComponents />
-            <HackerNotice />
           </CartProvider>
         </AuthProvider>
       </body>

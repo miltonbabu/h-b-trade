@@ -98,8 +98,8 @@ function EventsPage() {
                   className="w-full h-full object-cover opacity-30"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-900/60 to-slate-900/70"></div>
-                <div className="absolute top-20 right-10 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-20 left-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+                <div className="absolute top-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-20 left-10 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
               </div>
 
               <div className="relative z-10 container max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -125,18 +125,18 @@ function EventsPage() {
                   </div>
 
                   <div className="mt-8 text-center space-y-2">
-                    <p className="text-sm font-semibold text-teal-300">AUTOMOTIVE INNOVATION</p>
+                    <p className="text-sm font-semibold text-blue-300">AUTOMOTIVE INNOVATION</p>
                     <p className="text-xs text-gray-300">24th Edition • Zhengzhou • 2026</p>
                   </div>
                 </div>
 
                 <div className="space-y-4 sm:space-y-6 relative z-10">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight sm:leading-normal mb-2 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 animate-gradient-shift">
-                      Join the <span className="text-orange-400">2026 CIAAF</span> Zhengzhou
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight sm:leading-normal mb-2 sm:mb-4 bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-red-400 to-pink-400 animate-gradient-shift">
+                      Join the <span className="text-red-400">2026 CIAAF</span> Zhengzhou
                     </h1>
                     <div className="inline-block mb-3 sm:mb-4">
-                      <div className="bg-gradient-to-r from-teal-500 to-emerald-500 px-3 py-1.5 sm:px-6 sm:py-3 rounded-full shadow-xl animate-pulse">
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-1.5 sm:px-6 sm:py-3 rounded-full shadow-xl animate-pulse">
                         <p className="text-white font-bold text-xs sm:text-base md:text-lg">📅 June 26-28, 2026</p>
                       </div>
                     </div>
@@ -154,7 +154,7 @@ function EventsPage() {
                       </div>
                     </div>
                     <div className="flex items-start gap-2 sm:gap-3">
-                      <div className="w-1 h-5 sm:h-6 bg-orange-400 mt-0.5 sm:mt-1"></div>
+                      <div className="w-1 h-5 sm:h-6 bg-red-400 mt-0.5 sm:mt-1"></div>
                       <div>
                         <p className="font-semibold text-sm sm:text-base text-yellow-200">3,000+ Exhibitors</p>
                         <p className="text-xs sm:text-sm text-cyan-200">Domestic and international automotive aftermarket suppliers</p>
@@ -172,12 +172,12 @@ function EventsPage() {
                   <div className="pt-3 sm:pt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
                     <button
                       onClick={scrollToForm}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 animate-pulse w-full sm:w-auto"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 animate-pulse w-full sm:w-auto"
                     >
                       <span>Register Now</span>
                       <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce" />
                     </button>
-                    <Link href="/events/detail" className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-slate-800/80 hover:bg-slate-700/90 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl border border-orange-400/50 hover:border-orange-400 transition-all duration-300 w-full sm:w-auto">
+                    <Link href="/events/detail" className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-slate-800/80 hover:bg-slate-700/90 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl border border-blue-400/50 hover:border-blue-400 transition-all duration-300 w-full sm:w-auto">
                       View Event Details
                     </Link>
                   </div>
@@ -186,7 +186,7 @@ function EventsPage() {
 
               {isHeroVisible && (
                 <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                  <ArrowDown className="w-6 h-6 text-teal-400" />
+                  <ArrowDown className="w-6 h-6 text-blue-400" />
                 </div>
               )}
             </section>
@@ -200,9 +200,9 @@ function EventsPage() {
                 />
                 <defs>
                   <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
-                    <stop offset="50%" stopColor="#f97316" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#0d9488" stopOpacity="0.3" />
+                    <stop offset="0%" stopColor="#1e3a5f" stopOpacity="0.3" />
+                    <stop offset="50%" stopColor="#047857" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#1e3a5f" stopOpacity="0.3" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -296,10 +296,10 @@ function EventsPage() {
                 <div className="max-w-2xl mx-auto">
                   <button
                     onClick={() => setShowPdfViewer(true)}
-                    className="w-full group relative overflow-hidden rounded-2xl border-2 border-orange-400/30 hover:border-orange-400 transition-all duration-300 bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 text-left hover:shadow-2xl hover:shadow-orange-500/20"
+                    className="w-full group relative overflow-hidden rounded-2xl border-2 border-blue-400/30 hover:border-blue-400 transition-all duration-300 bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 text-left hover:shadow-2xl hover:shadow-blue-500/20"
                   >
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-orange-500 to-yellow-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xl">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform shadow-xl">
                         <FileText className="w-8 h-8 md:w-10 md:h-10 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -310,14 +310,14 @@ function EventsPage() {
                           24th China International Auto Aftermarket Fair — Official Event Guide
                         </p>
                         <div className="flex items-center gap-2 mt-3">
-                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white">
                             <Maximize2 size={12} /> Click to Read
                           </span>
                           <span className="text-xs text-emerald-200">PDF Document</span>
                         </div>
                       </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 </div>
               </div>
@@ -325,14 +325,14 @@ function EventsPage() {
 
             {showPdfViewer && (
               <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-lg flex flex-col">
-                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white shrink-0 border-b border-orange-500/30">
+                <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white shrink-0 border-b border-red-500/30">
                   <div className="flex items-center gap-3">
-                    <FileText className="text-orange-400" size={20} />
+                    <FileText className="text-red-400" size={20} />
                     <h3 className="font-semibold text-sm md:text-base text-yellow-300">2026 CIAAF Zhengzhou Exhibition Brochure</h3>
                   </div>
                   <button
                     onClick={() => setShowPdfViewer(false)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition text-sm font-medium"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-400 text-white transition text-sm font-medium"
                   >
                     <X size={18} />
                     <span className="hidden sm:inline">Close</span>

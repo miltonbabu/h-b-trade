@@ -113,7 +113,7 @@ export default function ServiceTrackPage() {
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
               Track Your <span className="text-yellow-300">Service Request</span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-teal-100">
+            <p className="text-base sm:text-lg md:text-xl text-white/80">
               Enter your tracking number to check the status of your service request.
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function ServiceTrackPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-sm text-gray-500">Tracking Number</p>
-                      <p className="text-lg font-bold text-primary">{data.serviceRequest.tracking_number}</p>
+                      <p className="text-lg font-bold text-blue-600">{data.serviceRequest.tracking_number}</p>
                     </div>
                     <div className={`px-4 py-2 rounded-full text-white text-sm font-medium ${STATUS_COLORS[data.serviceRequest.status] || 'bg-gray-500'}`}>
                       {data.statusInfo.label}
@@ -211,7 +211,7 @@ export default function ServiceTrackPage() {
                   <div className="flex items-start justify-between relative">
                     <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                       <div
-                        className="h-full bg-primary rounded transition-all duration-500"
+                        className="h-full bg-emerald-600 rounded transition-all duration-500"
                         style={{ width: `${Math.max(0, (currentStatusIndex / (data.allStatuses.length - 1)) * 100)}%` }}
                       />
                     </div>
@@ -223,14 +223,14 @@ export default function ServiceTrackPage() {
                       return (
                         <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                            isCompleted ? 'bg-primary border-primary text-white' :
-                            isCurrent ? 'bg-primary border-primary text-white ring-4 ring-primary/20' :
+                            isCompleted ? 'bg-emerald-600 border-emerald-600 text-white' :
+                            isCurrent ? 'bg-emerald-600 border-emerald-600 text-white ring-4 ring-emerald-500/20' :
                             'bg-white border-gray-300 text-gray-400'
                           }`}>
                             <StatusIcon size={18} />
                           </div>
                           <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${
-                            isCurrent ? 'font-bold text-primary' : isCompleted ? 'font-medium text-gray-700' : 'text-gray-400'
+                            isCurrent ? 'font-bold text-emerald-600' : isCompleted ? 'font-medium text-gray-700' : 'text-gray-400'
                           }`}>
                             {status.label}
                           </p>
@@ -258,7 +258,7 @@ export default function ServiceTrackPage() {
                       {data.tracking.map((entry, index) => (
                         <div key={index} className="flex gap-4">
                           <div className="flex flex-col items-center">
-                            <div className="w-3 h-3 bg-primary rounded-full mt-1.5" />
+                            <div className="w-3 h-3 bg-emerald-600 rounded-full mt-1.5" />
                             {index < data.tracking.length - 1 && <div className="w-0.5 h-full bg-gray-200 mt-1" />}
                           </div>
                           <div className="pb-4">

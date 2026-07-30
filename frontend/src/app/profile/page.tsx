@@ -349,7 +349,7 @@ function ProfileContent() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <Wrench size={24} className="mx-auto text-orange-500 mb-2" />
+                    <Wrench size={24} className="mx-auto text-secondary mb-2" />
                     <p className="text-2xl font-bold">{serviceRequests.length}</p>
                     <p className="text-gray-500 text-sm">Service Requests</p>
                   </div>

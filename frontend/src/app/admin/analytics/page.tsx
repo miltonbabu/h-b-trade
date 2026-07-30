@@ -60,7 +60,7 @@ interface AnalyticsData {
   topCustomers: Array<{ customer_name: string; orders: number; revenue: number }>;
 }
 
-const COLORS = ['#0d9488', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#f97316', '#6366f1'];
+const COLORS = ['#1e3a5f', '#047857', '#dc2626', '#d97706', '#254569', '#059669', '#b91c1c', '#3a6c9f'];
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -207,10 +207,10 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200">
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="p-3 text-center">
-            <p className="text-xs text-teal-600">All Orders</p>
-            <p className="text-xl font-bold text-teal-700">{s.allOrders}</p>
+            <p className="text-xs text-primary">All Orders</p>
+            <p className="text-xl font-bold text-primary-800">{s.allOrders}</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
@@ -232,11 +232,11 @@ export default function AnalyticsPage() {
             <p className="text-xs text-indigo-600">Delivered</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+        <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
           <CardContent className="p-3 text-center">
-            <ClipboardList className="mx-auto text-orange-500 mb-1" size={18} />
-            <p className="text-xl font-bold text-orange-700">{s.totalRequests}</p>
-            <p className="text-xs text-orange-600">Requests</p>
+            <ClipboardList className="mx-auto text-accent mb-1" size={18} />
+            <p className="text-xl font-bold text-accent-800">{s.totalRequests}</p>
+            <p className="text-xs text-accent-700">Requests</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-violet-50 to-violet-100 border-violet-200">
@@ -271,17 +271,17 @@ export default function AnalyticsPage() {
                   <Line 
                     type="monotone" 
                     dataKey="sales" 
-                    stroke="#0d9488" 
+                    stroke="#1e3a5f" 
                     strokeWidth={2}
-                    dot={{ fill: '#0d9488', r: 3 }}
+                    dot={{ fill: '#1e3a5f', r: 3 }}
                     name="Sales (৳)"
                   />
                   <Line 
                     type="monotone" 
                     dataKey="orders" 
-                    stroke="#f97316" 
+                    stroke="#047857" 
                     strokeWidth={2}
-                    dot={{ fill: '#f97316', r: 3 }}
+                    dot={{ fill: '#047857', r: 3 }}
                     name="Orders"
                   />
                 </LineChart>
@@ -312,7 +312,7 @@ export default function AnalyticsPage() {
                     labelLine={false}
                     label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                     outerRadius={100}
-                    fill="#8884d8"
+                    fill="#047857"
                     dataKey="value"
                   >
                     {statusChartData.map((entry, index) => (
@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#0d9488" name="Orders" />
+                  <Bar dataKey="value" fill="#1e3a5f" name="Orders" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

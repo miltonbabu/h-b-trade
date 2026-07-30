@@ -266,12 +266,12 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
 
   if (!config) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
         <Card className="max-w-md mx-auto text-center p-8">
-          <h2 className="text-2xl font-bold mb-4">Service Not Found</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Service Not Found</h2>
           <p className="text-gray-600 mb-6">The service you are looking for does not exist.</p>
           <Link href="/services">
-            <Button>View All Services</Button>
+            <Button className="bg-slate-800 hover:bg-slate-900 text-white">View All Services</Button>
           </Link>
         </Card>
       </div>
@@ -340,27 +340,27 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-8 sm:py-12 md:py-16">
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           <Card className="max-w-lg mx-auto text-center border-0 shadow-2xl">
             <CardContent className="p-5 sm:p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-green-500/30">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-emerald-500/30">
                 <CheckCircle className="text-white" size={40} />
               </div>
-              <h2 className="text-2xl font-bold mb-4 gradient-text">Request Submitted!</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Request Submitted!</h2>
               <p className="text-gray-600 mb-4">
                 Thank you for your {config.title.toLowerCase()} request. Our team will review it and get back to you within 24-48 hours.
               </p>
-              <div className="bg-primary/10 rounded-xl p-4 mb-4 sm:mb-6">
+              <div className="bg-slate-100 rounded-xl p-4 mb-4 sm:mb-6">
                 <p className="text-sm text-gray-600 mb-1">Your Tracking Number</p>
-                <p className="text-2xl font-bold text-primary">{trackingNumber}</p>
+                <p className="text-2xl font-bold text-slate-900">{trackingNumber}</p>
                 <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
               </div>
               <div className="flex flex-col gap-3">
                 <Link href="/tracking">
-                  <Button variant="gradient" className="w-full">Track Your Request</Button>
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white">Track Your Request</Button>
                 </Link>
-                <Button variant="outline" onClick={() => setIsSuccess(false)}>Submit Another Request</Button>
+                <Button variant="outline" className="w-full border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400" onClick={() => setIsSuccess(false)}>Submit Another Request</Button>
               </div>
             </CardContent>
           </Card>
@@ -387,7 +387,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
               Request <span className="text-yellow-300">{config.title}</span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-teal-100">
+            <p className="text-base sm:text-lg md:text-xl text-white/80">
               {config.description}
             </p>
           </div>
@@ -395,11 +395,11 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
       </section>
 
       {/* Form Section */}
-      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
         <div className="container mx-auto px-4">
           <Card className="max-w-3xl mx-auto border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b px-4 py-3 sm:px-6 sm:py-4">
-              <CardTitle className="text-lg sm:text-2xl gradient-text">Submit Your {config.title} Request</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-transparent border-b px-4 py-3 sm:px-6 sm:py-4">
+              <CardTitle className="text-lg sm:text-2xl text-slate-900">Submit Your {config.title} Request</CardTitle>
               <p className="text-gray-600">
                 Fill out the form below and our team will contact you within 24-48 hours.
               </p>
@@ -461,7 +461,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
 
                 {/* Service-Specific Fields */}
                 <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4 gradient-text">{config.title} Details</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-slate-900">{config.title} Details</h3>
                   <div className="space-y-6">
                     {config.specificFields.map((field) => (
                       <div key={field.key}>
@@ -478,7 +478,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                         ) : field.options ? (
                           <select
                             {...register(field.key, field.required ? { required: `${field.label} is required` } : undefined)}
-                            className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                           >
                             {field.options.map((opt) => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -512,7 +512,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Product Images (Optional - max 4, 6MB each)
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 hover:bg-slate-50 transition-all cursor-pointer">
                     <input
                       type="file"
                       accept="image/*"
@@ -523,7 +523,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                       disabled={selectedFiles.length >= 4}
                     />
                     <label htmlFor="service-file-upload" className={`cursor-pointer ${selectedFiles.length >= 4 ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <Upload className="mx-auto text-primary mb-2" size={32} />
+                      <Upload className="mx-auto text-slate-400 mb-2" size={32} />
                       <p className="text-gray-600 font-medium">
                         {selectedFiles.length >= 4 ? 'Maximum 4 images selected' : 'Click to upload or drag and drop'}
                       </p>
@@ -556,7 +556,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                 {/* Sender & Warehouse Section */}
                 {serviceType !== 'product-sourcing' && serviceType !== 'wholesale-supply' && serviceType !== 'canton-fair' && (
                 <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4 gradient-text">Sender & Warehouse Details</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-slate-900">Sender & Warehouse Details</h3>
                   <p className="text-sm text-gray-500 mb-4">Help our warehouse identify and receive your shipment</p>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -610,7 +610,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                         </label>
                         <select
                           {...register('delivery_warehouse', { required: 'Please select a warehouse' })}
-                          className={`w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary ${errors.delivery_warehouse ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                          className={`w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400 ${errors.delivery_warehouse ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
                         >
                           <option value="">Select delivery warehouse</option>
                           <option value="guangzhou_baiyun">Guangzhou Baiyun Warehouse</option>
@@ -657,8 +657,7 @@ export default function ServiceRequestForm({ serviceType }: { serviceType: strin
                 <Button
                   type="submit"
                   size="lg"
-                  variant="gradient"
-                  className="w-full rounded-xl"
+                  className="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

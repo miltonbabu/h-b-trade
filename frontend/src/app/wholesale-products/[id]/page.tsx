@@ -145,13 +145,13 @@ export default function ProductDetailPage() {
       {/* Breadcrumb */}
       <nav className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-4 py-3 flex items-center gap-1.5 text-sm">
-          <Link href="/wholesale-products" className="text-gray-500 hover:text-primary inline-flex items-center gap-1">
+          <Link href="/wholesale-products" className="text-gray-500 hover:text-slate-900 inline-flex items-center gap-1">
             <ChevronLeft size={14} /> Wholesale Products
           </Link>
           {product.category && (
             <>
               <span className="text-gray-300">/</span>
-              <Link href={`/wholesale-products?category=${encodeURIComponent(product.category)}`} className="text-gray-500 hover:text-primary truncate">
+              <Link href={`/wholesale-products?category=${encodeURIComponent(product.category)}`} className="text-gray-500 hover:text-slate-900 truncate">
                 {product.category}
               </Link>
             </>
@@ -191,7 +191,7 @@ export default function ProductDetailPage() {
                   <button
                     key={i}
                     onClick={() => setImgIdx(i)}
-                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${i === imgIdx ? "border-primary ring-2 ring-primary/30" : "border-gray-200 hover:border-gray-300"}`}
+                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${i === imgIdx ? "border-red-500 ring-2 ring-red-500/20" : "border-gray-200 hover:border-gray-300"}`}
                     aria-label={`View image ${i + 1}`}
                   >
                     <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
             </div>
 
             <div className="flex items-baseline gap-3">
-              <p className="text-3xl sm:text-4xl font-bold text-orange-600">৳{price.toFixed(2)}</p>
+              <p className="text-3xl sm:text-4xl font-bold text-amber-600">৳{price.toFixed(2)}</p>
               <span className="text-sm text-gray-500">per unit</span>
             </div>
 
@@ -257,7 +257,7 @@ export default function ProductDetailPage() {
                   </div>
                   <button
                     onClick={() => setBatches((b) => b + 1)}
-                    className="inline-flex items-center justify-center w-11 h-11 rounded-r-xl text-white bg-primary hover:bg-primary-600 active:scale-95 transition"
+                    className="inline-flex items-center justify-center w-11 h-11 rounded-r-xl text-white bg-red-600 hover:bg-red-700 active:scale-95 transition"
                     aria-label="Increase quantity"
                   >
                     <Plus size={18} />
@@ -265,11 +265,11 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 flex items-center justify-between text-sm">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-sm">
                 <div>
                   <p className="text-gray-700">Total: <span className="font-medium">{totalUnits} units</span></p>
                 </div>
-                <p className="text-xl font-bold text-orange-600">৳{totalPrice.toFixed(2)}</p>
+                <p className="text-xl font-bold text-amber-700">৳{totalPrice.toFixed(2)}</p>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-2.5">
@@ -285,7 +285,7 @@ export default function ProductDetailPage() {
                     <><ShoppingBag className="mr-1.5" size={16} /> Add to cart</>
                   )}
                 </Button>
-                <Button onClick={handleOrderNow} className="w-full bg-orange-500 hover:bg-orange-600">
+                <Button onClick={handleOrderNow} className="w-full bg-red-600 hover:bg-red-700 text-white">
                   Order now →
                 </Button>
               </div>
@@ -293,13 +293,13 @@ export default function ProductDetailPage() {
               {inCart && !justAdded && (
                 <p className="text-xs text-center text-gray-500">
                   You already have <span className="font-semibold text-gray-900">{inCart.quantity}</span> {inCart.quantity === 1 ? "batch" : "batches"} of this in your cart.
-                  {" "}<Link href="/cart" className="text-primary underline">View cart</Link>
+                  {" "}<Link href="/cart" className="text-red-600 underline">View cart</Link>
                 </p>
               )}
 
               <button
                 onClick={shareOnWhatsApp}
-                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-green-500 hover:bg-green-600 text-white font-semibold text-sm shadow-soft hover:shadow-soft-lg transition-all active:scale-[0.98]"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-soft hover:shadow-soft-lg transition-all active:scale-[0.98]"
               >
                 <MessageCircle size={16} /> Inquire on WhatsApp
               </button>
@@ -311,8 +311,8 @@ export default function ProductDetailPage() {
         {related.length > 0 && (
           <section className="mt-10 sm:mt-14">
             <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">More from {product.category || "this category"}</h2>
-              <Link href={`/wholesale-products${product.category ? `?category=${encodeURIComponent(product.category)}` : ""}`} className="text-sm text-primary hover:underline">View all</Link>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">More from {product.category || "this category"}</h2>
+              <Link href={`/wholesale-products${product.category ? `?category=${encodeURIComponent(product.category)}` : ""}`} className="text-sm text-slate-700 hover:text-slate-900 hover:underline">View all</Link>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {related.map((p) => (

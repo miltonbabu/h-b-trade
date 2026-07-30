@@ -130,11 +130,11 @@ const TRACKING_PREFIX_INFO: Record<string, { label: string; icon: React.Componen
   'PR': { label: 'Product Request', icon: ShoppingCart, color: 'bg-green-500' },
   'PS': { label: 'Product Sourcing', icon: ShoppingCart, color: 'bg-blue-500' },
   'WS': { label: 'Wholesale Supply', icon: Package, color: 'bg-purple-500' },
-  'AC': { label: 'Air Cargo', icon: Plane, color: 'bg-teal-500' },
-  'SS': { label: 'Sea Shipping', icon: Ship, color: 'bg-orange-500' },
+  'AC': { label: 'Air Cargo', icon: Plane, color: 'bg-sky-500' },
+  'SS': { label: 'Sea Shipping', icon: Ship, color: 'bg-cyan-700' },
   'HC': { label: 'Hand Carry', icon: Users, color: 'bg-pink-500' },
   'CF': { label: 'Canton Fair', icon: Globe, color: 'bg-amber-500' },
-  'SR': { label: 'Service Request', icon: Wrench, color: 'bg-teal-500' },
+  'SR': { label: 'Service Request', icon: Wrench, color: 'bg-emerald-600' },
 };
 
 const ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: number; className?: string }>; bgColor: string; label: string }> = {
@@ -142,8 +142,8 @@ const ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: n
   'processing': { icon: CheckCircle, bgColor: 'bg-blue-500', label: 'Processing' },
   'guangzhou_warehouse': { icon: Warehouse, bgColor: 'bg-purple-500', label: 'Guangzhou Warehouse' },
   'in_transit': { icon: Truck, bgColor: 'bg-indigo-500', label: 'In Transit' },
-  'dhaka_customs': { icon: ClipboardCheck, bgColor: 'bg-orange-500', label: 'Dhaka Customs' },
-  'dhaka_office': { icon: Building, bgColor: 'bg-teal-500', label: 'Dhaka Office' },
+  'dhaka_customs': { icon: ClipboardCheck, bgColor: 'bg-amber-500', label: 'Dhaka Customs' },
+  'dhaka_office': { icon: Building, bgColor: 'bg-slate-700', label: 'Dhaka Office' },
   'delivered': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Delivered' },
   'cancelled': { icon: XCircle, bgColor: 'bg-red-500', label: 'Cancelled' },
 };
@@ -352,7 +352,7 @@ export default function UnifiedTrackingPage() {
       {isAuthenticated && myTrackingNumbers.length > 0 && (
         <section className="py-6 bg-gray-50 border-b">
           <div className="container mx-auto px-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-3">My Tracking Numbers</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">My Tracking Numbers</h2>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {myTrackingNumbers.map((item) => {
                 const prefix = getPrefix(item.tracking_number);
@@ -363,13 +363,13 @@ export default function UnifiedTrackingPage() {
                   <button
                     key={item.tracking_number}
                     onClick={() => handleTrackFromList(item.tracking_number)}
-                    className={`flex items-center gap-3 p-3 bg-white rounded-lg border hover:border-primary hover:shadow-sm transition text-left ${trackingNumber === item.tracking_number ? 'border-primary shadow-sm' : 'border-gray-200'}`}
+                    className={`flex items-center gap-3 p-3 bg-white rounded-lg border hover:border-red-400 hover:shadow-sm transition text-left ${trackingNumber === item.tracking_number ? 'border-red-500 shadow-sm' : 'border-gray-200'}`}
                   >
                     <div className={`w-8 h-8 ${prefixInfo.color} rounded flex items-center justify-center shrink-0`}>
                       <Icon size={16} className="text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-800 truncate">{item.label}</p>
+                      <p className="text-sm font-medium text-slate-900 truncate">{item.label}</p>
                       <p className="text-xs text-gray-500 truncate">{item.tracking_number}</p>
                     </div>
                     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${statusColor}`}>
@@ -421,7 +421,7 @@ export default function UnifiedTrackingPage() {
                 <>
                   <Card>
                     <CardContent className="p-4 sm:p-6">
-                      <h2 className="text-xl font-bold mb-4">Order Details</h2>
+                      <h2 className="text-xl font-bold mb-4 text-slate-900">Order Details</h2>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <div><p className="text-gray-500 text-sm">Order Number</p><p className="font-semibold">{data.order.order_number}</p></div>
                         <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.order.tracking_number}</p></div>
@@ -442,12 +442,12 @@ export default function UnifiedTrackingPage() {
                   {/* Visual Order Progress Timeline with per-step timestamps */}
                   <Card>
                     <CardContent className="p-4 sm:p-6">
-                      <h2 className="text-xl font-bold mb-6">Shipment Progress</h2>
+                      <h2 className="text-xl font-bold mb-6 text-slate-900">Shipment Progress</h2>
                       <div className="overflow-x-auto pb-2">
                         <div className="flex items-start justify-between relative min-w-[640px]">
                           <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                             <div
-                              className="h-full bg-primary rounded transition-all duration-500"
+                              className="h-full bg-red-600 rounded transition-all duration-500"
                               style={{ width: currentIdx >= 0 && data.allStatuses.length > 1 ? `${Math.max(0, (currentIdx / (data.allStatuses.length - 1)) * 100)}%` : '0%' }}
                             />
                           </div>
@@ -460,13 +460,13 @@ export default function UnifiedTrackingPage() {
                             return (
                               <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                                  isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
+                                  isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-red-500/20` :
                                   isPast ? `${cfg.bgColor} border-transparent text-white` :
                                   'bg-white border-gray-300 text-gray-400'
                                 }`}>
                                   <Icon size={18} />
                                 </div>
-                                <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-primary' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{cfg.label || status.label}</p>
+                                <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-red-600' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{cfg.label || status.label}</p>
                                 {ts && (isCurrent || isPast) ? (
                                   <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
                                 ) : (
@@ -487,7 +487,7 @@ export default function UnifiedTrackingPage() {
                   {data.tracking.length > 0 && (
                     <Card>
                       <CardContent className="p-4 sm:p-6">
-                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <h2 className="text-xl font-bold mb-4 text-slate-900">Tracking History</h2>
                         <div className="space-y-4">
                           {data.tracking.map((track, index) => {
                             const cfg = ORDER_STATUS_CONFIG[track.status] || { icon: Package, bgColor: 'bg-gray-500', label: track.status };
@@ -519,7 +519,7 @@ export default function UnifiedTrackingPage() {
                 <>
                   <Card>
                     <CardContent className="p-4 sm:p-6">
-                      <h2 className="text-xl font-bold mb-4">Service Request Details</h2>
+                      <h2 className="text-xl font-bold mb-4 text-slate-900">Service Request Details</h2>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.serviceRequest.tracking_number}</p></div>
                         <div><p className="text-gray-500 text-sm">Service Type</p><p className="font-semibold">{SERVICE_TYPE_LABELS[data.serviceRequest.service_type] || data.serviceRequest.service_type}</p></div>
@@ -568,7 +568,7 @@ export default function UnifiedTrackingPage() {
                   {data.serviceRequest.parsedDetails && Object.keys(data.serviceRequest.parsedDetails).length > 0 && (
                     <Card>
                       <CardContent className="p-4 sm:p-6">
-                        <h2 className="text-xl font-bold mb-4">Request Details</h2>
+                        <h2 className="text-xl font-bold mb-4 text-slate-900">Request Details</h2>
                         <div className="space-y-2">
                           {Object.entries(data.serviceRequest.parsedDetails).map(([key, value]) => (
                             <div key={key} className="flex justify-between text-sm border-b border-gray-100 pb-2">
@@ -592,11 +592,11 @@ export default function UnifiedTrackingPage() {
                     return (
                   <Card>
                     <CardContent className="p-4 sm:p-6">
-                      <h2 className="text-xl font-bold mb-4">Request Progress</h2>
+                      <h2 className="text-xl font-bold mb-4 text-slate-900">Request Progress</h2>
                       <div className="flex items-start justify-between relative mb-4">
                         <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                           <div
-                            className="h-full bg-primary rounded transition-all duration-500"
+                            className="h-full bg-emerald-600 rounded transition-all duration-500"
                             style={{ width: currentIdx >= 0 && data.allStatuses.length > 1 ? `${Math.max(0, (currentIdx / (data.allStatuses.length - 1)) * 100)}%` : '0%' }}
                           />
                         </div>
@@ -609,13 +609,13 @@ export default function UnifiedTrackingPage() {
                           return (
                             <div key={status.value} className="relative flex flex-col items-center z-10 flex-1 min-w-[80px] px-1">
                               <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                                isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-primary/20` :
+                                isCurrent ? `${cfg.bgColor} border-current text-white ring-4 ring-emerald-500/20` :
                                 isPast ? `${cfg.bgColor} border-transparent text-white` :
                                 'bg-white border-gray-300 text-gray-400'
                               }`}>
                                 <Icon size={18} />
                               </div>
-                              <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-primary' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{status.label}</p>
+                              <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-emerald-600' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{status.label}</p>
                               {ts && (isCurrent || isPast) ? (
                                 <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
                               ) : (
@@ -635,7 +635,7 @@ export default function UnifiedTrackingPage() {
                   {data.tracking.length > 0 && (
                     <Card>
                       <CardContent className="p-4 sm:p-6">
-                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <h2 className="text-xl font-bold mb-4 text-slate-900">Tracking History</h2>
                         <div className="space-y-4">
                           {data.tracking.map((entry, index) => {
                             const cfg = SERVICE_STATUS_CONFIG[entry.status] || { icon: Clock, bgColor: 'bg-gray-500', label: entry.status };
@@ -666,7 +666,7 @@ export default function UnifiedTrackingPage() {
                 <>
                   <Card>
                     <CardContent className="p-4 sm:p-6">
-                      <h2 className="text-xl font-bold mb-4">Product Request Details</h2>
+                      <h2 className="text-xl font-bold mb-4 text-slate-900">Product Request Details</h2>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         <div><p className="text-gray-500 text-sm">Tracking Number</p><p className="font-semibold text-blue-600">{data.request.tracking_number}</p></div>
                         <div><p className="text-gray-500 text-sm">Name</p><p className="font-semibold">{data.request.name}</p></div>
@@ -710,11 +710,11 @@ export default function UnifiedTrackingPage() {
                   {data.tracking.length > 0 && (
                     <Card>
                       <CardContent className="p-4 sm:p-6">
-                        <h2 className="text-xl font-bold mb-4">Tracking History</h2>
+                        <h2 className="text-xl font-bold mb-4 text-slate-900">Tracking History</h2>
                         <div className="space-y-4">
                           {data.tracking.map((entry, index) => (
                             <div key={index} className="flex gap-4">
-                              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
                                 <Package className="text-white" size={18} />
                               </div>
                               <div>
@@ -737,7 +737,7 @@ export default function UnifiedTrackingPage() {
               <Card>
                 <CardContent className="p-6 sm:p-8 md:p-12">
                   <Package className="mx-auto text-gray-400 mb-4" size={64} />
-                  <h3 className="text-xl font-semibold mb-2">Track Your Shipment & Requests</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-slate-900">Track Your Shipment & Requests</h3>
                   <p className="text-gray-600 mb-4">
                     Enter your tracking number above to see status updates for orders, product requests, or service requests.
                   </p>
@@ -754,20 +754,20 @@ export default function UnifiedTrackingPage() {
                       <p className="font-bold text-green-600">PR</p>
                       <p className="text-gray-500">Product Req</p>
                     </div>
-                    <div className="bg-teal-50 rounded-lg p-2 text-center">
-                      <p className="font-bold text-teal-600">SR</p>
+                    <div className="bg-emerald-50 rounded-lg p-2 text-center">
+                      <p className="font-bold text-emerald-600">SR</p>
                       <p className="text-gray-500">Service</p>
                     </div>
                     <div className="bg-blue-50 rounded-lg p-2 text-center">
                       <p className="font-bold text-blue-600">PS</p>
                       <p className="text-gray-500">Sourcing</p>
                     </div>
-                    <div className="bg-orange-50 rounded-lg p-2 text-center">
-                      <p className="font-bold text-orange-600">AC</p>
+                    <div className="bg-sky-50 rounded-lg p-2 text-center">
+                      <p className="font-bold text-sky-600">AC</p>
                       <p className="text-gray-500">Air Cargo</p>
                     </div>
-                    <div className="bg-orange-50 rounded-lg p-2 text-center">
-                      <p className="font-bold text-orange-600">SS</p>
+                    <div className="bg-cyan-50 rounded-lg p-2 text-center">
+                      <p className="font-bold text-cyan-700">SS</p>
                       <p className="text-gray-500">Sea Ship</p>
                     </div>
                     <div className="bg-pink-50 rounded-lg p-2 text-center">
@@ -786,32 +786,32 @@ export default function UnifiedTrackingPage() {
       <section className="py-8 sm:py-12 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-4 sm:mb-6 md:mb-8">Need Help?</h2>
+            <h2 className="text-2xl font-bold text-center text-slate-900 mb-4 sm:mb-6 md:mb-8">Need Help?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <Card className="text-center">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Package className="text-primary" size={24} />
+                  <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="text-amber-600" size={24} />
                   </div>
-                  <h3 className="font-semibold mb-2">Lost Tracking Number?</h3>
+                  <h3 className="font-semibold text-slate-900 mb-2">Lost Tracking Number?</h3>
                   <p className="text-gray-600 text-sm">Contact us with your order details and we&apos;ll help you find it.</p>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Truck className="text-primary" size={24} />
+                  <div className="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Truck className="text-sky-600" size={24} />
                   </div>
-                  <h3 className="font-semibold mb-2">Shipment Delayed?</h3>
+                  <h3 className="font-semibold text-slate-900 mb-2">Shipment Delayed?</h3>
                   <p className="text-gray-600 text-sm">Delays can happen due to customs or weather. Contact us for updates.</p>
                 </CardContent>
               </Card>
               <Card className="text-center">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Home className="text-primary" size={24} />
+                  <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Home className="text-emerald-600" size={24} />
                   </div>
-                  <h3 className="font-semibold mb-2">Delivery Issues?</h3>
+                  <h3 className="font-semibold text-slate-900 mb-2">Delivery Issues?</h3>
                   <p className="text-gray-600 text-sm">If you have delivery problems, reach out to our support team.</p>
                 </CardContent>
               </Card>

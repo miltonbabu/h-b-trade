@@ -141,7 +141,7 @@ export default function AdminTrackingPage() {
     switch (type) {
       case 'order': return <Package size={14} className="text-blue-500" />;
       case 'request': return <ClipboardList size={14} className="text-green-500" />;
-      case 'service-request': return <Wrench size={14} className="text-orange-500" />;
+      case 'service-request': return <Wrench size={14} className="text-secondary" />;
       default: return <FileText size={14} className="text-gray-400" />;
     }
   };
@@ -150,7 +150,7 @@ export default function AdminTrackingPage() {
     const map: Record<string, string> = {
       order: 'bg-blue-100 text-blue-700',
       request: 'bg-green-100 text-green-700',
-      'service-request': 'bg-orange-100 text-orange-700',
+      'service-request': 'bg-secondary/10 text-secondary-700',
       custom: 'bg-gray-100 text-gray-600',
     };
     const label: Record<string, string> = {

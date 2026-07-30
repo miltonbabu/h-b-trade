@@ -31,14 +31,17 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+    <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+      {/* Subtle glow effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(30,58,95,0.2)_0%,transparent_50%)]"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(4,120,87,0.1)_0%,transparent_50%)]"></div>
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
       <div className="container mx-auto px-4 py-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
           {/* Company Info */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-14 h-14 flex items-center justify-center overflow-hidden">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center overflow-hidden bg-white rounded-xl p-1.5 shadow-lg">
                 <Image
                   src="/hbtrade_logo.png"
                   alt="H&B Trade Logo"
@@ -48,11 +51,13 @@ export default function Footer() {
                 />
               </div>
               <div>
-                <span className="text-2xl md:text-3xl font-serif tracking-[-0.02em]"><span className="bg-gradient-to-b from-red-400 to-red-600 bg-clip-text text-transparent">H</span><span className="bg-gradient-to-b from-red-400 to-red-600 bg-clip-text text-transparent">&</span><span className="bg-gradient-to-b from-green-500 to-green-700 bg-clip-text text-transparent">B</span></span>
-                <span className="text-sm md:text-base font-serif text-secondary/50 tracking-[0.15em] ml-1.5 font-medium">TRADE</span>
+                <span className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  H<span className="text-red-400">&</span>B
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-white/70 tracking-[0.2em] ml-1.5 block">TRADE</span>
               </div>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-300 mb-5 text-sm leading-relaxed">
               Your trusted partner for China to Bangladesh product sourcing,
               wholesale supply, and logistics services.
             </p>
@@ -61,27 +66,27 @@ export default function Footer() {
                 href={settings.facebook_page}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-primary/20 hover:border-primary/30 text-gray-400 hover:text-white"
+                className="footer-social-linear w-10 h-10 bg-white/10 border border-white/10 rounded-lg flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 text-gray-300 hover:text-white transition-all duration-300"
               >
-                <Facebook size={16} strokeWidth={1.5} />
+                <Facebook size={17} strokeWidth={1.5} />
               </a>
               <a
                 href={settings.whatsapp_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="footer-social-linear w-9 h-9 bg-white/[0.06] border border-white/[0.06] rounded-lg flex items-center justify-center hover:bg-green-500/20 hover:border-green-500/30 text-gray-400 hover:text-white"
+                className="footer-social-linear w-10 h-10 bg-white/10 border border-white/10 rounded-lg flex items-center justify-center hover:bg-emerald-600 hover:border-emerald-600 text-gray-300 hover:text-white transition-all duration-300"
               >
-                <MessageCircle size={16} strokeWidth={1.5} />
+                <MessageCircle size={17} strokeWidth={1.5} />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
+            <h3 className="text-sm font-bold mb-4 text-white tracking-wider uppercase">
               Quick Links
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {[
                 { href: "/", label: "Home" },
                 { href: "/about", label: "About Us" },
@@ -93,7 +98,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="footer-link-linear text-gray-500 hover:text-secondary text-sm"
+                    className="footer-link-linear text-gray-300 hover:text-white text-sm transition-colors duration-200 inline-block"
                   >
                     {link.label}
                   </Link>
@@ -104,10 +109,10 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
+            <h3 className="text-sm font-bold mb-4 text-white tracking-wider uppercase">
               Our Services
             </h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {[
                 { href: "/services/product-sourcing", label: "Product Sourcing" },
                 { href: "/services/wholesale-supply", label: "Wholesale Supply" },
@@ -119,9 +124,9 @@ export default function Footer() {
                 <li key={service.href}>
                   <Link
                     href={service.href}
-                    className="footer-link-linear text-gray-500 hover:text-secondary text-sm flex items-center gap-2.5"
+                    className="footer-link-linear text-gray-300 hover:text-white text-sm flex items-center gap-2.5 transition-colors duration-200"
                   >
-                    <span className="w-1 h-1 bg-primary/60 rounded-full"></span>
+                    <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
                     {service.label}
                   </Link>
                 </li>
@@ -131,45 +136,45 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-sm font-semibold mb-4 text-white/80 tracking-[-0.01em] uppercase">
+            <h3 className="text-sm font-bold mb-4 text-white tracking-wider uppercase">
               Contact Us
             </h3>
-            <ul className="space-y-3.5">
+            <ul className="space-y-4">
               <li className="flex items-start gap-3 group">
-                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <div className="w-9 h-9 bg-white/10 border border-white/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-red-500/20 group-hover:border-red-400/30 transition-all duration-300">
                   <Phone
-                    size={14}
+                    size={15}
                     strokeWidth={1.5}
-                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
+                    className="text-gray-300 group-hover:text-red-400 transition-colors duration-300"
                   />
-                </a>
-                <div className="text-gray-500 text-sm">
-                  <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="hover:text-secondary transition-colors">{settings.phone}</a>
+                </div>
+                <div className="pt-1">
+                  <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="text-gray-300 hover:text-white text-sm transition-colors block">{settings.phone}</a>
                 </div>
               </li>
               <li className="flex items-start gap-3 group">
-                <a href={`mailto:${settings.email}`} className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <div className="w-9 h-9 bg-white/10 border border-white/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/20 group-hover:border-emerald-400/30 transition-all duration-300">
                   <Mail
-                    size={14}
+                    size={15}
                     strokeWidth={1.5}
-                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
+                    className="text-gray-300 group-hover:text-emerald-400 transition-colors duration-300"
                   />
-                </a>
-                <a href={`mailto:${settings.email}`} className="text-gray-500 text-sm hover:text-secondary transition-colors">
-                  {settings.email}
-                </a>
+                </div>
+                <div className="pt-1 min-w-0">
+                  <a href={`mailto:${settings.email}`} className="text-gray-300 hover:text-white text-sm transition-colors block break-all">{settings.email}</a>
+                </div>
               </li>
               <li className="flex items-start gap-3 group">
-                <a href={`https://maps.google.com/?q=${encodeURIComponent(settings.office_address)}`} target="_blank" rel="noopener noreferrer" className="footer-icon-linear w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-md flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 group-hover:border-primary/30">
+                <div className="w-9 h-9 bg-white/10 border border-white/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-sky-500/20 group-hover:border-sky-400/30 transition-all duration-300">
                   <MapPin
-                    size={14}
+                    size={15}
                     strokeWidth={1.5}
-                    className="text-gray-500 group-hover:text-primary transition-colors duration-300"
+                    className="text-gray-300 group-hover:text-sky-400 transition-colors duration-300"
                   />
-                </a>
-                <div className="text-gray-500 text-xs leading-relaxed">
+                </div>
+                <div className="text-gray-300 text-xs sm:text-sm leading-relaxed pt-1">
                   {settings.office_address.split('|').map((addr, i) => (
-                    <p key={i}>{addr.trim()}</p>
+                    <p key={i} className="mb-0.5">{addr.trim()}</p>
                   ))}
                 </div>
               </li>
@@ -178,14 +183,14 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/[0.06] mt-8 pt-8 text-center text-gray-600 text-sm">
-          <p>
+        <div className="border-t border-white/10 mt-10 pt-6 text-center">
+          <p className="text-gray-400 text-sm">
             &copy; {currentYear} H&B Trade. All rights reserved. Developed by{" "}
             <a
               href="https://www.linkedin.com/in/milton-babu/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-secondary/80 hover:text-secondary transition-colors duration-300"
+              className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors duration-300"
             >
               Milton Babu
             </a>
@@ -196,13 +201,13 @@ export default function Footer() {
       {/* Scroll to top button */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-br from-primary to-primary-700 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-[60] ${
+        className={`fixed bottom-24 right-6 w-12 h-12 bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-[60] ${
           showScrollTop
             ? "opacity-100 translate-y-0"
             : "opacity-0 translate-y-10 pointer-events-none"
         }`}
       >
-        <ArrowUp size={24} className="text-white" />
+        <ArrowUp size={22} className="text-white" />
       </button>
     </footer>
   );

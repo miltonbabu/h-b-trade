@@ -208,10 +208,10 @@ export default function AdminOrdersPage() {
         <title>Order ${order.order_number}</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-          .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
-          .logo { font-size: 28px; font-weight: bold; color: #0d9488; }
+          .header { text-align: center; border-bottom: 3px solid #1e3a5f; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 28px; font-weight: bold; color: #1e3a5f; }
           .section { margin-bottom: 25px; }
-          .section-title { font-size: 16px; font-weight: bold; color: #0d9488; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+          .section-title { font-size: 16px; font-weight: bold; color: #1e3a5f; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
           .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
           .field { margin-bottom: 10px; }
           .label { font-size: 12px; color: #6b7280; }
@@ -226,7 +226,7 @@ export default function AdminOrdersPage() {
           .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
           .items-table th, .items-table td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 12px; }
           .items-table th { background: #f9fafb; font-weight: 600; }
-          .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; color: #0d9488; }
+          .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; color: #1e3a5f; }
           .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; }
           @media print { body { padding: 20px; } }
         </style>
@@ -332,7 +332,7 @@ export default function AdminOrdersPage() {
             </div>
             <div class="field">
               <div class="label">Total Amount</div>
-              <div class="value" style="color: #0d9488; font-size: 18px;">৳${order.price || '0'}</div>
+              <div class="value" style="color: #1e3a5f; font-size: 18px;">৳${order.price || '0'}</div>
             </div>
           </div>
         </div>
@@ -445,8 +445,8 @@ export default function AdminOrdersPage() {
                           <option value="processing" className="bg-blue-50">Processing</option>
                           <option value="guangzhou_warehouse" className="bg-purple-50">GZ Warehouse</option>
                           <option value="in_transit" className="bg-cyan-50">In Transit</option>
-                          <option value="dhaka_customs" className="bg-orange-50">Dhaka Customs</option>
-                          <option value="dhaka_office" className="bg-teal-50">Dhaka Office</option>
+                          <option value="dhaka_customs" className="bg-amber-50">Dhaka Customs</option>
+                          <option value="dhaka_office" className="bg-primary/5">Dhaka Office</option>
                           <option value="delivered" className="bg-green-50">Delivered</option>
                           <option value="cancelled" className="bg-red-50">Cancelled</option>
                         </select>
@@ -884,14 +884,14 @@ export default function AdminOrdersPage() {
                                   <div><span className="text-gray-500">Unit Price:</span> <span className="font-medium ml-1">৳{(item.unitPrice || item.price || 0).toFixed(2)}</span></div>
                                   <div><span className="text-gray-500">MOQ:</span> <span className="font-medium ml-1">{item.moq || 1}</span></div>
                                   <div><span className="text-gray-500">Batches:</span> <span className="font-medium ml-1">{item.quantity}</span></div>
-                                  <div><span className="text-gray-500">Total Units:</span> <span className="font-bold text-orange-600 ml-1">{item.totalUnits || (item.moq || 1) * item.quantity}</span></div>
+                                  <div><span className="text-gray-500">Total Units:</span> <span className="font-bold text-primary ml-1">{item.totalUnits || (item.moq || 1) * item.quantity}</span></div>
                                 </div>
                               </div>
                             ))}
-                            <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 mt-3">
+                            <div className="bg-primary/5 rounded-lg p-3 border border-primary/20 mt-3">
                               <div className="flex justify-between items-center">
                                 <span className="font-medium text-gray-700">Total Units:</span>
-                                <span className="font-bold text-orange-600">{raw.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)} units</span>
+                                <span className="font-bold text-primary">{raw.reduce((sum: number, item: any) => sum + (item.totalUnits || (item.moq || 1) * item.quantity), 0)} units</span>
                               </div>
                             </div>
                           </div>
@@ -942,7 +942,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Net Weight</p>
-                    <p className="font-medium text-orange-600">{selectedOrder.net_weight ? `${selectedOrder.net_weight} kg` : '-'}</p>
+                    <p className="font-medium text-primary">{selectedOrder.net_weight ? `${selectedOrder.net_weight} kg` : '-'}</p>
                   </div>
                 </div>
               </div>

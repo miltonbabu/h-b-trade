@@ -97,29 +97,29 @@ export default function ProductRequestPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-white py-8 sm:py-12 md:py-16">
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-8 sm:py-12 md:py-16">
         <div className="container mx-auto px-4">
           <Card className="max-w-lg mx-auto text-center border-0 shadow-2xl">
             <CardContent className="p-5 sm:p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-green-500/30">
+              <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-emerald-500/30">
                 <CheckCircle className="text-white" size={40} />
               </div>
-              <h2 className="text-2xl font-bold mb-4 gradient-text">Request Submitted!</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Request Submitted!</h2>
               <p className="text-gray-600 mb-4">
                 Thank you for your product request. Our team will review it and get back to you within 24-48 hours.
               </p>
-              <div className="bg-primary/10 rounded-xl p-4 mb-4 sm:mb-6">
+              <div className="bg-slate-100 rounded-xl p-4 mb-4 sm:mb-6">
                 <p className="text-sm text-gray-600 mb-1">Your Tracking Number</p>
-                <p className="text-2xl font-bold text-primary">{trackingNumber}</p>
+                <p className="text-2xl font-bold text-slate-900">{trackingNumber}</p>
                 <p className="text-xs text-gray-500 mt-2">Save this number to track your request status</p>
               </div>
               <div className="space-y-3">
                 <Link href="/tracking">
-                  <Button variant="gradient" className="w-full">
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
                     Track Your Request
                   </Button>
                 </Link>
-                <Button variant="outline" onClick={() => setIsSuccess(false)} className="w-full">
+                <Button variant="outline" className="w-full border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400" onClick={() => setIsSuccess(false)}>
                   Submit Another Request
                 </Button>
               </div>
@@ -138,13 +138,13 @@ export default function ProductRequestPage() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="hidden sm:inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-4 sm:mb-6">
-              <Package className="text-yellow-300" size={18} />
+              <Package className="text-white" size={18} />
               <span className="text-sm font-medium">Product Sourcing Made Easy</span>
             </div>
             <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 sm:mb-2">
-              Request a <span className="text-yellow-300">Product</span>
+              Request a <span className="text-white">Product</span>
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-teal-100">
+            <p className="text-base sm:text-lg md:text-xl text-white/80">
               Tell us about the products you need and we&apos;ll source them from China for you.
             </p>
           </div>
@@ -152,18 +152,18 @@ export default function ProductRequestPage() {
       </section>
 
       {/* Form Section */}
-      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-4 sm:py-8 md:py-16 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20">
         <div className="container mx-auto px-4">
           <Card className="max-w-3xl mx-auto border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b px-4 py-3 sm:px-6 sm:py-4">
-              <CardTitle className="text-lg sm:text-2xl gradient-text">Submit Your Product Request</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-transparent border-b px-4 py-3 sm:px-6 sm:py-4">
+              <CardTitle className="text-lg sm:text-2xl text-slate-900">Submit Your Product Request</CardTitle>
               <p className="text-gray-600">
                 Fill out the form below with your product details. Our team will contact you within 24-48 hours.
               </p>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 sm:mb-6 flex items-center gap-2">
+                <div className="bg-accent/10 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 sm:mb-6 flex items-center gap-2">
                   <span>⚠️</span> {error}
                 </div>
               )}
@@ -173,21 +173,21 @@ export default function ProductRequestPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Your Name <span className="text-red-500">*</span>
+                      Your Name <span className="text-accent">*</span>
                     </label>
                     <Input
                       {...register('name', { required: 'Name is required' })}
                       placeholder="Enter your full name"
-                      className={`rounded-xl ${errors.name ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                      className={`rounded-xl ${errors.name ? 'border-accent ring-2 ring-accent/20' : ''}`}
                     />
                     {errors.name && (
-                      <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                      <p className="text-accent text-sm mt-1">{errors.name.message}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address <span className="text-red-500">*</span>
+                      Email Address <span className="text-accent">*</span>
                     </label>
                     <Input
                       type="email"
@@ -199,10 +199,10 @@ export default function ProductRequestPage() {
                         }
                       })}
                       placeholder="your@email.com"
-                      className={`rounded-xl ${errors.email ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                      className={`rounded-xl ${errors.email ? 'border-accent ring-2 ring-accent/20' : ''}`}
                     />
                     {errors.email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                      <p className="text-accent text-sm mt-1">{errors.email.message}</p>
                     )}
                   </div>
                 </div>
@@ -244,20 +244,20 @@ export default function ProductRequestPage() {
 
                 {/* Product Information */}
                 <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4 gradient-text">Product Details</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-slate-900">Product Details</h3>
 
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Product Name <span className="text-red-500">*</span>
+                        Product Name <span className="text-accent">*</span>
                       </label>
                       <Input
                         {...register('product_name', { required: 'Product name is required' })}
                         placeholder="What product are you looking for?"
-                        className={`rounded-xl ${errors.product_name ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                        className={`rounded-xl ${errors.product_name ? 'border-accent ring-2 ring-accent/20' : ''}`}
                       />
                       {errors.product_name && (
-                        <p className="text-red-500 text-sm mt-1">{errors.product_name.message}</p>
+                        <p className="text-accent text-sm mt-1">{errors.product_name.message}</p>
                       )}
                     </div>
 
@@ -286,15 +286,15 @@ export default function ProductRequestPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Order Quantity <span className="text-red-500">*</span>
+                          Order Quantity <span className="text-accent">*</span>
                         </label>
                         <Input
                           {...register('quantity', { required: 'Quantity is required' })}
                           placeholder="e.g., 100 pieces, 50 cartons"
-                          className={`rounded-xl ${errors.quantity ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
+                          className={`rounded-xl ${errors.quantity ? 'border-accent ring-2 ring-accent/20' : ''}`}
                         />
                         {errors.quantity && (
-                          <p className="text-red-500 text-sm mt-1">{errors.quantity.message}</p>
+                          <p className="text-accent text-sm mt-1">{errors.quantity.message}</p>
                         )}
                       </div>
                     </div>
@@ -306,7 +306,7 @@ export default function ProductRequestPage() {
                         </label>
                         <select
                           {...register('sample_needed')}
-                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         >
                           <option value="">Select</option>
                           <option value="yes">Yes - Send sample first</option>
@@ -320,7 +320,7 @@ export default function ProductRequestPage() {
                         </label>
                         <select
                           {...register('shipping_method')}
-                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className="w-full h-11 px-4 rounded-xl border border-gray-200 bg-white text-sm focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
                         >
                           <option value="">Select shipping method</option>
                           <option value="air-cargo">Air Cargo (3-7 days)</option>
@@ -346,7 +346,7 @@ export default function ProductRequestPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Product Images (Optional - max 4, 6MB each)
                       </label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 hover:bg-slate-50 transition-all cursor-pointer">
                         <input
                           type="file"
                           accept="image/*"
@@ -357,7 +357,7 @@ export default function ProductRequestPage() {
                           disabled={selectedFiles.length >= 4}
                         />
                         <label htmlFor="file-upload" className={`cursor-pointer ${selectedFiles.length >= 4 ? 'opacity-50 pointer-events-none' : ''}`}>
-                          <Upload className="mx-auto text-primary mb-2" size={32} />
+                          <Upload className="mx-auto text-slate-400 mb-2" size={32} />
                           <p className="text-gray-600 font-medium">
                             {selectedFiles.length >= 4 ? 'Maximum 4 images selected' : 'Click to upload or drag and drop'}
                           </p>
@@ -376,7 +376,7 @@ export default function ProductRequestPage() {
                               <button
                                 type="button"
                                 onClick={() => removeFile(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="absolute -top-2 -right-2 bg-accent text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 x
                               </button>
@@ -392,8 +392,7 @@ export default function ProductRequestPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  variant="gradient"
-                  className="w-full rounded-xl"
+                  className="w-full rounded-xl bg-red-600 hover:bg-red-700 text-white"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

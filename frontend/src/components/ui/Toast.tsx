@@ -60,9 +60,9 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   }, []);
 
   const styles: Record<ToastVariant, { bg: string; border: string; text: string; icon: ReactNode }> = {
-    success: { bg: 'bg-green-50', border: 'border-green-300', text: 'text-green-900', icon: <CheckCircle size={20} className="text-green-600 flex-shrink-0" /> },
-    error: { bg: 'bg-red-50', border: 'border-red-300', text: 'text-red-900', icon: <AlertCircle size={20} className="text-red-600 flex-shrink-0" /> },
-    info: { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-900', icon: <Info size={20} className="text-blue-600 flex-shrink-0" /> },
+    success: { bg: 'bg-secondary/10', border: 'border-secondary/30', text: 'text-secondary-900', icon: <CheckCircle size={20} className="text-secondary flex-shrink-0" /> },
+    error: { bg: 'bg-accent/10', border: 'border-accent/30', text: 'text-accent-900', icon: <AlertCircle size={20} className="text-accent flex-shrink-0" /> },
+    info: { bg: 'bg-primary/10', border: 'border-primary/30', text: 'text-primary-900', icon: <Info size={20} className="text-primary flex-shrink-0" /> },
   };
   const s = styles[toast.variant];
 

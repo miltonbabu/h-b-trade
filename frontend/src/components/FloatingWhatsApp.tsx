@@ -29,7 +29,7 @@ export default function FloatingWhatsApp() {
                 </div>
                 <div>
                   <p className="font-semibold">H&B Trade</p>
-                  <p className="text-xs text-green-100">Usually replies instantly</p>
+                  <p className="text-xs text-white/80">Usually replies instantly</p>
                 </div>
               </div>
               <button
@@ -71,7 +71,7 @@ export default function FloatingWhatsApp() {
         <MessageCircle size={28} className="text-white" />
         
         {/* Notification dot */}
-        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">
+        <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent rounded-full text-white text-xs flex items-center justify-center font-bold animate-pulse">
           1
         </span>
 

@@ -126,10 +126,10 @@ export default function WholesaleProductsPage() {
               </Link>
             )}
             <Link href="/cart">
-              <Button size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-soft">
+              <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white shadow-soft">
                 <ShoppingBag className="mr-1.5" size={16} />
                 <span className="hidden xs:inline">Cart</span>
-                <span className="ml-1.5 inline-flex items-center justify-center bg-white text-orange-600 rounded-full text-xs font-bold min-w-[20px] h-5 px-1.5">
+                <span className="ml-1.5 inline-flex items-center justify-center bg-white text-red-600 rounded-full text-xs font-bold min-w-[20px] h-5 px-1.5">
                   {getTotalItems()}
                 </span>
               </Button>
@@ -148,7 +148,7 @@ export default function WholesaleProductsPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search products…"
-                className="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 bg-white text-base shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                className="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 bg-white text-base shadow-soft focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
               />
             </div>
             <button
@@ -158,7 +158,7 @@ export default function WholesaleProductsPage() {
             >
               <SlidersHorizontal size={18} />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold">
+                <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold">
                   {activeFilterCount}
                 </span>
               )}
@@ -191,21 +191,21 @@ export default function WholesaleProductsPage() {
               <div className="flex flex-wrap items-center gap-2 mb-3 text-sm">
                 <span className="text-gray-500">Filters:</span>
                 {category !== "all" && (
-                  <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">
                     <Tag size={12} /> {category}
                     <button
                       onClick={() => setCategory("all")}
-                      className="ml-0.5 hover:bg-primary/20 rounded-full p-0.5"
+                      className="ml-0.5 hover:bg-slate-200 rounded-full p-0.5"
                       aria-label="Remove category filter"
                     ><X size={12} /></button>
                   </span>
                 )}
                 {searchTerm && (
-                  <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">
                     <Search size={12} /> &ldquo;{searchTerm}&rdquo;
                     <button
                       onClick={() => { setSearchInput(""); setSearchTerm(""); }}
-                      className="ml-0.5 hover:bg-orange-200 rounded-full p-0.5"
+                      className="ml-0.5 hover:bg-slate-200 rounded-full p-0.5"
                       aria-label="Remove search filter"
                     ><X size={12} /></button>
                   </span>
@@ -324,7 +324,7 @@ function FilterPanel({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search products…"
-            className="w-full h-10 pl-9 pr-3 rounded-xl border border-gray-200 bg-white text-sm shadow-soft focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-gray-200 bg-white text-sm shadow-soft focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
           />
         </div>
       </div>
@@ -336,7 +336,7 @@ function FilterPanel({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortOption)}
-            className="w-full h-10 px-3 pr-9 rounded-xl border border-gray-200 bg-white text-sm shadow-soft appearance-none focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+            className="w-full h-10 px-3 pr-9 rounded-xl border border-gray-200 bg-white text-sm shadow-soft appearance-none focus:outline-none focus:ring-2 focus:ring-slate-400/30 focus:border-slate-400"
           >
             {Object.entries(SORT_LABELS).map(([v, l]) => (
               <option key={v} value={v}>{l}</option>
@@ -368,7 +368,7 @@ function FilterPanel({
       {onApply && (
         <button
           onClick={onApply}
-          className="w-full inline-flex items-center justify-center h-11 rounded-xl bg-primary text-white text-sm font-semibold shadow-soft hover:bg-primary-600 active:scale-[0.98]"
+          className="w-full inline-flex items-center justify-center h-11 rounded-xl bg-slate-800 text-white text-sm font-semibold shadow-soft hover:bg-slate-900 active:scale-[0.98]"
         >
           Show results
         </button>
@@ -384,7 +384,7 @@ function CategoryItem({ label, value, current, onSelect }: { label: string; valu
       onClick={() => onSelect(value)}
       className={`w-full text-left text-sm px-3 py-2 rounded-lg transition-colors ${
         active
-          ? "bg-primary/10 text-primary font-semibold"
+          ? "bg-slate-100 text-slate-900 font-semibold"
           : "text-gray-700 hover:bg-gray-100"
       }`}
     >

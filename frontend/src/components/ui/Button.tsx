@@ -14,13 +14,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // - Solid color primary instead of double-gradient noise
     const variants = {
       default: 'bg-primary text-white hover:bg-primary-600 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
-      destructive: 'bg-red-500 text-white hover:bg-red-600 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
+      destructive: 'bg-accent text-white hover:bg-accent-700 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
       outline: 'border-2 border-primary bg-white text-primary hover:bg-primary hover:text-white shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
-      secondary: 'bg-secondary text-white hover:bg-orange-600 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
+      secondary: 'bg-secondary text-white hover:bg-secondary-800 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
       ghost: 'text-primary hover:bg-primary/10 hover:text-primary-700',
       link: 'text-primary underline-offset-4 hover:underline hover:text-primary-600',
-      gradient: 'bg-gradient-to-r from-primary via-accent to-secondary text-white hover:opacity-95 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
-      glow: 'bg-primary text-white shadow-[0_0_20px_rgba(13,148,136,0.4)] hover:shadow-[0_0_28px_rgba(13,148,136,0.6)] hover:-translate-y-px active:translate-y-0',
+      gradient: 'bg-gradient-to-r from-primary to-primary-700 text-white hover:opacity-95 shadow-soft hover:shadow-soft-lg hover:-translate-y-px active:translate-y-0',
+      glow: 'bg-primary text-white shadow-[0_0_20px_hsl(var(--primary)/0.4)] hover:shadow-[0_0_28px_hsl(var(--primary)/0.6)] hover:-translate-y-px active:translate-y-0',
     }
 
     // Sizes tuned for accessibility — min-44px tap target on mobile.

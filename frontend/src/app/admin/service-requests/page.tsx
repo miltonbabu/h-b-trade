@@ -316,10 +316,10 @@ export default function AdminServiceRequestsPage() {
         <title>Service Request - ${request.tracking_number || request.id}</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-          .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 20px; margin-bottom: 30px; }
-          .logo { font-size: 28px; font-weight: bold; color: #0d9488; }
+          .header { text-align: center; border-bottom: 3px solid #1e3a5f; padding-bottom: 20px; margin-bottom: 30px; }
+          .logo { font-size: 28px; font-weight: bold; color: #1e3a5f; }
           .section { margin-bottom: 25px; }
-          .section-title { font-size: 16px; font-weight: bold; color: #0d9488; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
+          .section-title { font-size: 16px; font-weight: bold; color: #1e3a5f; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 15px; }
           .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
           .field { margin-bottom: 10px; }
           .label { font-size: 12px; color: #6b7280; }
@@ -341,7 +341,7 @@ export default function AdminServiceRequestsPage() {
             opacity: 0.06;
           }
           .watermark-logo { width: 180px; height: 180px; margin-bottom: 8px; }
-          .watermark-text { font-size: 52px; font-weight: 900; color: #0d9488; letter-spacing: 6px; }
+          .watermark-text { font-size: 52px; font-weight: 900; color: #1e3a5f; letter-spacing: 6px; }
           .content-wrapper { position: relative; z-index: 1; }
           @media print { body { padding: 20px; } }
         </style>
@@ -381,7 +381,7 @@ export default function AdminServiceRequestsPage() {
             ${request.price ? `
             <div class="field">
               <div class="label">Price (৳ BDT)</div>
-              <div class="value" style="color: #0d9488; font-size: 18px; font-weight: bold;">৳${request.price!.toFixed(2)}</div>
+              <div class="value" style="color: #1e3a5f; font-size: 18px; font-weight: bold;">৳${request.price!.toFixed(2)}</div>
             </div>
             ` : ''}
             ${request.admin_notes ? `

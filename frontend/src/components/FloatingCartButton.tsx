@@ -29,12 +29,12 @@ export default function FloatingCartButton() {
   return (
     <Link
       href="/cart"
-      className="fixed bottom-36 right-6 z-50 w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl"
+      className="fixed bottom-36 right-6 z-50 w-14 h-14 bg-gradient-to-br from-accent to-accent-700 hover:from-accent-700 hover:to-accent-800 rounded-2xl shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-xl"
       aria-label="View Cart"
     >
       <ShoppingBag size={24} className="text-white" />
       {totalItems > 0 && (
-        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+        <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-xs font-bold rounded-full flex items-center justify-center">
           {totalItems > 99 ? "99+" : totalItems}
         </span>
       )}

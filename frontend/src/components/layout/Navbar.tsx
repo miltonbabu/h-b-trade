@@ -24,11 +24,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const hasVisited = localStorage.getItem('customer_user') || localStorage.getItem('hb_visited');
-    if (hasVisited) {
-      setIsReturningUser(true);
-    } else {
-      setIsReturningUser(false);
-    }
+    setIsReturningUser(!!hasVisited);
   }, [isAuthenticated]);
 
   const markVisited = () => {
@@ -36,13 +32,13 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/services", label: "Services" },
-    { href: "/wholesale-products", label: "Wholesale Products" },
-    { href: "/product-request", label: "Product Request" },
-    { href: "/tracking", label: "Track Shipment" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", label: "Home", shortLabel: "Home" },
+    { href: "/about", label: "About", shortLabel: "About" },
+    { href: "/services", label: "Services", shortLabel: "Services" },
+    { href: "/wholesale-products", label: "Wholesale", shortLabel: "Wholesale" },
+    { href: "/product-request", label: "Request Product", shortLabel: "Request" },
+    { href: "/tracking", label: "Track", shortLabel: "Track" },
+    { href: "/contact", label: "Contact", shortLabel: "Contact" },
   ];
 
   const handleLogout = () => {
@@ -54,41 +50,43 @@ export default function Navbar() {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-white shadow-md"}`}
     >
-      <div className="bg-gradient-to-r from-primary via-primary-600 to-primary-700 text-white py-2 hidden md:block">
-        <div className="container mx-auto px-4 flex justify-between items-center text-sm">
-          <div className="flex items-center gap-6">
+      {/* Top info bar - hidden on small mobile, visible on md+ */}
+      <div className="bg-slate-800 text-white py-1.5 hidden sm:block">
+        <div className="container mx-auto px-4 flex justify-between items-center text-xs lg:text-sm">
+          <div className="flex items-center gap-3 lg:gap-6">
             <a
               href={`tel:${settings.phone.replace(/\s/g, '')}`}
-              className="flex items-center gap-2 hover:text-yellow-300 transition-colors"
+              className="flex items-center gap-1.5 hover:text-white/80 transition-colors"
             >
-              <Phone size={14} />
-              <span>{settings.phone}</span>
+              <Phone size={13} />
+              <span className="truncate max-w-[140px] lg:max-w-none">{settings.phone}</span>
             </a>
             <a
               href={`mailto:${settings.email}`}
-              className="flex items-center gap-2 hover:text-yellow-300 transition-colors"
+              className="hidden md:flex items-center gap-1.5 hover:text-white/80 transition-colors"
             >
-              <Mail size={14} />
-              <span>{settings.email}</span>
+              <Mail size={13} />
+              <span className="truncate max-w-[180px] lg:max-w-none">{settings.email}</span>
             </a>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a
               href={settings.facebook_page}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-yellow-300 transition-colors hover:scale-110 transform"
+              className="hover:text-white/80 transition-colors hover:scale-110 transform"
             >
-              <Facebook size={16} />
+              <Facebook size={14} />
             </a>
           </div>
         </div>
       </div>
 
-      <nav className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-14 sm:h-16">
-          <Link href="/" className="flex items-center group min-w-0">
-            <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden shrink-0" suppressHydrationWarning>
+      <nav className="container mx-auto px-3 sm:px-4">
+        <div className="flex justify-between items-center h-14 sm:h-16 lg:h-[68px]">
+          {/* Logo */}
+          <Link href="/" className="flex items-center group min-w-0 shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 overflow-hidden" suppressHydrationWarning>
               <Image
                 src="/hbtrade_logo.png"
                 alt="H&B Trade Logo"
@@ -98,88 +96,122 @@ export default function Navbar() {
                 priority
               />
             </div>
+            <span className="ml-2 font-bold text-slate-800 text-sm sm:text-base lg:text-lg leading-tight hidden sm:inline-block">
+              H&B<span className="text-red-600">Trade</span>
+            </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
+          {/* Desktop nav links - hidden below lg (1024px) to prevent crowding */}
+          <div className="hidden lg:flex items-center gap-4 xl:gap-6">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="nav-link-linear text-gray-600 hover:text-primary font-medium"
+                className="nav-link-linear text-gray-600 hover:text-slate-800 font-medium text-sm whitespace-nowrap transition-colors"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {link.label}
               </Link>
             ))}
-            {isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 text-gray-600 hover:text-primary font-medium transition"
-                >
-                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
-                    <User size={16} className="text-primary" />
-                  </div>
-                  <span className="hidden lg:inline">{user.name}</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-500 transition"
-                  title="Logout"
-                >
-                  <LogOut size={18} />
-                </button>
-              </div>
-            ) : (
-              <Link
-                href={isReturningUser ? '/login' : '/signup'}
-                onClick={markVisited}
-                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-700 transition font-medium text-sm"
-              >
-                <User size={16} />
-                {isReturningUser ? 'Login' : 'Sign Up'}
-              </Link>
-            )}
           </div>
 
-          <div className="flex items-center gap-2 md:hidden">
-            {isAuthenticated && user ? (
-              <Link href="/profile" className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition" onClick={() => setIsOpen(false)}>
-                <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/30">
-                  <User size={14} className="text-primary" />
+          {/* Right side: Auth + Hamburger */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Desktop auth buttons - lg+ */}
+            <div className="hidden lg:flex items-center gap-3">
+              {isAuthenticated && user ? (
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 text-gray-600 hover:text-slate-800 font-medium transition text-sm"
+                  >
+                    <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center border-2 border-slate-200">
+                      <User size={16} className="text-slate-700" />
+                    </div>
+                    <span className="hidden xl:inline">{user.name}</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-400 hover:text-red-500 transition"
+                    title="Logout"
+                  >
+                    <LogOut size={18} />
+                  </button>
                 </div>
-              </Link>
-            ) : (
-              <Link
-                href={isReturningUser ? '/login' : '/signup'}
-                onClick={() => { markVisited(); setIsOpen(false); }}
-                className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-gray-600"
-              >
-                <User size={20} />
-              </Link>
-            )}
+              ) : (
+                <Link
+                  href={isReturningUser ? '/login' : '/signup'}
+                  onClick={markVisited}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg transition font-medium text-sm shadow-md"
+                >
+                  <User size={15} />
+                  {isReturningUser ? 'Login' : 'Sign Up'}
+                </Link>
+              )}
+            </div>
+
+            {/* Tablet auth icon - md to lg */}
+            <div className="hidden md:flex lg:hidden items-center">
+              {isAuthenticated && user ? (
+                <Link href="/profile" className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
+                  <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center border-2 border-slate-200">
+                    <User size={14} className="text-slate-700" />
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  href={isReturningUser ? '/login' : '/signup'}
+                  onClick={markVisited}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-slate-700"
+                >
+                  <User size={20} />
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile auth icon - below md */}
+            <div className="flex md:hidden items-center">
+              {isAuthenticated && user ? (
+                <Link href="/profile" className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition" onClick={() => setIsOpen(false)}>
+                  <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center border-2 border-slate-200">
+                    <User size={14} className="text-slate-700" />
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  href={isReturningUser ? '/login' : '/signup'}
+                  onClick={() => { markVisited(); setIsOpen(false); }}
+                  className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-slate-700"
+                >
+                  <User size={19} />
+                </Link>
+              )}
+            </div>
+
+            {/* Hamburger menu button - visible below lg (1024px) */}
             <button
-              className="inline-flex items-center justify-center h-9 w-9 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              className="inline-flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-xl hover:bg-gray-100 active:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/40"
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
             >
               {isOpen ? (
-                <X size={22} className="text-primary" />
+                <X size={22} className="text-slate-700" />
               ) : (
-                <Menu size={22} className="text-primary" />
+                <Menu size={22} className="text-slate-700" />
               )}
             </button>
           </div>
         </div>
 
+        {/* Mobile/Tablet dropdown menu */}
         {isOpen && (
-          <div className="md:hidden py-3 border-t border-gray-100 animate-fade-in">
+          <div className="lg:hidden py-3 border-t border-gray-100 animate-fade-in max-h-[70vh] overflow-y-auto">
             {navLinks.map((link, index) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center min-h-11 px-4 text-gray-700 hover:text-primary hover:bg-primary/5 active:bg-primary/10 font-medium rounded-xl transition-colors duration-150"
+                className="flex items-center min-h-[44px] px-4 text-gray-700 hover:text-slate-800 hover:bg-gray-50 active:bg-gray-100 font-medium rounded-xl transition-colors duration-150"
                 onClick={() => setIsOpen(false)}
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
@@ -187,21 +219,38 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="border-t border-gray-100 mt-2 pt-2">
+              {/* Contact quick actions on mobile */}
+              <div className="sm:hidden px-4 pb-2 flex gap-3">
+                <a
+                  href={`tel:${settings.phone.replace(/\s/g, '')}`}
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-slate-800 transition"
+                >
+                  <Phone size={14} />
+                  <span>Call</span>
+                </a>
+                <a
+                  href={`mailto:${settings.email}`}
+                  className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-slate-800 transition"
+                >
+                  <Mail size={14} />
+                  <span>Email</span>
+                </a>
+              </div>
               {isAuthenticated && user ? (
                 <>
                   <Link
                     href="/profile"
-                    className="flex items-center gap-3 min-h-11 px-4 text-gray-700 hover:text-primary hover:bg-primary/5 font-medium rounded-xl transition"
+                    className="flex items-center gap-3 min-h-[44px] px-4 text-gray-700 hover:text-slate-800 hover:bg-gray-50 font-medium rounded-xl transition"
                     onClick={() => setIsOpen(false)}
                   >
-                    <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary font-bold text-xs">{user.name?.charAt(0) || 'U'}</span>
+                    <div className="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center">
+                      <span className="text-slate-700 font-bold text-xs">{user.name?.charAt(0) || 'U'}</span>
                     </div>
                     <span>My Profile</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 min-h-11 px-4 w-full text-red-500 hover:bg-red-50 font-medium rounded-xl transition"
+                    className="flex items-center gap-3 min-h-[44px] px-4 w-full text-red-500 hover:bg-red-50 font-medium rounded-xl transition"
                   >
                     <LogOut size={18} />
                     <span>Logout</span>
@@ -211,7 +260,7 @@ export default function Navbar() {
                 <>
                   <Link
                     href={isReturningUser ? '/login' : '/signup'}
-                    className="flex items-center gap-3 min-h-11 px-4 text-primary hover:bg-primary/5 font-medium rounded-xl transition"
+                    className="flex items-center gap-3 min-h-[44px] px-4 text-slate-800 hover:bg-gray-50 font-semibold rounded-xl transition"
                     onClick={() => { markVisited(); setIsOpen(false); }}
                   >
                     <User size={18} />
@@ -220,7 +269,7 @@ export default function Navbar() {
                   {isReturningUser && (
                     <Link
                       href="/signup"
-                      className="flex items-center gap-3 min-h-11 px-4 text-gray-500 hover:bg-gray-50 font-medium rounded-xl transition"
+                      className="flex items-center gap-3 min-h-[44px] px-4 text-gray-500 hover:bg-gray-50 font-medium rounded-xl transition"
                       onClick={() => setIsOpen(false)}
                     >
                       <User size={18} />

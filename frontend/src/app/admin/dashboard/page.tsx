@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       title: 'Service Requests',
       value: data?.stats.totalServiceRequests || 0,
       icon: Wrench,
-      color: 'bg-teal-500',
+      color: 'bg-secondary',
     },
     {
       title: 'Messages',
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
       title: 'Pending Orders',
       value: data?.stats.pendingOrders || 0,
       icon: Clock,
-      color: 'bg-orange-500',
+      color: 'bg-accent',
     },
   ];
 

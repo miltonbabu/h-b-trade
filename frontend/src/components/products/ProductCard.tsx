@@ -93,7 +93,7 @@ export default function ProductCard({ product, quantity = 0, compact, onAdd }: P
             </span>
           )}
           {quantity > 0 && (
-            <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-orange-500 text-white px-2 py-0.5 rounded-full text-[11px] font-semibold shadow-soft">
+            <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-accent text-white px-2 py-0.5 rounded-full text-[11px] font-semibold shadow-soft">
               <ShoppingBag size={10} /> {quantity}
             </span>
           )}
@@ -108,7 +108,7 @@ export default function ProductCard({ product, quantity = 0, compact, onAdd }: P
           )}
           <div className="flex items-end justify-between mt-1">
             <div>
-              <p className={`${compact ? "text-base" : "text-xl"} font-bold text-orange-600`}>
+              <p className={`${compact ? "text-base" : "text-xl"} font-bold text-amber-600`}>
                 ৳{price.toFixed(2)}
               </p>
               <p className="text-[10px] text-gray-500 leading-none">per unit</p>

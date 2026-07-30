@@ -12,17 +12,17 @@ import {
 import { InvoiceData } from '@/types';
 
 const COLORS = {
-  primary: '#0d9488',
-  primaryDark: '#0f766e',
-  secondary: '#f97316',
+  primary: '#1e3a5f',
+  primaryDark: '#152a47',
+  secondary: '#047857',
   dark: '#1e293b',
   gray600: '#4b5563',
   gray400: '#9ca3af',
   gray200: '#e5e7eb',
   gray100: '#f3f4f6',
   white: '#ffffff',
-  teal50: '#f0fdfa',
-  teal100: '#ccfbf1',
+  primary50: '#f0f4f9',
+  primary100: '#dce6f0',
 };
 
 const styles = StyleSheet.create({
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 10,
-    color: COLORS.teal100,
+    color: COLORS.primary100,
     marginTop: 4,
     letterSpacing: 0.5,
   },
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   invoiceLabel: {
     fontSize: 12,
     fontWeight: 600,
-    color: COLORS.teal100,
+    color: COLORS.primary100,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray200,
-    backgroundColor: COLORS.teal50,
+    backgroundColor: COLORS.primary50,
   },
   tableCell: {
     fontSize: 9,
