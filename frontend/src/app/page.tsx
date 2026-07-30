@@ -229,17 +229,19 @@ export default function HomePage() {
             </div>
 
             {/* Service Cards Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 md:gap-3 mb-5 md:mb-6">
               {heroServices.map((service, index) => (
-                <Link key={index} href={`/services/${service.slug}`}>
-                  <div className="group bg-slate-800/60 backdrop-blur-sm rounded-lg md:rounded-xl p-2 md:p-3 lg:p-3 border border-slate-700/40 hover:border-slate-600/60 hover:bg-slate-800/80 transition-all duration-300 cursor-pointer text-center hover:-translate-y-[3px] hover:shadow-[0_8px_24px_-4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center h-[80px] md:h-[100px] lg:h-[100px] overflow-hidden">
-                    <div className={`w-9 h-9 md:w-11 md:h-11 lg:w-11 lg:h-11 ${service.iconBg} rounded-md md:rounded-lg flex items-center justify-center mx-auto mb-1 md:mb-1.5 group-hover:scale-110 transition-transform duration-300`}>
-                      <service.icon className="text-white" size={18} strokeWidth={1.5} />
+                <Link key={index} href={`/services/${service.slug}`} className="block">
+                  <div className="group relative bg-slate-900/95 rounded-xl md:rounded-2xl p-3 md:p-4 border border-white/10 hover:border-white/25 transition-all duration-300 cursor-pointer text-center hover:-translate-y-1 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center min-h-[96px] md:min-h-[116px] overflow-hidden">
+                    {/* Top accent bar */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${service.iconBg} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+                    <div className={`w-10 h-10 md:w-12 md:h-12 ${service.iconBg} rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-2 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <service.icon className="text-white" size={20} strokeWidth={1.75} />
                     </div>
-                    <h3 className={`${service.titleColor} font-semibold text-[11px] md:text-sm lg:text-sm mb-0 md:mb-0.5 group-hover:brightness-125 transition-all leading-tight whitespace-nowrap`}>
+                    <h3 className="text-white font-semibold text-xs md:text-sm mb-0.5 leading-tight whitespace-nowrap">
                       {service.title}
                     </h3>
-                    <p className="text-slate-400/80 text-[9px] md:text-[11px] lg:text-[11px] leading-tight hidden md:block">
+                    <p className="text-slate-300/90 text-[10px] md:text-[11px] leading-tight">
                       {service.description}
                     </p>
                   </div>
