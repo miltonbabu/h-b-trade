@@ -191,7 +191,6 @@ export default function HomePage() {
   return (
     <div>
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
         <div
           className="absolute inset-0"
           style={{
@@ -200,48 +199,40 @@ export default function HomePage() {
             backgroundPosition: "center"
           }}
         ></div>
-        
-        <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-20 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-green-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl"></div>
-          </div>
-        </div>
+        {/* Subtle bottom scrim for content readability (keeps image visible) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30"></div>
 
-        <div className="container mx-auto px-3 md:px-4 lg:px-6 relative z-10 pt-8 md:pt-0 pb-20 md:pb-24">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 pt-10 md:pt-0 pb-20 md:pb-24">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-4 md:mb-8">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-2 md:mb-3 leading-tight">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-300 via-white to-green-300 bg-[length:200%_auto] animate-gradient-shift">
+            <div className="text-center mb-5 md:mb-8">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-2 md:mb-3 leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                <span className="text-white">
                   HELP & BENEFIT TRADE
                 </span>
-                <span className="block mt-1 md:mt-2 text-base md:text-xl lg:text-2xl font-medium text-yellow-200/90">
+                <span className="block mt-2 md:mt-3 text-base md:text-xl lg:text-2xl font-semibold text-teal-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
                   Your Complete China-Bangladesh Trade Solution
                 </span>
               </h1>
 
-              <p className="text-xs md:text-sm lg:text-base text-white/80 mb-3 md:mb-6 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xs md:text-base text-white/95 mb-4 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                 From sourcing to shipping, we handle everything. Choose a service below to get started.
               </p>
 
             </div>
 
             {/* Service Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 md:gap-3 mb-5 md:mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
               {heroServices.map((service, index) => (
                 <Link key={index} href={`/services/${service.slug}`} className="block">
-                  <div className="group relative bg-slate-900/95 rounded-xl md:rounded-2xl p-3 md:p-4 border border-white/10 hover:border-white/25 transition-all duration-300 cursor-pointer text-center hover:-translate-y-1 hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center min-h-[96px] md:min-h-[116px] overflow-hidden">
-                    {/* Top accent bar */}
-                    <div className={`absolute top-0 left-0 right-0 h-1 ${service.iconBg} opacity-80 group-hover:opacity-100 transition-opacity`}></div>
-                    <div className={`w-10 h-10 md:w-12 md:h-12 ${service.iconBg} rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-2 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                  <div className="group h-full bg-white rounded-xl md:rounded-2xl p-3.5 md:p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.6)] border border-black/5 transition-all duration-300 cursor-pointer text-center hover:-translate-y-1 flex flex-col items-center justify-center min-h-[104px] md:min-h-[124px]">
+                    <div className={`w-10 h-10 md:w-11 md:h-11 ${service.iconBg} rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform duration-300`}>
                       <service.icon className="text-white" size={20} strokeWidth={1.75} />
                     </div>
-                    <h3 className="text-white font-semibold text-xs md:text-sm mb-0.5 leading-tight whitespace-nowrap">
+                    <h3 className="text-slate-900 font-semibold text-xs md:text-sm leading-tight whitespace-nowrap">
                       {service.title}
                     </h3>
-                    <p className="text-slate-300/90 text-[10px] md:text-[11px] leading-tight">
+                    <p className="text-slate-500 text-[10px] md:text-[11px] leading-tight mt-0.5">
                       {service.description}
                     </p>
                   </div>
@@ -250,34 +241,34 @@ export default function HomePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center mt-4 md:mt-12">
-              <Link href="/services/product-sourcing">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6 md:mt-10">
+              <Link href="/services/product-sourcing" className="w-full sm:w-auto">
                 <Button
                   size="sm"
-                  className="btn-cta-linear w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-red-600/80 backdrop-blur-xl hover:bg-red-500/90 text-white font-semibold tracking-[-0.01em] shadow-[0_0_24px_rgba(239,68,68,0.25),0_8px_32px_-8px_rgba(0,0,0,0.4)] hover:shadow-[0_0_32px_rgba(239,68,68,0.4),0_12px_40px_-8px_rgba(0,0,0,0.5)] border border-red-400/20 hover:border-red-400/40 transition-all duration-500 ease-out hover:-translate-y-[3px]"
+                  className="w-full sm:w-auto px-5 md:px-6 py-3 md:py-3.5 bg-red-600 hover:bg-red-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 ease-out hover:-translate-y-0.5"
                 >
-                  <Zap className="mr-1.5 md:mr-2" size={17} strokeWidth={2} />
+                  <Zap className="mr-2" size={17} strokeWidth={2} />
                   <span className="text-xs md:text-sm">Request a Product</span>
-                  <ArrowRight className="ml-1 md:ml-2 opacity-70" size={15} strokeWidth={1.5} />
+                  <ArrowRight className="ml-2 opacity-80" size={15} strokeWidth={1.5} />
                 </Button>
               </Link>
-              <Link href="/tracking">
+              <Link href="/tracking" className="w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="btn-glass-linear btn-glass-linear-green w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-green-600/30 backdrop-blur-xl hover:bg-green-500/40 text-white/90 border border-green-500/20 hover:border-green-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] font-medium tracking-[-0.01em] transition-all duration-500 ease-out hover:-translate-y-[3px]"
+                  className="w-full sm:w-auto px-5 md:px-6 py-3 md:py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white/60 font-medium transition-all duration-300 ease-out hover:-translate-y-0.5"
                 >
-                  <Search className="mr-1.5 md:mr-2 opacity-70" size={17} strokeWidth={1.5} />
+                  <Search className="mr-2 opacity-80" size={17} strokeWidth={1.5} />
                   <span className="text-xs md:text-sm">Track Shipment / Request</span>
                 </Button>
               </Link>
-              <Link href="/wholesale-products">
+              <Link href="/wholesale-products" className="w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="btn-glass-linear w-full sm:w-auto px-4 md:px-6 py-3 md:py-4 bg-purple-600/30 backdrop-blur-xl hover:bg-purple-500/40 text-white/90 border border-purple-500/20 hover:border-purple-400/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_0_20px_rgba(168,85,247,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] font-medium tracking-[-0.01em] transition-all duration-500 ease-out hover:-translate-y-[3px]"
+                  className="w-full sm:w-auto px-5 md:px-6 py-3 md:py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white/60 font-medium transition-all duration-300 ease-out hover:-translate-y-0.5"
                 >
-                  <Package className="mr-1.5 md:mr-2 opacity-70 group-hover:opacity-100" size={17} strokeWidth={1.5} />
+                  <Package className="mr-2 opacity-80" size={17} strokeWidth={1.5} />
                   <span className="text-xs md:text-sm">Wholesale Products</span>
                 </Button>
               </Link>
