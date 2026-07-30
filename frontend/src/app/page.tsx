@@ -190,17 +190,17 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
-        {/* Mobile hero image (portrait crop) */}
+      <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden bg-gradient-to-b from-[#2b1e14] via-[#3a2817] to-[#1a1f2e]">
+        {/* Mobile hero image (portrait crop) - full image visible, no crop */}
         <div
-          className="absolute inset-0 bg-cover bg-center md:hidden"
+          className="absolute inset-0 bg-no-repeat bg-contain bg-top md:hidden"
           style={{
             backgroundImage: "url('/hero-mobile.jpg')"
           }}
         ></div>
-        {/* Desktop hero image (landscape crop) */}
+        {/* Desktop hero image (landscape crop) - full image visible, no crop */}
         <div
-          className="absolute inset-0 bg-cover bg-center hidden md:block"
+          className="absolute inset-0 bg-no-repeat bg-contain bg-center hidden md:block"
           style={{
             backgroundImage: "url('/hero-desktop.jpg')"
           }}
