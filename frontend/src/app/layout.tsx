@@ -9,7 +9,6 @@ import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import PWAServiceWorker from "@/components/PWAServiceWorker";
 import ClientDynamicComponents from "@/components/ClientDynamicComponents";
-import HackerNotice from "@/components/HackerNotice";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -117,7 +116,6 @@ export default function RootLayout({
             <div className="md:hidden h-20" aria-hidden="true" />
             <MobileBottomTabs />
             <ClientDynamicComponents />
-            <HackerNotice />
           </CartProvider>
         </AuthProvider>
       </body>
