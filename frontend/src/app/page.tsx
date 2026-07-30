@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -23,9 +23,6 @@ import {
 } from "lucide-react";
 import api from "@/lib/api";
 import { Video } from "@/types";
-
-// Lazy load event popup for faster initial page load
-const EventPopup = lazy(() => import("@/components/events/EventPopup"));
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -193,9 +190,6 @@ export default function HomePage() {
 
   return (
     <div>
-      <Suspense fallback={null}>
-        <EventPopup />
-      </Suspense>
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
         <div 
