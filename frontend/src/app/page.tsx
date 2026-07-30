@@ -192,15 +192,14 @@ export default function HomePage() {
     <div>
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900"></div>
-        <div 
-          className="absolute inset-0 opacity-30" 
-          style={{ 
+        <div
+          className="absolute inset-0"
+          style={{
             backgroundImage: "url('/hero-image.png')",
             backgroundSize: "cover",
             backgroundPosition: "center"
           }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-slate-900/80"></div>
         
         <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
           <div className="absolute top-0 left-0 w-full h-full">
