@@ -191,12 +191,18 @@ export default function HomePage() {
   return (
     <div>
       <section className="relative min-h-[60vh] sm:min-h-screen flex items-center overflow-hidden">
+        {/* Mobile hero image (portrait crop) */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 bg-cover bg-center md:hidden"
           style={{
-            backgroundImage: "url('/hero-image.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center"
+            backgroundImage: "url('/hero-mobile.jpg')"
+          }}
+        ></div>
+        {/* Desktop hero image (landscape crop) */}
+        <div
+          className="absolute inset-0 bg-cover bg-center hidden md:block"
+          style={{
+            backgroundImage: "url('/hero-desktop.jpg')"
           }}
         ></div>
         {/* Subtle bottom scrim for content readability (keeps image visible) */}
