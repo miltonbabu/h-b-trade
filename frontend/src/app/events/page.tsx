@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import SignupForm from "@/components/events/SignupForm";
 import { ArrowDown, ChevronLeft, ChevronRight, FileText, X, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import ErrorBoundary from "@/components/events/ErrorBoundary";
 import { ThemeProvider } from "@/components/events/ThemeContext";
@@ -79,10 +78,6 @@ function EventsPage() {
 
     return () => clearInterval(interval);
   }, []);
-
-  const scrollToForm = () => {
-    document.getElementById('registration-form')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <ErrorBoundary>
@@ -170,13 +165,6 @@ function EventsPage() {
                   </div>
 
                   <div className="pt-3 sm:pt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
-                    <button
-                      onClick={scrollToForm}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 animate-pulse w-full sm:w-auto"
-                    >
-                      <span>Register Now</span>
-                      <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce" />
-                    </button>
                     <Link href="/events/detail" className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 bg-slate-800/80 hover:bg-slate-700/90 text-white font-bold text-base sm:text-lg rounded-xl shadow-xl border border-blue-400/50 hover:border-blue-400 transition-all duration-300 w-full sm:w-auto">
                       View Event Details
                     </Link>
@@ -347,19 +335,6 @@ function EventsPage() {
                 </div>
               </div>
             )}
-
-            <section className="bg-card py-16 md:py-24" id="registration-form">
-              <div className="container max-w-4xl mx-auto px-4">
-                <div className="mb-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Event Registration</h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Complete your registration to secure your spot at the 2026 CIAAF (Zhengzhou). Please provide accurate information for verification purposes.
-                  </p>
-                </div>
-
-                <SignupForm />
-              </div>
-            </section>
 
             <footer className="bg-background border-t border-border py-12">
               <div className="container max-w-6xl mx-auto px-4">
