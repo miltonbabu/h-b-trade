@@ -234,10 +234,10 @@ export default function ServiceTrackPage() {
                           }`}>
                             {status.label}
                           </p>
-                          {ts && (isCurrent || isCompleted) ? (
+                          {ts ? (
                             <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
                           ) : (
-                            <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                            <p className="text-[10px] mt-1 text-center text-gray-400">{isCurrent || isCompleted ? 'Not recorded' : 'Awaiting update'}</p>
                           )}
                         </div>
                       );

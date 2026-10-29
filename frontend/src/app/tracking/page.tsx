@@ -467,10 +467,10 @@ export default function UnifiedTrackingPage() {
                                   <Icon size={18} />
                                 </div>
                                 <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-red-600' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{cfg.label || status.label}</p>
-                                {ts && (isCurrent || isPast) ? (
+                                {ts ? (
                                   <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
                                 ) : (
-                                  <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                                  <p className="text-[10px] mt-1 text-center text-gray-400">{isCurrent || isPast ? 'Not recorded' : 'Awaiting update'}</p>
                                 )}
                               </div>
                             );
@@ -616,10 +616,10 @@ export default function UnifiedTrackingPage() {
                                 <Icon size={18} />
                               </div>
                               <p className={`text-xs mt-2 text-center max-w-[100px] leading-tight ${isCurrent ? 'font-bold text-emerald-600' : isPast ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{status.label}</p>
-                              {ts && (isCurrent || isPast) ? (
+                              {ts ? (
                                 <p className="text-[10px] mt-1 text-center text-gray-500 font-medium">{formatShortDateTime(ts)}</p>
                               ) : (
-                                <p className="text-[10px] mt-1 text-center text-gray-300">—</p>
+                                <p className="text-[10px] mt-1 text-center text-gray-400">{isCurrent || isPast ? 'Not recorded' : 'Awaiting update'}</p>
                               )}
                             </div>
                           );

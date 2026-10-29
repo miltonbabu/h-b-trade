@@ -22,7 +22,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import api from '@/lib/api';
-import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
+import { formatDateTime, getStatusColor, getStatusLabel } from '@/lib/utils';
 
 interface TrackingEntry {
   id: string;
@@ -267,7 +267,7 @@ export default function AdminTrackingPage() {
                           <span className="flex items-center gap-1"><MapPin size={12} className="text-gray-400" />{entry.location}</span>
                         ) : '-'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{formatDate(entry.created_at)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500">{formatDateTime(entry.created_at)}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => handleViewHistory(entry.tracking_number)} title="View history">
@@ -397,7 +397,7 @@ export default function AdminTrackingPage() {
                             )}
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-gray-500">{formatDate(track.created_at)}</p>
+                            <p className="text-sm text-gray-500">{formatDateTime(track.created_at)}</p>
                             <Button
                               variant="ghost"
                               size="sm"

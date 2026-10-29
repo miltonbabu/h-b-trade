@@ -583,6 +583,15 @@ router.post(
         ],
       );
 
+      if (tracking_number) {
+        const initialStatus = status || 'pending';
+        await db.run(
+          `INSERT INTO tracking (id, tracking_number, status, location, note)
+           VALUES (?, ?, ?, ?, ?)`,
+          [uuidv4(), tracking_number, initialStatus, STATUS_LOCATION_MAP[initialStatus] || 'System', STATUS_DESCRIPTIONS[initialStatus] || 'Order created'],
+        );
+      }
+
       logger.info(`Order created: ${orderNumber} for ${customer_name}`);
 
       res.status(201).json({
@@ -1053,6 +1062,15 @@ router.put("/requests/:id", async (req, res) => {
 
     updateParams.push(req.params.id);
     await db.run(`UPDATE product_requests SET ${updates.join(", ")} WHERE id = ?`, updateParams);
+
+    const trackingNumber = req.body.tracking_number ?? request.tracking_number;
+    if (req.body.status && req.body.status !== request.status && trackingNumber) {
+      await db.run(
+        `INSERT INTO tracking (id, tracking_number, status, location, note)
+         VALUES (?, ?, ?, ?, ?)`,
+        [uuidv4(), trackingNumber, req.body.status, 'System', `Request status changed to ${req.body.status.replace(/_/g, ' ')}`],
+      );
+    }
 
     const updatedRequest = await db.getOne("SELECT * FROM product_requests WHERE id = ?", [req.params.id]);
     logger.info(`Product request updated: ${req.params.id}`);
@@ -1968,6 +1986,15 @@ router.put("/service-requests/:id", async (req, res) => {
 
     updateParams.push(req.params.id);
     await db.run(`UPDATE service_requests SET ${updates.join(", ")} WHERE id = ?`, updateParams);
+
+    const trackingNumber = req.body.tracking_number ?? request.tracking_number;
+    if (req.body.status && req.body.status !== request.status && trackingNumber) {
+      await db.run(
+        `INSERT INTO tracking (id, tracking_number, status, location, note)
+         VALUES (?, ?, ?, ?, ?)`,
+        [uuidv4(), trackingNumber, req.body.status, 'System', `Service status changed to ${req.body.status.replace(/_/g, ' ')}`],
+      );
+    }
 
     const updatedRequest = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
     logger.info(`Service request updated: ${req.params.id}`);
