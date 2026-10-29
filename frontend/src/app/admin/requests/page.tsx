@@ -763,7 +763,7 @@ export default function AdminRequestsPage() {
                   <option value="pending">Pending</option>
                   <option value="processing">Processing</option>
                   <option value="shipped">Shipped</option>
-                  <option value="in-transit">In Transit</option>
+                  <option value="in-transit">Flying</option>
                   <option value="delivered">Delivered</option>
                 </select>
               </div>

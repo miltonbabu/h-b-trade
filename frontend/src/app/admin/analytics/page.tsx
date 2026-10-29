@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
         </Card>
         <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 border-cyan-200">
           <CardContent className="p-3 text-center">
-            <p className="text-xs text-cyan-600">In Transit</p>
+            <p className="text-xs text-cyan-600">Flying</p>
             <p className="text-xl font-bold text-cyan-700">{s.inTransitOrders}</p>
           </CardContent>
         </Card>

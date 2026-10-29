@@ -148,7 +148,7 @@ router.get('/track/:tracking_number', async (req, res) => {
       'pending': { label: 'Pending', description: 'Your order has been received and is awaiting processing.', icon: 'package', color: 'yellow' },
       'processing': { label: 'Processing', description: 'Your order is being prepared for shipment.', icon: 'cog', color: 'blue' },
       'guangzhou_warehouse': { label: 'Guangzhou Warehouse Received', description: 'Your package has been received at our Guangzhou warehouse in China.', icon: 'warehouse', color: 'purple' },
-      'in_transit': { label: 'In Transit', description: 'Your package is in transit from China to Bangladesh.', icon: 'truck', color: 'indigo' },
+      'in_transit': { label: 'Flying', description: 'Your package is flying from China to Bangladesh.', icon: 'plane', color: 'indigo' },
       'dhaka_customs': { label: 'Dhaka Customs Clearance', description: 'Your package is going through customs clearance in Dhaka.', icon: 'clipboard', color: 'orange' },
       'dhaka_office': { label: 'Dhaka Office', description: 'Your package has arrived at our Dhaka office and is ready for delivery.', icon: 'building', color: 'teal' },
       'delivered': { label: 'Delivered To Customer', description: 'Your package has been successfully delivered.', icon: 'check-circle', color: 'green' },

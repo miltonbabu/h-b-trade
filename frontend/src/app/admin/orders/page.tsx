@@ -384,7 +384,7 @@ export default function AdminOrdersPage() {
               <option value="pending">Pending</option>
               <option value="processing">Processing</option>
               <option value="shipped">Shipped</option>
-              <option value="in-transit">In Transit</option>
+              <option value="in-transit">Flying</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
             </select>
@@ -444,7 +444,7 @@ export default function AdminOrdersPage() {
                           <option value="pending" className="bg-yellow-50">Pending</option>
                           <option value="processing" className="bg-blue-50">Processing</option>
                           <option value="guangzhou_warehouse" className="bg-purple-50">GZ Warehouse</option>
-                          <option value="in_transit" className="bg-cyan-50">In Transit</option>
+                          <option value="in_transit" className="bg-cyan-50">Flying</option>
                           <option value="dhaka_customs" className="bg-amber-50">Dhaka Customs</option>
                           <option value="dhaka_office" className="bg-primary/5">Dhaka Office</option>
                           <option value="delivered" className="bg-green-50">Delivered</option>
@@ -602,7 +602,7 @@ export default function AdminOrdersPage() {
                     <option value="pending">Pending</option>
                     <option value="processing">Processing</option>
                     <option value="guangzhou_warehouse">Guangzhou Warehouse</option>
-                    <option value="in_transit">In Transit</option>
+                    <option value="in_transit">Flying</option>
                     <option value="dhaka_customs">Dhaka Customs</option>
                     <option value="dhaka_office">Dhaka Office</option>
                     <option value="delivered">Delivered</option>

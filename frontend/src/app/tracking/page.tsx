@@ -141,7 +141,7 @@ const ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: n
   'pending': { icon: Package, bgColor: 'bg-yellow-500', label: 'Pending' },
   'processing': { icon: CheckCircle, bgColor: 'bg-blue-500', label: 'Processing' },
   'guangzhou_warehouse': { icon: Warehouse, bgColor: 'bg-purple-500', label: 'Guangzhou Warehouse' },
-  'in_transit': { icon: Truck, bgColor: 'bg-indigo-500', label: 'In Transit' },
+  'in_transit': { icon: Plane, bgColor: 'bg-indigo-500', label: 'Flying' },
   'dhaka_customs': { icon: ClipboardCheck, bgColor: 'bg-amber-500', label: 'Dhaka Customs' },
   'dhaka_office': { icon: Building, bgColor: 'bg-slate-700', label: 'Dhaka Office' },
   'delivered': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Delivered' },
