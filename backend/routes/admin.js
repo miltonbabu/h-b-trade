@@ -27,6 +27,36 @@ const ORDER_STATUS_SEQUENCE = [
   { value: 'cancelled', label: 'Cancelled', description: 'Order cancelled' },
 ];
 
+const SEA_STATUS_SEQUENCE = [
+  { value: 'sea_received_warehouse', label: 'Received at the warehouse', description: 'Shipment received at the warehouse' },
+  { value: 'sea_container_loading', label: 'Container loading', description: 'Shipment is being loaded into a container' },
+  { value: 'sea_in_transit', label: 'In transit', description: 'Shipment is in transit by sea' },
+  { value: 'sea_chittagong_port', label: 'Chittagong port', description: 'Shipment arrived at Chittagong port' },
+  { value: 'sea_chittagong_customs', label: 'Chittagong customs', description: 'Shipment is undergoing customs clearance' },
+  { value: 'sea_customs_released', label: 'Customs released', description: 'Shipment has been released by customs' },
+  { value: 'sea_dhaka_office', label: 'Dhaka office', description: 'Shipment arrived at the Dhaka office' },
+  { value: 'sea_delivered', label: 'Delivered to customer', description: 'Shipment delivered to customer' },
+  { value: 'cancelled', label: 'Cancelled', description: 'Order cancelled' },
+];
+const SEA_STATUSES = SEA_STATUS_SEQUENCE.map(({ value }) => value);
+const SEA_STATUS_DETAILS = Object.fromEntries(SEA_STATUS_SEQUENCE.map(({ value, label, description }) => [value, { label, description }]));
+const SEA_STATUS_LOCATION_MAP = {
+  sea_received_warehouse: 'Warehouse', sea_container_loading: 'Container loading', sea_in_transit: 'At sea',
+  sea_chittagong_port: 'Chittagong Port', sea_chittagong_customs: 'Chittagong Customs',
+  sea_customs_released: 'Chittagong Customs', sea_dhaka_office: 'Dhaka Office, Bangladesh',
+  sea_delivered: 'Customer Location', cancelled: 'System',
+};
+const isSeaShipping = (method) => ['sea-shipping', 'sea_shipping'].includes(String(method || '').toLowerCase());
+const isSeaOrder = (order) => isSeaShipping(order.shipping_method);
+const validStatusFor = (method, status) => isSeaShipping(method) ? SEA_STATUSES.includes(status) : ORDER_STATUS_SEQUENCE.some(({ value }) => value === status);
+const statusDetailsFor = (method, status) => isSeaShipping(method) ? SEA_STATUS_DETAILS[status] : null;
+const statusLocationFor = (method, status) => (isSeaShipping(method) ? SEA_STATUS_LOCATION_MAP[status] : STATUS_LOCATION_MAP[status]);
+const eventTimestamp = (value) => {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$/.test(value) || Number.isNaN(Date.parse(value))) return undefined;
+  return value;
+};
+
 const STATUS_TRANSITIONS = {
   'pending': ['processing', 'cancelled'],
   'processing': ['guangzhou_warehouse', 'cancelled'],
@@ -83,6 +113,7 @@ router.get("/order-statuses", (req, res) => {
     success: true,
     data: {
       statuses: ORDER_STATUS_SEQUENCE,
+      seaStatuses: SEA_STATUS_SEQUENCE,
       transitions: STATUS_TRANSITIONS,
       descriptions: STATUS_DESCRIPTIONS,
       locations: STATUS_LOCATION_MAP,
@@ -560,15 +591,21 @@ router.post(
         net_weight,
         status,
         tracking_number,
+        notes,
       } = req.body;
-
+      const seaOrder = isSeaShipping(shipping_method);
+      const initialStatus = status || (seaOrder ? 'sea_received_warehouse' : 'pending');
+      if (!validStatusFor(shipping_method, initialStatus)) {
+        return res.status(400).json({ error: 'Invalid status for shipping method' });
+      }
+      const eventAt = seaOrder ? new Date().toISOString() : null;
       const id = uuidv4();
       const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
 
       await db.run(
         `INSERT INTO orders 
-       (id, order_number, customer_name, product_name, quantity, shipping_method, price, net_weight, status, tracking_number) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, order_number, customer_name, product_name, quantity, shipping_method, price, net_weight, status, tracking_number, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           orderNumber,
@@ -578,10 +615,24 @@ router.post(
           shipping_method,
           price,
           net_weight,
-          status || "pending",
-          tracking_number,
+          initialStatus,
+          tracking_number || (seaOrder ? `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}` : null),
+          notes ?? null,
         ],
       );
+      if (seaOrder) {
+        const effectiveTrackingNumber = tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}`;
+        await db.run("UPDATE orders SET tracking_number = ? WHERE id = ?", [effectiveTrackingNumber, id]);
+        const stage = SEA_STATUS_DETAILS[initialStatus];
+        await db.run(
+          `INSERT INTO tracking (id, tracking_number, status, location, note, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+          [uuidv4(), effectiveTrackingNumber, initialStatus, SEA_STATUS_LOCATION_MAP[initialStatus], stage.description, eventAt],
+        );
+        await db.run(
+          `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [uuidv4(), id, effectiveTrackingNumber, null, initialStatus, SEA_STATUS_LOCATION_MAP[initialStatus], stage.description, req.user?.id ?? null],
+        );
+      }
 
       logger.info(`Order created: ${orderNumber} for ${customer_name}`);
 
@@ -601,7 +652,8 @@ router.put("/orders/:id", [
   body("customer_name").optional().trim(),
   body("product_name").optional().trim(),
   body("price").optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage("Price must be a positive number"),
-  body("status").optional().isIn(['pending', 'processing', 'guangzhou_warehouse', 'in_transit', 'dhaka_customs', 'dhaka_office', 'delivered', 'cancelled']).withMessage("Invalid status"),
+  body("status").optional().isString().withMessage("Invalid status"),
+  body("status_date").optional({ values: 'falsy' }).isISO8601({ strict: true, strictSeparator: true }).withMessage("Status date must be an ISO timestamp"),
   handleValidationErrors
 ], async (req, res) => {
   try {
@@ -618,6 +670,7 @@ router.put("/orders/:id", [
       note,
       notes,
       product_link,
+      status_date,
     } = req.body;
 
     const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [
@@ -628,6 +681,13 @@ router.put("/orders/:id", [
       return res.status(404).json({ error: "Order not found" });
     }
 
+    const effectiveShippingMethod = shipping_method ?? order.shipping_method;
+    if (status !== undefined && !validStatusFor(effectiveShippingMethod, status)) {
+      return res.status(400).json({ error: 'Invalid status for shipping method' });
+    }
+    const eventAt = isSeaShipping(effectiveShippingMethod) ? eventTimestamp(status_date) : null;
+    if (eventAt === undefined) return res.status(400).json({ error: 'Status date must be a valid ISO timestamp' });
+
     // Resolve effective tracking number: explicit from request > existing on order > auto-generate
     const effectiveTrackingNumber = tracking_number || order.tracking_number ||
       (status && status !== order.status
@@ -635,9 +695,10 @@ router.put("/orders/:id", [
         : null);
 
     if (status && status !== order.status) {
-      const resolvedLocation = location || STATUS_LOCATION_MAP[status] || 'System';
+      const resolvedLocation = location || statusLocationFor(effectiveShippingMethod, status) || 'System';
+      const seaDetails = statusDetailsFor(effectiveShippingMethod, status);
       const historyNote = note ?? null;
-      const trackingNote = note || STATUS_DESCRIPTIONS[status] || '';
+      const trackingNote = note || seaDetails?.description || STATUS_DESCRIPTIONS[status] || '';
       const changedBy = req.user?.id ?? null;
 
       const historyId = uuidv4();
@@ -649,9 +710,11 @@ router.put("/orders/:id", [
 
       if (effectiveTrackingNumber) {
         await db.run(
-          `INSERT INTO tracking (id, tracking_number, status, location, note)
-           VALUES (?, ?, ?, ?, ?)`,
-          [uuidv4(), effectiveTrackingNumber, status, resolvedLocation, trackingNote],
+          `INSERT INTO tracking (id, tracking_number, status, location, note${isSeaShipping(effectiveShippingMethod) ? ', created_at' : ''})
+           VALUES (?, ?, ?, ?, ?${isSeaShipping(effectiveShippingMethod) ? ', ?' : ''})`,
+          isSeaShipping(effectiveShippingMethod)
+            ? [uuidv4(), effectiveTrackingNumber, status, resolvedLocation, trackingNote, eventAt || new Date().toISOString()]
+            : [uuidv4(), effectiveTrackingNumber, status, resolvedLocation, trackingNote],
         );
       }
     }
@@ -750,14 +813,20 @@ router.post(
         [tracking_number]
       );
       
-      // Admin can freely set any status; no transition enforcement on this endpoint
+      if (order && !validStatusFor(order.shipping_method, status)) {
+        return res.status(400).json({ error: 'Invalid status for shipping method' });
+      }
+      const seaDetails = order && isSeaOrder(order) ? SEA_STATUS_DETAILS[status] : null;
+      if (order && isSeaOrder(order) && !seaDetails) {
+        return res.status(400).json({ error: 'Invalid status for shipping method' });
+      }
       
       const id = uuidv4();
 
       await db.run(
         `INSERT INTO tracking (id, tracking_number, status, location, note) 
        VALUES (?, ?, ?, ?, ?)`,
-        [id, tracking_number, status, location || STATUS_LOCATION_MAP[status], note || STATUS_DESCRIPTIONS[status]],
+        [id, tracking_number, status, location || statusLocationFor(order?.shipping_method, status), note || seaDetails?.description || STATUS_DESCRIPTIONS[status]],
       );
 
       if (order) {
@@ -2009,7 +2078,7 @@ router.delete("/service-requests/:id", canDelete, async (req, res) => {
 // Convert service request to order
 router.post("/service-requests/:id/convert-to-order", async (req, res) => {
   try {
-    const { price, shipping_method, status = "processing" } = req.body;
+    const { price, shipping_method, status: requestedStatus } = req.body;
 
     const request = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
 
@@ -2067,6 +2136,12 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
       'hand': 'Hand Carry',
     };
     const shippingMethod = shippingMethodMap[shipping_method] || shipping_method || 'Not specified';
+    const seaOrder = isSeaShipping(shipping_method) || isSeaShipping(request.service_type) || ['sea', 'sea_shipping'].includes(String(request.service_type || '').toLowerCase());
+    const status = seaOrder ? 'sea_received_warehouse' : (requestedStatus || 'processing');
+    if (!validStatusFor(seaOrder ? 'sea_shipping' : shippingMethod, status)) {
+      return res.status(400).json({ error: 'Invalid status for shipping method' });
+    }
+    const initialEventAt = new Date().toISOString();
 
     // Build items_info with all service request details
     let itemsInfo = null;
@@ -2097,6 +2172,19 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [orderId, orderNumber, trackingNumber, request.name, customerInfo, productName, orderQuantity, shippingMethod, price || 0, status, itemsInfo, request.message || null]
     );
+
+    if (seaOrder) {
+      const initialLocation = SEA_STATUS_LOCATION_MAP[status];
+      const initialNote = SEA_STATUS_DETAILS[status].description;
+      await db.run(
+        `INSERT INTO tracking (id, tracking_number, status, location, note, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+        [uuidv4(), trackingNumber, status, initialLocation, initialNote, initialEventAt],
+      );
+      await db.run(
+        `INSERT INTO status_history (id, order_id, tracking_number, old_status, new_status, location, note, changed_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [uuidv4(), orderId, trackingNumber, null, status, initialLocation, initialNote, req.user?.id ?? null],
+      );
+    }
 
     // Update service request
     await db.run(
