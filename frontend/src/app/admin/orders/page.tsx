@@ -28,7 +28,7 @@ const AIR_STATUSES = [
   ['dhaka_customs', 'Dhaka Customs'], ['dhaka_office', 'Dhaka Office'],
   ['delivered', 'Delivered'], ['cancelled', 'Cancelled'],
 ];
-const isSeaShipping = (method?: string | null) => ['sea-shipping', 'sea_shipping'].includes((method || '').toLowerCase());
+const isSeaShipping = (method?: string | null) => /sea/i.test(method || '');
 const localDateTimeValue = () => {
   const date = new Date();
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());

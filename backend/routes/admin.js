@@ -46,14 +46,14 @@ const SEA_STATUS_LOCATION_MAP = {
   sea_customs_released: 'Chittagong Customs', sea_dhaka_office: 'Dhaka Office, Bangladesh',
   sea_delivered: 'Customer Location', cancelled: 'System',
 };
-const isSeaShipping = (method) => ['sea-shipping', 'sea_shipping'].includes(String(method || '').toLowerCase());
+const isSeaShipping = (method) => /sea/i.test(String(method || ''));
 const isSeaOrder = (order) => isSeaShipping(order.shipping_method);
 const validStatusFor = (method, status) => isSeaShipping(method) ? SEA_STATUSES.includes(status) : ORDER_STATUS_SEQUENCE.some(({ value }) => value === status);
 const statusDetailsFor = (method, status) => isSeaShipping(method) ? SEA_STATUS_DETAILS[status] : null;
 const statusLocationFor = (method, status) => (isSeaShipping(method) ? SEA_STATUS_LOCATION_MAP[status] : STATUS_LOCATION_MAP[status]);
 const eventTimestamp = (value) => {
   if (value === undefined || value === null || value === '') return null;
-  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$/.test(value) || Number.isNaN(Date.parse(value))) return undefined;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || Number.isNaN(Date.parse(value))) return undefined;
   return value;
 };
 
