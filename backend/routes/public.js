@@ -164,7 +164,7 @@ router.get('/track/:tracking_number', async (req, res) => {
     const order = await db.getOne(
       `SELECT 
         order_number, customer_name, product_name, quantity, shipping_method, 
-        status, tracking_number, price, created_at
+        status, tracking_number, price, net_weight, notes, created_at
        FROM orders 
        WHERE tracking_number = ? AND deleted_at IS NULL`,
       [tracking_number]
@@ -179,7 +179,30 @@ router.get('/track/:tracking_number', async (req, res) => {
         [tracking_number]
       );
 
-      const statusInfo = STATUS_INFO[order.status] || { label: order.status, description: '', icon: 'package', color: 'gray' };
+      const seaStatuses = [
+        { value: 'sea_received_warehouse', label: 'Received at the warehouse', description: 'Shipment received at the warehouse', icon: 'warehouse', color: 'purple' },
+        { value: 'sea_container_loading', label: 'Container loading', description: 'Shipment is being loaded into a container', icon: 'package', color: 'blue' },
+        { value: 'sea_in_transit', label: 'In transit', description: 'Shipment is in transit by sea', icon: 'ship', color: 'cyan' },
+        { value: 'sea_chittagong_port', label: 'Chittagong port', description: 'Shipment arrived at Chittagong port', icon: 'anchor', color: 'teal' },
+        { value: 'sea_chittagong_customs', label: 'Chittagong customs', description: 'Shipment is undergoing customs clearance', icon: 'clipboard', color: 'orange' },
+        { value: 'sea_customs_released', label: 'Customs released', description: 'Shipment has been released by customs', icon: 'check-circle', color: 'green' },
+        { value: 'sea_dhaka_office', label: 'Dhaka office', description: 'Shipment arrived at the Dhaka office', icon: 'building', color: 'teal' },
+        { value: 'sea_delivered', label: 'Delivered to customer', description: 'Shipment delivered to customer', icon: 'check-circle', color: 'green' },
+        { value: 'cancelled', label: 'Cancelled', description: 'Order cancelled', icon: 'x-circle', color: 'red' },
+      ];
+      const isSeaOrder = /sea/i.test(order.shipping_method || '');
+      const statusSequence = isSeaOrder ? seaStatuses : Object.entries(STATUS_INFO)
+        .filter(([value]) => ['pending', 'processing', 'guangzhou_warehouse', 'in_transit', 'dhaka_customs', 'dhaka_office', 'delivered', 'cancelled'].includes(value))
+        .map(([value, info]) => ({ value, ...info }));
+      const activeStatuses = statusSequence.filter(status => status.value !== 'cancelled');
+      const currentIdx = activeStatuses.findIndex(status => status.value === order.status);
+      const allStatuses = statusSequence.map((status, index) => ({
+        ...status,
+        isCurrent: status.value === order.status,
+        isPast: status.value !== 'cancelled' && currentIdx >= 0 && index < currentIdx,
+        created_at: trackingHistory.find(track => track.status === status.value)?.created_at || (status.value === 'pending' ? order.created_at : null),
+      }));
+      const statusInfo = statusSequence.find(status => status.value === order.status) || STATUS_INFO[order.status] || { label: order.status, description: '', icon: 'package', color: 'gray' };
 
       logger.http(`Tracking lookup (order): ${tracking_number}`);
 
@@ -190,11 +213,7 @@ router.get('/track/:tracking_number', async (req, res) => {
           order,
           tracking: trackingHistory,
           statusInfo,
-          allStatuses: Object.entries(STATUS_INFO).map(([value, info]) => ({
-            value,
-            ...info,
-            isCurrent: value === order.status,
-          })),
+          allStatuses,
         }
       });
     }

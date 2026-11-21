@@ -23,6 +23,9 @@ interface OrderTrackingData {
     shipping_method: string;
     status: string;
     tracking_number: string;
+    price?: number;
+    net_weight?: string;
+    notes?: string;
     created_at: string;
   };
   tracking: Array<{
@@ -44,6 +47,8 @@ interface OrderTrackingData {
     label: string;
     description: string;
     isCurrent: boolean;
+    isPast?: boolean;
+    created_at?: string | null;
   }>;
 }
 
@@ -135,6 +140,18 @@ const TRACKING_PREFIX_INFO: Record<string, { label: string; icon: React.Componen
   'HC': { label: 'Hand Carry', icon: Users, color: 'bg-pink-500' },
   'CF': { label: 'Canton Fair', icon: Globe, color: 'bg-amber-500' },
   'SR': { label: 'Service Request', icon: Wrench, color: 'bg-emerald-600' },
+};
+
+const SEA_ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: number; className?: string }>; bgColor: string; label: string }> = {
+  'sea_received_warehouse': { icon: Warehouse, bgColor: 'bg-purple-500', label: 'Received at the warehouse' },
+  'sea_container_loading': { icon: Package, bgColor: 'bg-blue-500', label: 'Container loading' },
+  'sea_in_transit': { icon: Ship, bgColor: 'bg-cyan-700', label: 'In transit' },
+  'sea_chittagong_port': { icon: Building, bgColor: 'bg-teal-600', label: 'Chittagong port' },
+  'sea_chittagong_customs': { icon: ClipboardCheck, bgColor: 'bg-amber-500', label: 'Chittagong customs' },
+  'sea_customs_released': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Customs released' },
+  'sea_dhaka_office': { icon: Building, bgColor: 'bg-slate-700', label: 'Dhaka office' },
+  'sea_delivered': { icon: CheckCircle, bgColor: 'bg-green-500', label: 'Delivered to customer' },
+  'cancelled': { icon: XCircle, bgColor: 'bg-red-500', label: 'Cancelled' },
 };
 
 const ORDER_STATUS_CONFIG: Record<string, { icon: React.ComponentType<{ size?: number; className?: string }>; bgColor: string; label: string }> = {
@@ -409,13 +426,17 @@ export default function UnifiedTrackingPage() {
               {/* ORDER TYPE */}
               {data.type === 'order' && (() => {
                 // Map each status to its most recent tracking timestamp (tracking is ORDER BY created_at DESC)
+                const isSeaOrder = /sea/i.test(data.order.shipping_method || '');
                 const timeForStatus: Record<string, string | undefined> = {};
                 for (const t of (data.tracking || [])) {
                   if (!timeForStatus[t.status]) timeForStatus[t.status] = t.created_at;
                 }
-                // Order created_at is the implicit "pending" timestamp if nothing else is set
+                for (const status of data.allStatuses) {
+                  if (status.created_at) timeForStatus[status.value] = status.created_at;
+                }
                 if (!timeForStatus['pending']) timeForStatus['pending'] = data.order.created_at;
-                const currentIdx = data.allStatuses.findIndex(s => s.isCurrent);
+                const activeStatuses = data.allStatuses.filter(status => status.value !== 'cancelled');
+                const currentIdx = activeStatuses.findIndex(s => s.isCurrent);
 
                 return (
                 <>
@@ -429,6 +450,8 @@ export default function UnifiedTrackingPage() {
                         <div><p className="text-gray-500 text-sm">Product</p><p className="font-semibold">{data.order.product_name}</p></div>
                         <div><p className="text-gray-500 text-sm">Quantity</p><p className="font-semibold">{data.order.quantity || 'N/A'}</p></div>
                         <div><p className="text-gray-500 text-sm">Shipping</p><p className="font-semibold">{data.order.shipping_method || 'N/A'}</p></div>
+                        {isSeaOrder && data.order.net_weight && <div><p className="text-gray-500 text-sm">Net Weight</p><p className="font-semibold">{data.order.net_weight}</p></div>}
+                        {isSeaOrder && data.order.price !== null && data.order.price !== undefined && <div><p className="text-gray-500 text-sm">Price</p><p className="font-semibold">৳{data.order.price}</p></div>}
                         <div><p className="text-gray-500 text-sm">Status</p>
                           <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${ORDER_STATUS_CONFIG[data.order.status]?.bgColor || 'bg-gray-500'}`}>
                             {ORDER_STATUS_CONFIG[data.order.status]?.label || data.order.status}
@@ -436,6 +459,7 @@ export default function UnifiedTrackingPage() {
                         </div>
                         <div><p className="text-gray-500 text-sm">Order Date</p><p className="font-semibold">{formatDateTime(data.order.created_at)}</p></div>
                       </div>
+                      {isSeaOrder && data.order.notes && <div className="mt-4 border-t pt-3"><p className="text-gray-500 text-sm">Notes</p><p className="font-medium text-slate-800">{data.order.notes}</p></div>}
                     </CardContent>
                   </Card>
 
@@ -448,13 +472,13 @@ export default function UnifiedTrackingPage() {
                           <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
                             <div
                               className="h-full bg-red-600 rounded transition-all duration-500"
-                              style={{ width: currentIdx >= 0 && data.allStatuses.length > 1 ? `${Math.max(0, (currentIdx / (data.allStatuses.length - 1)) * 100)}%` : '0%' }}
+                              style={{ width: currentIdx >= 0 && activeStatuses.length > 1 ? `${Math.max(0, (currentIdx / (activeStatuses.length - 1)) * 100)}%` : '0%' }}
                             />
                           </div>
                           {data.allStatuses.map((status, idx) => {
-                            const cfg = ORDER_STATUS_CONFIG[status.value] || { icon: Package, bgColor: 'bg-gray-500', label: status.label };
+                            const cfg = (isSeaOrder ? SEA_ORDER_STATUS_CONFIG : ORDER_STATUS_CONFIG)[status.value] || { icon: Package, bgColor: 'bg-gray-500', label: status.label };
                             const Icon = cfg.icon;
-                            const isPast = currentIdx > idx;
+                            const isPast = status.isPast ?? currentIdx > idx;
                             const isCurrent = status.isCurrent;
                             const ts = timeForStatus[status.value];
                             return (

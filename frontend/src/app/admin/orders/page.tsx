@@ -11,6 +11,30 @@ import { formatDate, getStatusColor, getStatusLabel } from '@/lib/utils';
 import { Order } from '@/types';
 import { useToast, errorMessage } from '@/components/ui/Toast';
 
+const SEA_STATUSES = [
+  ['sea_received_warehouse', 'Received at the warehouse'],
+  ['sea_container_loading', 'Container loading'],
+  ['sea_in_transit', 'In transit'],
+  ['sea_chittagong_port', 'Chittagong port'],
+  ['sea_chittagong_customs', 'Chittagong customs'],
+  ['sea_customs_released', 'Customs released'],
+  ['sea_dhaka_office', 'Dhaka office'],
+  ['sea_delivered', 'Delivered to customer'],
+  ['cancelled', 'Cancelled'],
+];
+const AIR_STATUSES = [
+  ['pending', 'Pending'], ['processing', 'Processing'],
+  ['guangzhou_warehouse', 'Guangzhou Warehouse'], ['in_transit', 'Flying'],
+  ['dhaka_customs', 'Dhaka Customs'], ['dhaka_office', 'Dhaka Office'],
+  ['delivered', 'Delivered'], ['cancelled', 'Cancelled'],
+];
+const isSeaShipping = (method?: string | null) => ['sea-shipping', 'sea_shipping'].includes((method || '').toLowerCase());
+const localDateTimeValue = () => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 16);
+};
+
 export default function AdminOrdersPage() {
   const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -31,6 +55,7 @@ export default function AdminOrdersPage() {
     status: 'pending',
     tracking_number: '',
   });
+  const [statusEventTime, setStatusEventTime] = useState('');
   const [copiedTracking, setCopiedTracking] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -86,7 +111,13 @@ export default function AdminOrdersPage() {
   const handleUpdate = async () => {
     if (!selectedOrder) return;
     try {
-      await api.put(`/admin/orders/${selectedOrder.id}`, { ...formData, net_weight: formData.net_weight || null });
+      await api.put(`/admin/orders/${selectedOrder.id}`, {
+        ...formData,
+        net_weight: formData.net_weight || null,
+        ...(isSeaShipping(formData.shipping_method) && formData.status !== selectedOrder.status
+          ? { status_date: new Date(statusEventTime || localDateTimeValue()).toISOString() }
+          : {}),
+      });
       setShowModal(false);
       resetForm();
       fetchOrders();
@@ -109,9 +140,12 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleQuickStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleQuickStatusUpdate = async (order: Order, newStatus: string) => {
     try {
-      await api.put(`/admin/orders/${orderId}`, { status: newStatus });
+      await api.put(`/admin/orders/${order.id}`, {
+        status: newStatus,
+        ...(isSeaShipping(order.shipping_method) ? { status_date: new Date().toISOString() } : {}),
+      });
       fetchOrders();
       toast.success(`Status updated to ${newStatus.replace(/_/g, ' ')}`);
     } catch (error) {
@@ -123,11 +157,13 @@ export default function AdminOrdersPage() {
   const openCreateModal = () => {
     resetForm();
     setSelectedOrder(null);
+    setStatusEventTime(localDateTimeValue());
     setShowModal(true);
   };
 
   const openEditModal = (order: Order) => {
     setSelectedOrder(order);
+    setStatusEventTime(localDateTimeValue());
     setFormData({
       customer_name: order.customer_name,
       product_name: order.product_name,
@@ -437,18 +473,13 @@ export default function AdminOrdersPage() {
                       <td className="px-3 py-2">
                         <select
                           value={order.status}
-                          onChange={(e) => handleQuickStatusUpdate(order.id, e.target.value)}
+                          onChange={(e) => handleQuickStatusUpdate(order, e.target.value)}
                           className={`px-2 py-1 rounded text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 ${getStatusColor(order.status)}`}
                           title="Click to change status"
                         >
-                          <option value="pending" className="bg-yellow-50">Pending</option>
-                          <option value="processing" className="bg-blue-50">Processing</option>
-                          <option value="guangzhou_warehouse" className="bg-purple-50">GZ Warehouse</option>
-                          <option value="in_transit" className="bg-cyan-50">Flying</option>
-                          <option value="dhaka_customs" className="bg-amber-50">Dhaka Customs</option>
-                          <option value="dhaka_office" className="bg-primary/5">Dhaka Office</option>
-                          <option value="delivered" className="bg-green-50">Delivered</option>
-                          <option value="cancelled" className="bg-red-50">Cancelled</option>
+                          {(isSeaShipping(order.shipping_method) ? SEA_STATUSES : AIR_STATUSES).map(([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
                         </select>
                       </td>
                       <td className="px-3 py-2 hidden lg:table-cell">
@@ -583,7 +614,16 @@ export default function AdminOrdersPage() {
                   <label className="block text-sm font-medium mb-1">Shipping Method</label>
                   <select
                     value={formData.shipping_method}
-                    onChange={(e) => setFormData({ ...formData, shipping_method: e.target.value })}
+                    onChange={(e) => {
+                      const shipping_method = e.target.value;
+                      setFormData({
+                        ...formData,
+                        shipping_method,
+                        status: isSeaShipping(shipping_method)
+                          ? (isSeaShipping(formData.shipping_method) ? formData.status : 'sea_received_warehouse')
+                          : (isSeaShipping(formData.shipping_method) ? 'pending' : formData.status),
+                      });
+                    }}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background"
                   >
                     <option value="">Select method</option>
@@ -599,15 +639,20 @@ export default function AdminOrdersPage() {
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="processing">Processing</option>
-                    <option value="guangzhou_warehouse">Guangzhou Warehouse</option>
-                    <option value="in_transit">Flying</option>
-                    <option value="dhaka_customs">Dhaka Customs</option>
-                    <option value="dhaka_office">Dhaka Office</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
+                    {(isSeaShipping(formData.shipping_method) ? SEA_STATUSES : AIR_STATUSES).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
                   </select>
+                  {isSeaShipping(formData.shipping_method) && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium mb-1">Status date and time</label>
+                      <Input
+                        type="datetime-local"
+                        value={statusEventTime}
+                        onChange={(e) => setStatusEventTime(e.target.value)}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Read-only items info from converted request */}
