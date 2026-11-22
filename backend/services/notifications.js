@@ -44,9 +44,18 @@ const orderCustomer = (order) => {
   };
 };
 
-const getAdminEmail = async (settings) => {
+/**
+ * Admin alert recipients — supports multiple emails (comma-separated) in
+ * settings.admin_notification_email or the ADMIN_EMAIL env var.
+ * Returns an array of email strings.
+ */
+const getAdminEmails = async (settings) => {
   const s = settings || (await require('./email/dispatcher').getSettings());
-  return s.admin_notification_email || process.env.ADMIN_EMAIL || s.email || null;
+  const raw = s.admin_notification_email || process.env.ADMIN_EMAIL || s.email || '';
+  return String(raw || '')
+    .split(/[,;]/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 };
 
 /* ============================================================
@@ -73,7 +82,7 @@ const orderConfirmation = (order) => {
     sendEmail({
       to: c.email,
       template: 'orderConfirmation',
-      data: { order, customerName: c.name },
+      data: { order, customerName: c.name, statusLabel: orderStatusLabel(order.shipping_method, order.status) },
       category: 'order_confirmation',
       recipientType: 'customer',
       relatedType: 'order',
@@ -321,8 +330,8 @@ const invoiceSent = ({ to, subject, invoiceNumber, customerName, attachment, att
 const adminAlert = async ({ subject, heading, intro, rows, eyebrow, adminPath, note, replyTo, relatedType, relatedId }) => {
   try {
     const settings = await require('./email/dispatcher').getSettings();
-    const to = await getAdminEmail(settings);
-    if (!to) {
+    const to = await getAdminEmails(settings);
+    if (to.length === 0) {
       logger.warn('notify: admin alert skipped — no admin email configured');
       return;
     }

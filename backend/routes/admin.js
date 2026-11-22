@@ -16,7 +16,7 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const logger = require("../config/logger");
 const notify = require("../services/notifications");
-const { sendEmail, getSettings } = require("../services/email/dispatcher");
+const { sendEmail, getSettings, parseRecipients } = require("../services/email/dispatcher");
 
 const ORDER_STATUS_SEQUENCE = [
   { value: 'pending', label: 'Pending', description: 'Order received, awaiting processing' },
@@ -580,12 +580,17 @@ router.post(
   [
     body("customer_name").notEmpty().withMessage("Customer name is required"),
     body("product_name").notEmpty().withMessage("Product name is required"),
+    body("email").optional({ values: "falsy" }).isEmail().withMessage("Please provide a valid email"),
     handleValidationErrors,
   ],
   async (req, res) => {
     try {
       const {
         customer_name,
+        email,
+        phone,
+        whatsapp,
+        address,
         product_name,
         quantity,
         shipping_method,
@@ -603,28 +608,35 @@ router.post(
       const eventAt = seaOrder ? new Date().toISOString() : null;
       const id = uuidv4();
       const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
+      const effectiveTrackingNumber = tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}`;
+      const customerInfoJson = JSON.stringify({
+        name: customer_name,
+        email: email || null,
+        phone: phone || null,
+        whatsapp: whatsapp || null,
+        address: address || null,
+      });
 
       await db.run(
         `INSERT INTO orders 
-       (id, order_number, customer_name, product_name, quantity, shipping_method, price, net_weight, status, tracking_number, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, order_number, customer_name, customer_info, product_name, quantity, shipping_method, price, net_weight, status, tracking_number, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
           orderNumber,
           customer_name,
+          customerInfoJson,
           product_name,
           quantity,
           shipping_method,
           price,
           net_weight,
           initialStatus,
-          tracking_number || (seaOrder ? `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}` : null),
+          effectiveTrackingNumber,
           notes ?? null,
         ],
       );
       if (seaOrder) {
-        const effectiveTrackingNumber = tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}`;
-        await db.run("UPDATE orders SET tracking_number = ? WHERE id = ?", [effectiveTrackingNumber, id]);
         const stage = SEA_STATUS_DETAILS[initialStatus];
         await db.run(
           `INSERT INTO tracking (id, tracking_number, status, location, note, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -638,10 +650,25 @@ router.post(
 
       logger.info(`Order created: ${orderNumber} for ${customer_name}`);
 
+      const orderForEmail = {
+        id,
+        order_number: orderNumber,
+        tracking_number: effectiveTrackingNumber,
+        customer_name,
+        customer_info: customerInfoJson,
+        product_name,
+        quantity,
+        shipping_method,
+        price,
+        status: initialStatus,
+      };
+      notify.orderConfirmation(orderForEmail);
+      notify.adminNewOrder(orderForEmail);
+
       res.status(201).json({
         success: true,
         message: "Order created successfully",
-        data: { id, order_number: orderNumber, customer_name, product_name },
+        data: { id, order_number: orderNumber, customer_name, product_name, tracking_number: effectiveTrackingNumber },
       });
     } catch (error) {
       logger.error("Create order error:", error);
@@ -652,6 +679,7 @@ router.post(
 
 router.put("/orders/:id", [
   body("customer_name").optional().trim(),
+  body("email").optional({ values: 'falsy' }).isEmail().withMessage("Please provide a valid email"),
   body("product_name").optional().trim(),
   body("price").optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage("Price must be a positive number"),
   body("status").optional().isString().withMessage("Invalid status"),
@@ -661,6 +689,10 @@ router.put("/orders/:id", [
   try {
     const {
       customer_name,
+      email,
+      phone,
+      whatsapp,
+      address,
       product_name,
       quantity,
       shipping_method,
@@ -749,6 +781,28 @@ router.put("/orders/:id", [
         req.params.id,
       ],
     );
+
+    // Merge contact fields (email/phone/whatsapp/address) into customer_info JSON
+    // so tracking/status emails can reach the customer.
+    const contactUpdates = { email, phone, whatsapp, address };
+    const hasContactUpdate =
+      Object.values(contactUpdates).some((v) => v !== undefined) || customer_name !== undefined;
+    if (hasContactUpdate) {
+      let info = {};
+      try {
+        info = order.customer_info ? JSON.parse(order.customer_info) : {};
+      } catch (e) {
+        info = {};
+      }
+      if (customer_name !== undefined) info.name = customer_name;
+      for (const [key, value] of Object.entries(contactUpdates)) {
+        if (value !== undefined) info[key] = value === '' ? null : value;
+      }
+      await db.run("UPDATE orders SET customer_info = ? WHERE id = ?", [
+        JSON.stringify(info),
+        req.params.id,
+      ]);
+    }
 
     const updatedOrder = await db.getOne("SELECT * FROM orders WHERE id = ?", [
       req.params.id,
@@ -1540,9 +1594,9 @@ router.get("/email-log", async (req, res) => {
 router.post("/email/test", async (req, res) => {
   try {
     const settings = await getSettings();
-    const to = req.body.to || settings.admin_notification_email || process.env.ADMIN_EMAIL || settings.email;
+    const to = parseRecipients(req.body.to || settings.admin_notification_email || process.env.ADMIN_EMAIL || settings.email);
 
-    if (!to) {
+    if (to.length === 0) {
       return res.status(400).json({ error: "No recipient email available" });
     }
     if (!process.env.RESEND_API_KEY) {
@@ -1569,7 +1623,7 @@ router.post("/email/test", async (req, res) => {
       return res.status(500).json({ error: "Failed to send test email", details: result.error });
     }
 
-    res.json({ success: true, message: `Test email sent to ${to}` });
+    res.json({ success: true, message: `Test email sent to ${to.join(", ")}` });
   } catch (error) {
     logger.error("Send test email error:", error);
     res.status(500).json({ error: "Failed to send test email", details: error.message });

@@ -46,6 +46,8 @@ export default function AdminOrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [formData, setFormData] = useState({
     customer_name: '',
+    email: '',
+    phone: '',
     product_name: '',
     quantity: '',
     shipping_method: '',
@@ -164,8 +166,19 @@ export default function AdminOrdersPage() {
   const openEditModal = (order: Order) => {
     setSelectedOrder(order);
     setStatusEventTime(localDateTimeValue());
+    let existingEmail = '';
+    let existingPhone = '';
+    try {
+      const info = typeof order.customer_info === 'string'
+        ? JSON.parse(order.customer_info)
+        : order.customer_info;
+      existingEmail = info?.email || '';
+      existingPhone = info?.phone || '';
+    } catch { /* customer_info not parseable */ }
     setFormData({
       customer_name: order.customer_name,
+      email: existingEmail,
+      phone: existingPhone,
       product_name: order.product_name,
       quantity: order.quantity || '',
       shipping_method: order.shipping_method || '',
@@ -191,6 +204,8 @@ export default function AdminOrdersPage() {
   const resetForm = () => {
     setFormData({
       customer_name: '',
+      email: '',
+      phone: '',
       product_name: '',
       quantity: '',
       shipping_method: '',
@@ -559,6 +574,24 @@ export default function AdminOrdersPage() {
                   <Input
                     value={formData.customer_name}
                     onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="customer@example.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Order confirmation &amp; tracking updates go here</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+880 1XXX-XXXXXX"
                   />
                 </div>
                 <div>

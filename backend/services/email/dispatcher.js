@@ -98,11 +98,25 @@ const logEmail = async (entry) => {
 };
 
 /**
+ * Normalize recipients: accepts a single email, an array, or a
+ * comma/semicolon-separated string ("a@x.com, b@x.com").
+ */
+const parseRecipients = (to) => {
+  if (Array.isArray(to)) {
+    return to.map((s) => String(s).trim()).filter(Boolean);
+  }
+  return String(to || '')
+    .split(/[,;]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+/**
  * Send a templated transactional email via Resend and log the result.
  * NEVER throws — a failed email must not break the calling request.
  *
  * @param {Object} options
- * @param {string} options.to            recipient email
+ * @param {string|string[]} options.to  recipient email(s) — array or comma-separated string
  * @param {string} options.template      key of templates map
  * @param {Object} options.data          template data
  * @param {string} options.category      e.g. 'order_status_update'
@@ -129,7 +143,9 @@ const sendEmail = async (options) => {
   const logId = uuidv4();
 
   try {
-    if (!to) {
+    const recipients = parseRecipients(to);
+    const recipientStr = recipients.join(', ');
+    if (recipients.length === 0) {
       await logEmail({ id: logId, to: '(missing)', subject: null, category, recipientType, relatedType, relatedId, status: 'failed', error: 'No recipient email' });
       return { success: false, error: 'No recipient email' };
     }
@@ -137,8 +153,8 @@ const sendEmail = async (options) => {
     const settings = await getSettings();
     const policy = resolvePolicy(settings, category, recipientType);
     if (!policy.send) {
-      logger.info(`email: skipped (${policy.reason}) → ${to} [${category}]`);
-      await logEmail({ id: logId, to, subject: null, category, recipientType, relatedType, relatedId, status: 'skipped', error: policy.reason });
+      logger.info(`email: skipped (${policy.reason}) → ${recipientStr} [${category}]`);
+      await logEmail({ id: logId, to: recipientStr, subject: null, category, recipientType, relatedType, relatedId, status: 'skipped', error: policy.reason });
       return { success: true, skipped: true, reason: policy.reason };
     }
 
@@ -176,7 +192,7 @@ const sendEmail = async (options) => {
 
     const result = await sendViaResend({
       from,
-      to,
+      to: recipients,
       subject: rendered.subject,
       html: rendered.html,
       text: rendered.text,
@@ -186,7 +202,7 @@ const sendEmail = async (options) => {
 
     await logEmail({
       id: logId,
-      to,
+      to: recipientStr,
       from,
       replyTo,
       subject: rendered.subject,
@@ -198,13 +214,13 @@ const sendEmail = async (options) => {
       resendId: (result && result.id) || null,
     });
 
-    logger.info(`email: sent [${category}] → ${to} (resend id: ${(result && result.id) || 'n/a'})`);
+    logger.info(`email: sent [${category}] → ${recipientStr} (resend id: ${(result && result.id) || 'n/a'})`);
     return { success: true, resendId: result && result.id };
   } catch (error) {
-    logger.error(`email: FAILED [${category}] → ${to}: ${error.message}`);
+    logger.error(`email: FAILED [${category}] → ${String(to)}: ${error.message}`);
     await logEmail({
       id: logId,
-      to,
+      to: parseRecipients(to).join(', ') || '(missing)',
       subject: null,
       category,
       recipientType,
@@ -217,4 +233,4 @@ const sendEmail = async (options) => {
   }
 };
 
-module.exports = { sendEmail, getSettings, FRONTEND_URL };
+module.exports = { sendEmail, getSettings, parseRecipients, FRONTEND_URL };

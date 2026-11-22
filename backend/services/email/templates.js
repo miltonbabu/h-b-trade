@@ -330,7 +330,7 @@ const templates = {
         { label: 'Tracking Number', value: order.tracking_number },
         { label: 'Shipping Method', value: order.shipping_method },
         { label: 'Order Total', value: `$${order.price}` },
-        { label: 'Status', value: 'Pending — awaiting processing' },
+        { label: 'Status', value: data.statusLabel || 'Pending — awaiting processing' },
       ])}
       ${itemsRows}
       ${noteBox(`You can follow every step of your shipment using your tracking number <strong>${escapeHtml(order.tracking_number || '')}</strong>. We will email you each time your order status changes.`, 'info')}

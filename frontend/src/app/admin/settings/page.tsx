@@ -444,9 +444,9 @@ export default function AdminSettingsPage() {
                   <Input value={emailData.email_from_name} onChange={(e) => setEmailData({ ...emailData, email_from_name: e.target.value })} placeholder="H&B Trade" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notification Email</label>
-                  <Input type="email" value={emailData.admin_notification_email} onChange={(e) => setEmailData({ ...emailData, admin_notification_email: e.target.value })} placeholder="admin@hbtrade.ltd" />
-                  <p className="text-xs text-gray-500 mt-1">All website activity alerts go to this inbox</p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notification Email(s)</label>
+                  <Input value={emailData.admin_notification_email} onChange={(e) => setEmailData({ ...emailData, admin_notification_email: e.target.value })} placeholder="admin@hbtrade.ltd, manager@hbtrade.ltd" />
+                  <p className="text-xs text-gray-500 mt-1">All activity alerts go here — separate multiple emails with commas</p>
                 </div>
               </div>
               {emailMeta.from_address && (
