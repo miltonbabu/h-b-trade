@@ -259,3 +259,32 @@ export interface InvoiceData {
   signatureUrl?: string;
   useLogoAsSignature?: boolean;
 }
+
+// Email notification types (Resend)
+export interface EmailLog {
+  id: string;
+  to_email: string;
+  from_email?: string;
+  reply_to?: string;
+  subject?: string;
+  category?: string;
+  recipient_type?: string;
+  related_type?: string;
+  related_id?: string;
+  status: 'queued' | 'sent' | 'failed' | 'skipped' | string;
+  error?: string;
+  resend_id?: string;
+  created_at: string;
+  sent_at?: string;
+}
+
+export interface EmailSettings {
+  email_from_name: string;
+  admin_notification_email: string;
+  email_notifications_enabled: boolean | number;
+  notify_customer_status_updates: boolean | number;
+  notify_admin_new_activity: boolean | number;
+  resend_configured?: boolean;
+  email_enabled?: boolean;
+  from_address?: string;
+}

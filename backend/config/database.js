@@ -347,6 +347,44 @@ const initPostgresTables = async () => {
       // Columns already exist, ignore error
     }
 
+    // Email notification settings
+    try {
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_from_name VARCHAR(100)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS admin_notification_email VARCHAR(255)");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS notify_customer_status_updates BOOLEAN DEFAULT true");
+      await client.query("ALTER TABLE settings ADD COLUMN IF NOT EXISTS notify_admin_new_activity BOOLEAN DEFAULT true");
+    } catch (e) {
+      // Columns already exist, ignore error
+    }
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS email_log (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        to_email VARCHAR(255) NOT NULL,
+        from_email VARCHAR(255),
+        reply_to VARCHAR(255),
+        subject VARCHAR(500),
+        category VARCHAR(50),
+        recipient_type VARCHAR(20),
+        related_type VARCHAR(50),
+        related_id VARCHAR(100),
+        status VARCHAR(20) DEFAULT 'queued',
+        error TEXT,
+        resend_id VARCHAR(100),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        sent_at TIMESTAMP WITH TIME ZONE
+      )
+    `);
+
+    try {
+      await client.query("CREATE INDEX IF NOT EXISTS idx_email_log_status ON email_log(status)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_email_log_category ON email_log(category)");
+      await client.query("CREATE INDEX IF NOT EXISTS idx_email_log_created_at ON email_log(created_at)");
+    } catch (e) {
+      // Indexes already exist, ignore error
+    }
+
     const settingsResult = await client.query("SELECT COUNT(*) FROM settings");
     if (parseInt(settingsResult.rows[0].count) === 0) {
       await client.query(`
@@ -710,6 +748,47 @@ const initSQLite = async () => {
       INSERT INTO settings (id, phone, email, whatsapp_link, facebook_page, facebook_group, office_address, company_name, bkash, nagad, bank_account, wechat, alipay)
       VALUES ('settings-1', '+880 1234-567890', 'info@hbtrade.com', 'https://wa.me/8801234567890', 'https://www.facebook.com/hbtrade', 'https://www.facebook.com/groups/hbtrade', '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh', 'H&B Trade', '0183522072', '0183522072', 'Bank: The City Bank\nName: MD ARIFUL ISLAM RONY\nAccount Number: 2183964509001\nBranch: Gulshan-02 Avenue\nRouting Number: 225261732\nDhaka, Bangladesh', 'wechat_hbtrade', 'alipay_hbtrade')
     `);
+  }
+
+  // Email notification settings (SQLite)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS email_log (
+      id TEXT PRIMARY KEY,
+      to_email TEXT NOT NULL,
+      from_email TEXT,
+      reply_to TEXT,
+      subject TEXT,
+      category TEXT,
+      recipient_type TEXT,
+      related_type TEXT,
+      related_id TEXT,
+      status TEXT DEFAULT 'queued',
+      error TEXT,
+      resend_id TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      sent_at DATETIME
+    )
+  `);
+
+  try {
+    const settingsInfo = db.exec("PRAGMA table_info(settings)");
+    if (settingsInfo.length > 0) {
+      const settingsColumns = settingsInfo[0].values.map(col => col[1]);
+      const emailSettingCols = [
+        ['email_from_name', 'TEXT'],
+        ['admin_notification_email', 'TEXT'],
+        ['email_notifications_enabled', 'INTEGER DEFAULT 1'],
+        ['notify_customer_status_updates', 'INTEGER DEFAULT 1'],
+        ['notify_admin_new_activity', 'INTEGER DEFAULT 1'],
+      ];
+      for (const [colName, colType] of emailSettingCols) {
+        if (!settingsColumns.includes(colName)) {
+          db.run(`ALTER TABLE settings ADD COLUMN ${colName} ${colType}`);
+        }
+      }
+    }
+  } catch (e) {
+    // Settings table missing or columns already exist, ignore
   }
 
   // Add deleted_at column to all tables for soft delete support

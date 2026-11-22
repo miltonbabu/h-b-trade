@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Settings, Save, Loader2, Upload, Trash2, CheckCircle } from 'lucide-react';
+import { Settings, Save, Loader2, Upload, Trash2, CheckCircle, Mail, Send } from 'lucide-react';
 import api from '@/lib/api';
 
 interface SettingsData {
@@ -48,9 +48,71 @@ export default function AdminSettingsPage() {
     alipay_qr: '',
   });
 
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [emailData, setEmailData] = useState({
+    email_from_name: '',
+    admin_notification_email: '',
+    email_notifications_enabled: true,
+    notify_customer_status_updates: true,
+    notify_admin_new_activity: true,
+  });
+  const [emailMeta, setEmailMeta] = useState({ resend_configured: false, email_enabled: true, from_address: '' });
+
   useEffect(() => {
     fetchSettings();
+    fetchEmailSettings();
   }, []);
+
+  const toBool = (v: unknown) => v === true || v === 1 || v === '1';
+
+  const fetchEmailSettings = async () => {
+    try {
+      const response = await api.get('/admin/email-settings');
+      const s = response.data.data;
+      setEmailData({
+        email_from_name: s.email_from_name || '',
+        admin_notification_email: s.admin_notification_email || '',
+        email_notifications_enabled: toBool(s.email_notifications_enabled ?? true),
+        notify_customer_status_updates: toBool(s.notify_customer_status_updates ?? true),
+        notify_admin_new_activity: toBool(s.notify_admin_new_activity ?? true),
+      });
+      setEmailMeta({
+        resend_configured: !!s.resend_configured,
+        email_enabled: s.email_enabled !== false,
+        from_address: s.from_address || '',
+      });
+    } catch (error) {
+      console.error('Failed to fetch email settings:', error);
+    }
+  };
+
+  const handleEmailSave = async () => {
+    setEmailSaving(true);
+    setMessage({ type: '', text: '' });
+    try {
+      await api.put('/admin/email-settings', emailData);
+      setMessage({ type: 'success', text: 'Email settings saved successfully!' });
+      fetchEmailSettings();
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to save email settings. Please try again.' });
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
+  const handleSendTest = async () => {
+    setTesting(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const res = await api.post('/admin/email/test', {});
+      setMessage({ type: 'success', text: res.data?.message || 'Test email sent successfully!' });
+    } catch (error: any) {
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to send test email. Please try again.' });
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -345,6 +407,106 @@ export default function AdminSettingsPage() {
                     className="hidden"
                   />
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Email Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail size={20} />
+              Email Notifications (Resend)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${emailMeta.resend_configured ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {emailMeta.resend_configured ? '✓ Resend API configured' : '✗ Resend API key missing'}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${emailMeta.email_enabled ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  {emailMeta.email_enabled ? 'Sending enabled' : 'Sending disabled (EMAIL_ENABLED=false)'}
+                </span>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  Customers automatically receive welcome, order/service request confirmation, and <strong>every tracking &amp; status update</strong> email (sea, air cargo, hand carry and all other services).
+                  Admin receives alerts for every new order, service request, product request, contact message, registration and request conversion.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sender Name</label>
+                  <Input value={emailData.email_from_name} onChange={(e) => setEmailData({ ...emailData, email_from_name: e.target.value })} placeholder="H&B Trade" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notification Email</label>
+                  <Input type="email" value={emailData.admin_notification_email} onChange={(e) => setEmailData({ ...emailData, admin_notification_email: e.target.value })} placeholder="admin@hbtrade.ltd" />
+                  <p className="text-xs text-gray-500 mt-1">All website activity alerts go to this inbox</p>
+                </div>
+              </div>
+              {emailMeta.from_address && (
+                <p className="text-xs text-gray-500">Sending from: <span className="font-mono">{emailMeta.from_address}</span></p>
+              )}
+
+              <div className="space-y-3 border border-gray-200 rounded-lg p-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailData.email_notifications_enabled}
+                    onChange={(e) => setEmailData({ ...emailData, email_notifications_enabled: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-700">Enable all notification emails</span>
+                    <span className="block text-xs text-gray-500">Master switch for every outgoing email</span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailData.notify_customer_status_updates}
+                    onChange={(e) => setEmailData({ ...emailData, notify_customer_status_updates: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-700">Customer status &amp; tracking update emails</span>
+                    <span className="block text-xs text-gray-500">Send an email to customers on every status/tracking step</span>
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailData.notify_admin_new_activity}
+                    onChange={(e) => setEmailData({ ...emailData, notify_admin_new_activity: e.target.checked })}
+                    className="w-4 h-4 mt-0.5 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-700">Admin activity alerts</span>
+                    <span className="block text-xs text-gray-500">New orders, requests, messages and registrations</span>
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button type="button" onClick={handleEmailSave} disabled={emailSaving}>
+                  {emailSaving ? (
+                    <><Loader2 className="mr-2 animate-spin" size={18} />Saving...</>
+                  ) : (
+                    <><Save className="mr-2" size={18} />Save Email Settings</>
+                  )}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleSendTest} disabled={testing}>
+                  {testing ? (
+                    <><Loader2 className="mr-2 animate-spin" size={18} />Sending...</>
+                  ) : (
+                    <><Send className="mr-2" size={18} />Send Test Email</>
+                  )}
+                </Button>
               </div>
             </div>
           </CardContent>

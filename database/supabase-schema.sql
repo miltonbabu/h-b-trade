@@ -371,6 +371,39 @@ WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@hbtrade.com');
 UPDATE users SET role = 'super_admin' WHERE email = 'admin@hbtrade.com' AND role = 'admin';
 
 -- ============================================
+-- EMAIL NOTIFICATIONS (Resend) — schema additions
+-- ============================================
+
+-- Settings: email notification configuration
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_from_name VARCHAR(100);
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS admin_notification_email VARCHAR(255);
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS notify_customer_status_updates BOOLEAN DEFAULT true;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS notify_admin_new_activity BOOLEAN DEFAULT true;
+
+-- Email delivery log
+CREATE TABLE IF NOT EXISTS email_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    to_email VARCHAR(255) NOT NULL,
+    from_email VARCHAR(255),
+    reply_to VARCHAR(255),
+    subject VARCHAR(500),
+    category VARCHAR(50),
+    recipient_type VARCHAR(20),
+    related_type VARCHAR(50),
+    related_id VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'queued',
+    error TEXT,
+    resend_id VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    sent_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_log_status ON email_log(status);
+CREATE INDEX IF NOT EXISTS idx_email_log_category ON email_log(category);
+CREATE INDEX IF NOT EXISTS idx_email_log_created_at ON email_log(created_at);
+
+-- ============================================
 -- SCHEMA COMPLETE!
 -- Supports ALL features:
 -- - Admin authentication & management (super_admin, admin roles)

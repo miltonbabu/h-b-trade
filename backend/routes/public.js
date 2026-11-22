@@ -8,6 +8,7 @@ const { uploadMultipleToCloudinary } = require('../config/cloudinary');
 const { optionalAuth } = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
+const notify = require('../services/notifications');
 
 router.use(xssProtection);
 
@@ -98,6 +99,9 @@ router.post('/product-request', optionalAuth, (req, res, next) => {
 
     logger.info(`New product request from: ${email} - ${product_name} - Tracking: ${trackingNumber}`);
 
+    notify.productRequestReceived({ id, name, email, product_name, tracking_number: trackingNumber, quantity, target_price, shipping_method });
+    notify.adminNewProductRequest({ id, name, email, product_name, tracking_number: trackingNumber, quantity, target_price, shipping_method });
+
     res.status(201).json({
       success: true,
       message: 'Product request submitted successfully',
@@ -128,6 +132,9 @@ router.post('/contact', contactValidation, async (req, res) => {
     );
 
     logger.info(`New contact message from: ${email}`);
+
+    notify.contactAutoReply({ id, name, email, subject: subject || 'Contact Form Submission', message });
+    notify.adminNewMessage({ id, name, email, subject: subject || 'Contact Form Submission', message });
 
     res.status(201).json({
       success: true,
@@ -605,7 +612,22 @@ router.post('/orders', optionalAuth, [
     );
 
     logger.info(`New order created: ${orderNumber} - Tracking: ${trackingNumber} - Shipping: ${shippingMethodName} - Total Units: ${serverTotalUnits} - Total: ${serverTotal}`);
-    
+
+    const orderForEmail = {
+      id,
+      order_number: orderNumber,
+      tracking_number: trackingNumber,
+      customer_name: customerInfo.name || 'Guest Customer',
+      customer_info: customerInfoJson,
+      product_name: productNames,
+      items_info: itemsJson,
+      quantity: serverTotalUnits,
+      shipping_method: shippingMethodName,
+      price: serverTotal,
+    };
+    notify.orderConfirmation(orderForEmail);
+    notify.adminNewOrder(orderForEmail);
+
     res.status(201).json({
       success: true,
       message: 'Order placed successfully',
@@ -749,6 +771,10 @@ router.post('/service-request', optionalAuth, (req, res, next) => {
 
     logger.info(`New service request: ${service_type} from ${email} - Tracking: ${trackingNumber}`);
 
+    const requestForEmail = { id, service_type, name, phone, whatsapp, email, company, message, tracking_number: trackingNumber };
+    notify.serviceRequestReceived(requestForEmail);
+    notify.adminNewServiceRequest(requestForEmail);
+
     res.status(201).json({
       success: true,
       message: 'Service request submitted successfully',
@@ -862,6 +888,9 @@ router.post('/event-registration', async (req, res) => {
     );
 
     logger.info(`New event registration from: ${email} - ${event_title}`);
+
+    notify.eventRegistrationConfirmation({ id, event_title, full_name, email, phone });
+    notify.adminNewEventRegistration({ id, event_title, full_name, email, phone, business_name });
 
     res.status(201).json({
       success: true,

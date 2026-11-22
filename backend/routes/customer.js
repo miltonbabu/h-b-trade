@@ -7,6 +7,7 @@ const db = require('../config/database');
 const { handleValidationErrors, xssProtection } = require('../middleware/validation');
 const { protect, customerOnly } = require('../middleware/auth');
 const logger = require('../config/logger');
+const notify = require('../services/notifications');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
@@ -93,6 +94,9 @@ router.post('/register', registerValidation, async (req, res) => {
     );
 
     logger.info(`Customer registered: ${email}`);
+
+    notify.welcomeCustomer({ id, name, email: email.toLowerCase() });
+    notify.adminNewCustomer({ id, name, email: email.toLowerCase(), phone, whatsapp, company });
 
     res.status(201).json({
       success: true,

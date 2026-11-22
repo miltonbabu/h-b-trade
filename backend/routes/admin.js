@@ -15,6 +15,8 @@ const { uploadToCloudinary } = require("../config/cloudinary");
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcryptjs");
 const logger = require("../config/logger");
+const notify = require("../services/notifications");
+const { sendEmail, getSettings } = require("../services/email/dispatcher");
 
 const ORDER_STATUS_SEQUENCE = [
   { value: 'pending', label: 'Pending', description: 'Order received, awaiting processing' },
@@ -754,6 +756,15 @@ router.put("/orders/:id", [
 
     logger.info(`Order updated: ${order.order_number} - Status: ${order.status} → ${status || order.status}`);
 
+    if (status && status !== order.status) {
+      notify.orderStatusUpdated(updatedOrder || order, {
+        oldStatus: order.status,
+        newStatus: status,
+        location: location || statusLocationFor(effectiveShippingMethod, status),
+        note: note ?? null,
+      });
+    }
+
     res.json({
       success: true,
       message: "Order updated successfully",
@@ -844,6 +855,13 @@ router.post(
       ]);
 
       logger.info(`Tracking update: ${tracking_number} - ${status}`);
+
+      notify.trackingEntryAdded({
+        trackingNumber: tracking_number,
+        status,
+        location: location || statusLocationFor(order?.shipping_method, status),
+        note: note || seaDetails?.description || STATUS_DESCRIPTIONS[status],
+      });
 
       res.status(201).json({
         success: true,
@@ -1126,6 +1144,13 @@ router.put("/requests/:id", async (req, res) => {
     const updatedRequest = await db.getOne("SELECT * FROM product_requests WHERE id = ?", [req.params.id]);
     logger.info(`Product request updated: ${req.params.id}`);
 
+    if (req.body.status && req.body.status !== request.status) {
+      notify.productRequestStatusUpdated(updatedRequest, {
+        oldStatus: request.status,
+        newStatus: req.body.status,
+      });
+    }
+
     res.json({ success: true, message: "Request updated successfully", data: updatedRequest });
   } catch (error) {
     logger.error("Update request error:", error);
@@ -1248,6 +1273,9 @@ router.post("/requests/:id/convert-to-order", async (req, res) => {
     );
 
     logger.info(`Request ${request.id} converted to order ${orderNumber}`);
+
+    notify.convertedToOrder(order, request, 'product request');
+    notify.adminConversionNotice(order, request, 'product request');
 
     res.status(201).json({
       success: true,
@@ -1396,6 +1424,155 @@ router.put("/settings", [
   } catch (error) {
     logger.error("Update settings error:", error);
     res.status(500).json({ error: "Failed to update settings" });
+  }
+});
+
+// ============ EMAIL NOTIFICATION SETTINGS & LOG ============
+
+const EMAIL_SETTING_FIELDS = [
+  "email_from_name",
+  "admin_notification_email",
+  "email_notifications_enabled",
+  "notify_customer_status_updates",
+  "notify_admin_new_activity",
+];
+
+const toBoolInt = (v) => (v === true || v === 1 || v === "1" || String(v).toLowerCase() === "true" ? 1 : 0);
+
+router.get("/email-settings", async (req, res) => {
+  try {
+    const settings = await getSettings();
+    res.json({
+      success: true,
+      data: {
+        email_from_name: settings.email_from_name || "H&B Trade",
+        admin_notification_email: settings.admin_notification_email || process.env.ADMIN_EMAIL || settings.email || "",
+        email_notifications_enabled: toBoolInt(settings.email_notifications_enabled ?? true),
+        notify_customer_status_updates: toBoolInt(settings.notify_customer_status_updates ?? true),
+        notify_admin_new_activity: toBoolInt(settings.notify_admin_new_activity ?? true),
+        resend_configured: !!process.env.RESEND_API_KEY,
+        email_enabled: !(String(process.env.EMAIL_ENABLED).toLowerCase() === "false"),
+        from_address: process.env.EMAIL_FROM || "",
+      },
+    });
+  } catch (error) {
+    logger.error("Get email settings error:", error);
+    res.status(500).json({ error: "Failed to get email settings" });
+  }
+});
+
+router.put("/email-settings", async (req, res) => {
+  try {
+    const fields = {};
+    for (const key of EMAIL_SETTING_FIELDS) {
+      if (key in req.body) {
+        fields[key] = key.includes("enabled") || key.startsWith("notify_")
+          ? toBoolInt(req.body[key])
+          : (req.body[key] === "" ? null : req.body[key]);
+      }
+    }
+
+    if (Object.keys(fields).length === 0) {
+      return res.status(400).json({ error: "No fields to update" });
+    }
+
+    const setClauses = Object.keys(fields).map((key) => `${key} = ?`).join(", ");
+    await db.run(
+      `UPDATE settings SET ${setClauses} WHERE id = (SELECT id FROM settings LIMIT 1)`,
+      Object.values(fields)
+    );
+
+    logger.info("Email settings updated");
+    res.json({ success: true, message: "Email settings updated successfully" });
+  } catch (error) {
+    logger.error("Update email settings error:", error);
+    res.status(500).json({ error: "Failed to update email settings" });
+  }
+});
+
+router.get("/email-log", async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+    const { status, category, q } = req.query;
+
+    const where = [];
+    const params = [];
+    if (status) {
+      where.push("status = ?");
+      params.push(status);
+    }
+    if (category) {
+      where.push("category = ?");
+      params.push(category);
+    }
+    if (q) {
+      where.push("(to_email LIKE ? OR subject LIKE ?)");
+      params.push(`%${q}%`, `%${q}%`);
+    }
+    const whereSql = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";
+
+    const logs = await db.getMany(
+      `SELECT * FROM email_log ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    const countRow = await db.getOne(
+      `SELECT COUNT(*) as total FROM email_log ${whereSql}`,
+      params
+    );
+
+    res.json({
+      success: true,
+      data: logs,
+      pagination: {
+        page,
+        limit,
+        total: parseInt(countRow && countRow.total) || 0,
+      },
+    });
+  } catch (error) {
+    logger.error("Get email log error:", error);
+    res.status(500).json({ error: "Failed to get email log" });
+  }
+});
+
+router.post("/email/test", async (req, res) => {
+  try {
+    const settings = await getSettings();
+    const to = req.body.to || settings.admin_notification_email || process.env.ADMIN_EMAIL || settings.email;
+
+    if (!to) {
+      return res.status(400).json({ error: "No recipient email available" });
+    }
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(503).json({
+        error: "Resend is not configured (RESEND_API_KEY missing)",
+        fallback: true,
+        mailto: `mailto:${to}?subject=${encodeURIComponent("H&B Trade - Email system test")}`,
+      });
+    }
+
+    const result = await sendEmail({
+      to,
+      template: "testEmail",
+      data: {
+        name: req.user?.name || "Admin",
+        environment: process.env.NODE_ENV || "development",
+        from: process.env.EMAIL_FROM || "Resend default sender",
+      },
+      category: "test",
+      recipientType: "admin",
+    });
+
+    if (!result.success) {
+      return res.status(500).json({ error: "Failed to send test email", details: result.error });
+    }
+
+    res.json({ success: true, message: `Test email sent to ${to}` });
+  } catch (error) {
+    logger.error("Send test email error:", error);
+    res.status(500).json({ error: "Failed to send test email", details: error.message });
   }
 });
 
@@ -2041,6 +2218,16 @@ router.put("/service-requests/:id", async (req, res) => {
     const updatedRequest = await db.getOne("SELECT * FROM service_requests WHERE id = ?", [req.params.id]);
     logger.info(`Service request updated: ${req.params.id}`);
 
+    if (req.body.status && req.body.status !== request.status) {
+      notify.serviceRequestStatusUpdated(updatedRequest, {
+        oldStatus: request.status,
+        newStatus: req.body.status,
+      });
+    }
+    if (req.body.price !== undefined && String(req.body.price) !== String(request.price ?? '')) {
+      notify.quoteReady(updatedRequest, { price: req.body.price, kind: 'service' });
+    }
+
     res.json({ success: true, message: "Service request updated successfully", data: updatedRequest });
   } catch (error) {
     logger.error("Update service request error:", error);
@@ -2195,6 +2382,9 @@ router.post("/service-requests/:id/convert-to-order", async (req, res) => {
     const order = await db.getOne("SELECT * FROM orders WHERE id = ?", [orderId]);
 
     logger.info(`Service request ${request.tracking_number} converted to order ${orderNumber}`);
+
+    notify.convertedToOrder(order, request, 'service request');
+    notify.adminConversionNotice(order, request, 'service request');
 
     res.status(201).json({
       success: true,
@@ -2404,20 +2594,6 @@ router.delete("/videos/:id", canDelete, async (req, res) => {
   }
 });
 
-const nodemailer = require("nodemailer");
-
-const getEmailTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
-
 router.post("/send-invoice", async (req, res) => {
   try {
     const { to, subject, invoiceNumber, customerName, attachment, attachmentName } = req.body;
@@ -2426,8 +2602,8 @@ router.post("/send-invoice", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields: to, subject, attachment" });
     }
 
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      logger.warn("SMTP credentials not configured, falling back to mailto");
+    if (!process.env.RESEND_API_KEY) {
+      logger.warn("RESEND_API_KEY not configured, falling back to mailto");
       return res.status(503).json({
         error: "Email service not configured",
         fallback: true,
@@ -2435,44 +2611,27 @@ router.post("/send-invoice", async (req, res) => {
       });
     }
 
-    const transporter = getEmailTransporter();
-
-    const base64Data = attachment.replace(/^data:.*;base64,/, '');
-
-    const mailOptions = {
-      from: `"H&B Trade" <${process.env.SMTP_USER}>`,
+    const result = await sendEmail({
       to,
-      subject,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: #0d9488; padding: 20px; border-radius: 8px 8px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">H&B Trade</h1>
-            <p style="color: #ccfbf1; margin: 5px 0 0 0; font-size: 12px;">China to Bangladesh Product Sourcing & Shipping</p>
-          </div>
-          <div style="padding: 20px; border: 1px solid #e5e7eb; border-top: none;">
-            <p>Dear ${customerName || 'Customer'},</p>
-            <p>Please find attached your invoice <strong>${invoiceNumber}</strong>.</p>
-            <p>If you have any questions regarding this invoice, please don't hesitate to contact us.</p>
-            <p>Thank you for your business!</p>
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-            <p style="color: #9ca3af; font-size: 12px;">Best regards,<br/>H&B Trade Team</p>
-          </div>
-          <div style="background: #f3f4f6; padding: 12px; border-radius: 0 0 8px 8px; text-align: center;">
-            <p style="color: #9ca3af; font-size: 11px; margin: 0;">H&B Trade - Your Trusted Sourcing Partner</p>
-          </div>
-        </div>
-      `,
+      template: "invoice",
+      data: { customerName, invoiceNumber, subject },
+      category: "invoice",
+      recipientType: "customer",
+      relatedType: "invoice",
+      relatedId: invoiceNumber,
       attachments: [
         {
+          content: String(attachment).replace(/^data:.*;base64,/, ''),
           filename: attachmentName || 'invoice.pdf',
-          content: base64Data,
-          encoding: 'base64',
           contentType: 'application/pdf',
         },
       ],
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (!result.success) {
+      return res.status(500).json({ error: "Failed to send invoice email", details: result.error });
+    }
+
     logger.info(`Invoice ${invoiceNumber} sent to ${to}`);
 
     res.json({
