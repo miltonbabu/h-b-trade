@@ -340,12 +340,12 @@ INSERT INTO settings (
     bkash, nagad, bank_account, wechat, alipay
 )
 VALUES (
-    '+880 1234-567890',
+    '01937-585398',
     'info@hbtrade.com',
     'https://wa.me/8801234567890',
     'https://www.facebook.com/hbtrade',
     'https://www.facebook.com/groups/hbtrade',
-    '123 Trade Center, Guangzhou, China | 456 Business Hub, Dhaka, Bangladesh',
+    '123 Trade Center, Guangzhou, China | House-55, Road-16, Sector-14, Uttara, Dhaka-1230',
     'H&B Trade',
     'H&B Trade is a leading logistics and sourcing company specializing in China to Bangladesh trade.',
     'Product Sourcing, Wholesale Supply, Sea Shipping, Air Cargo, Hand Carry Services',

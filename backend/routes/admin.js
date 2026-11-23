@@ -609,6 +609,8 @@ router.post(
       const id = uuidv4();
       const orderNumber = `HB${Date.now().toString().slice(-8)}${Math.random().toString(36).slice(2,5)}`;
       const effectiveTrackingNumber = tracking_number || `TRK${Date.now().toString().slice(-10)}${Math.random().toString(36).slice(2, 5)}`;
+      // Empty strings must become NULL — PostgreSQL rejects '' for numeric columns (price)
+      const numOrNull = (v) => (v === '' || v === undefined || v === null ? null : v);
       const customerInfoJson = JSON.stringify({
         name: customer_name,
         email: email || null,
@@ -627,13 +629,13 @@ router.post(
           customer_name,
           customerInfoJson,
           product_name,
-          quantity,
+          numOrNull(quantity),
           shipping_method,
-          price,
-          net_weight,
+          numOrNull(price),
+          numOrNull(net_weight),
           initialStatus,
           effectiveTrackingNumber,
-          notes ?? null,
+          numOrNull(notes),
         ],
       );
       if (seaOrder) {
@@ -770,10 +772,10 @@ router.put("/orders/:id", [
       [
         customer_name ?? null,
         product_name ?? null,
-        quantity ?? null,
-        shipping_method ?? null,
-        price ?? null,
-        net_weight ?? null,
+        quantity === '' ? null : quantity ?? null,
+        shipping_method === '' ? null : shipping_method ?? null,
+        price === '' ? null : price ?? null,
+        net_weight === '' ? null : net_weight ?? null,
         status ?? null,
         effectiveTrackingNumber ?? null,
         notes !== undefined ? notes : null,

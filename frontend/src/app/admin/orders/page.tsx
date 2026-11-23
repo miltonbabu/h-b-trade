@@ -99,7 +99,12 @@ export default function AdminOrdersPage() {
 
   const handleCreate = async () => {
     try {
-      await api.post('/admin/orders', { ...formData, net_weight: formData.net_weight || null });
+      await api.post('/admin/orders', {
+        ...formData,
+        quantity: formData.quantity || null,
+        price: formData.price || null,
+        net_weight: formData.net_weight || null,
+      });
       setShowModal(false);
       resetForm();
       fetchOrders();
@@ -115,6 +120,8 @@ export default function AdminOrdersPage() {
     try {
       await api.put(`/admin/orders/${selectedOrder.id}`, {
         ...formData,
+        quantity: formData.quantity || null,
+        price: formData.price || null,
         net_weight: formData.net_weight || null,
         ...(isSeaShipping(formData.shipping_method) && formData.status !== selectedOrder.status
           ? { status_date: new Date(statusEventTime || localDateTimeValue()).toISOString() }

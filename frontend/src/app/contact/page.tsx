@@ -75,7 +75,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Phone</h3>
-                      <p className="text-gray-600">+880 1835220729 (Admin: RONY)</p>
+                      <p className="text-gray-600">01937-585398 (Admin: RONY)</p>
                       <p className="text-gray-600">+86 13071095097 (WeChat)</p>
                     </div>
                   </CardContent>
@@ -109,9 +109,9 @@ export default function ContactPage() {
                       </p>
                       <p className="text-gray-600">
                         <strong>Bangladesh Office:</strong><br />
-                        Dhaka, Uttara, Sector 5<br />
-                        Road 3, House # 25<br />
-                        ঢাকা, উত্তরা, সেক্টর ৫
+                        House-55, Road-16, Sector-14<br />
+                        Uttara, Dhaka-1230<br />
+                        হাউস-৫৫, রোড-১৬, সেক্টর-১৪, উত্তরা, ঢাকা-১২৩০
                       </p>
                     </div>
                   </CardContent>
@@ -273,30 +273,58 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <Card>
               <CardContent className="p-0">
-                <div className="bg-gray-200 h-40 sm:h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="mx-auto text-gray-400 mb-2" size={48} />
-                    <p className="text-gray-600">Guangzhou, China</p>
-                  </div>
+                <div className="h-40 sm:h-64 w-full">
+                  <iframe
+                    src="https://www.google.com/maps?q=Tahei+Town,+Baiyun+District,+Guangzhou,+China&output=embed"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="H&B Trade China Office Map"
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-slate-900">China Office</h3>
-                  <p className="text-gray-600 text-sm">Guangzhou, China</p>
+                  <p className="text-gray-600 text-sm">Tahei Town, Baiyun District, Guangzhou City, China</p>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Tahei+Town,+Baiyun+District,+Guangzhou,+China"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-600 hover:text-sky-700 text-sm font-medium inline-flex items-center gap-1 mt-2"
+                  >
+                    <MapPin size={14} /> View on Google Maps
+                  </a>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-0">
-                <div className="bg-gray-200 h-40 sm:h-64 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="mx-auto text-gray-400 mb-2" size={48} />
-                    <p className="text-gray-600">Dhaka, Bangladesh</p>
-                  </div>
+                <div className="h-40 sm:h-64 w-full">
+                  <iframe
+                    src="https://www.google.com/maps?q=House-55,+Road-16,+Sector-14,+Uttara,+Dhaka-1230&output=embed"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="H&B Trade Bangladesh Office Map"
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-slate-900">Bangladesh Office</h3>
-                  <p className="text-gray-600 text-sm">Uttara Sector 05, Road 03, House 25, Dhaka</p>
+                  <p className="text-gray-600 text-sm">House-55, Road-16, Sector-14, Uttara, Dhaka-1230</p>
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=House-55,+Road-16,+Sector-14,+Uttara,+Dhaka-1230"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-600 hover:text-sky-700 text-sm font-medium inline-flex items-center gap-1 mt-2"
+                  >
+                    <MapPin size={14} /> View on Google Maps
+                  </a>
                 </div>
               </CardContent>
             </Card>
